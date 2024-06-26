@@ -70,6 +70,8 @@ class MockServer:
 class TestGather:
     @pytest.mark.anyio
     async def test_gather(self):
+        assert (await gather()) == ()
+
         async def a():
             return 1
 
@@ -145,6 +147,20 @@ class TestGather:
             assert all(i == MockServer.OK for i in results)
 
     @pytest.mark.anyio
+    async def test_bulk_batch_size_generator(self):
+        total = 200
+        with Timer("Use sema(generator):"):
+            tasks = (MockServer.response() for _ in range(total))
+            results = await bulk_gather(tasks, batch_size=MockServer.limit)
+            assert sum(i == MockServer.OK for i in results) == total
+        with Timer("Without sema(generator):"):
+            tasks = (MockServer.response() for _ in range(total))
+            results = await bulk_gather(
+                tasks, batch_size=MockServer.limit, wait_last=True
+            )
+            assert all(i == MockServer.OK for i in results)
+
+    @pytest.mark.anyio
     async def test_bulk_limit(self):
         total = 200
         with Timer("Use sema:"):
@@ -153,6 +169,18 @@ class TestGather:
             assert sum(i == MockServer.OK for i in results) == total
         with Timer("Without sema:"):
             tasks = [MockServer.response() for _ in range(total)]
+            results = await bulk_gather(tasks, limit=MockServer.limit, wait_last=True)
+            assert all(i == MockServer.OK for i in results)
+
+    @pytest.mark.anyio
+    async def test_bulk_limit_generator(self):
+        total = 200
+        with Timer("Use sema(generator):"):
+            tasks = (MockServer.response() for _ in range(total))
+            results = await bulk_gather(tasks, limit=MockServer.limit)
+            assert sum(i == MockServer.OK for i in results) == total
+        with Timer("Without sema(generator):"):
+            tasks = (MockServer.response() for _ in range(total))
             results = await bulk_gather(tasks, limit=MockServer.limit, wait_last=True)
             assert all(i == MockServer.OK for i in results)
 
@@ -167,6 +195,14 @@ class TestGather:
             await bulk_gather(
                 tasks, batch_size=MockServer.limit, limit=MockServer.limit
             )
+
+    @pytest.mark.anyio
+    async def test_bulk_gather_generator(self):
+        async def a():
+            return 1
+
+        lazy_tasks = (a() for _ in range(3))
+        assert (await bulk_gather(lazy_tasks)) == (1, 1, 1)
 
 
 class TestStartTasks:

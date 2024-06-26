@@ -1,6 +1,6 @@
 import importlib.metadata as importlib_metadata
 
-from .aio import gather, run, run_async, start_tasks, wait_for
+from .aio import bulk_gather, gather, map_group, run, run_async, start_tasks, wait_for
 from .client import AsyncRedis
 from .timing import timeit
 from .utils import AttrDict
@@ -12,6 +12,8 @@ __all__ = (
     "AttrDict",
     "run",
     "run_async",
+    "bulk_gather",
+    "map_group",
     "gather",
     "start_tasks",
     "timeit",

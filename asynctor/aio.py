@@ -1,7 +1,17 @@
+import itertools
 import sys
 import warnings
 from contextlib import asynccontextmanager
-from typing import Any, Awaitable, Callable, Coroutine, Sequence, TypeVar
+from typing import (
+    Any,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Generator,
+    Iterable,
+    Sequence,
+    TypeVar,
+)
 
 import anyio
 
@@ -16,6 +26,7 @@ else:
 
 T_Retval = TypeVar("T_Retval")
 PosArgsT = TypeVarTuple("PosArgsT")
+AsyncFunc = Callable[..., Coroutine]
 
 
 def ensure_afunc(
@@ -57,6 +68,24 @@ def run(
     backend: str = "asyncio",
     backend_options: dict[str, Any] | None = None,
 ) -> T_Retval:
+    """Combine `asyncio.run` and `anyio.run`
+
+    :param func: async function or coroutine.
+    :param *args: arguments that will pass to `func` if it's a function.
+    :param backend: should be 'asyncio' or 'trio'.
+    :param backend_options: will pass to `anyio.run`.
+
+    Usage::
+
+    .. code-block:: python3
+
+        async def foo(a, b, *, c=3):
+            return a, b, c
+
+        from functools import partial
+        assert run(partial(foo, c=0), 1, 2) == run(foo(1, 2, c=0))
+
+    """
     if not callable(func):
 
         async def do_await() -> T_Retval:
@@ -67,7 +96,7 @@ def run(
 
 
 async def bulk_gather(
-    coros: Sequence[Coroutine],
+    coros: Sequence[Coroutine] | Generator[Coroutine, None, None],
     batch_size=0,
     wait_last=False,
     raises=True,
@@ -83,13 +112,19 @@ async def bulk_gather(
     :param raises: if True, raise Exception when coroutine failed, else return None.
     :param limit: (deprecated) only leave it here to compare with old version.
     """
-    total = len(coros)
+    try:
+        total = len(coros)  # type:ignore[arg-type]
+    except TypeError:  # if coros is generator
+        total = 0
+    else:
+        if total == 0:
+            return ()
     results = [None] * total
 
-    async def runner(_coro, _i) -> None:
+    async def runner(_i: int, _coro: Coroutine) -> None:
         results[_i] = await _coro
 
-    async def limited_runner(_coro, _i, _limiter) -> None:
+    async def limited_runner(_i, _coro, _limiter) -> None:
         async with _limiter:
             results[_i] = await _coro
 
@@ -108,24 +143,50 @@ async def bulk_gather(
                 batch_size = limit
         if batch_size:
             if wait_last:
-                for start in range(0, total, batch_size):
-                    async with anyio.create_task_group() as tg:
-                        for index, coro in enumerate(coros[start : start + batch_size]):
-                            tg.start_soon(runner, coro, start + index)
+                if total == 0:
+                    todos: list[tuple[int, Coroutine]] = []
+                    for count, args in zip(itertools.count(), enumerate(coros)):
+                        todos.append(args)
+                        results.append(None)
+                        if count % batch_size == 0:
+                            await map_group(runner, todos)
+                            todos.clear()
+                    if todos:
+                        await map_group(runner, todos)
+                else:
+                    for start in range(0, total, batch_size):
+                        coros_slice = itertools.islice(coros, start, start + batch_size)
+                        args_items = (
+                            (start + i, coro) for i, coro in enumerate(coros_slice)
+                        )
+                        await map_group(runner, args_items)
             else:
                 limiter = anyio.CapacityLimiter(batch_size)
-                async with anyio.create_task_group() as tg:
-                    for i, coro in enumerate(coros):
-                        tg.start_soon(limited_runner, coro, i, limiter)
+                todo_args = ((*item, limiter) for item in enumerate(coros))
+                if total == 0:
+                    await map_group(limited_runner, todo_args, results)
+                else:
+                    await map_group(limited_runner, todo_args)
         else:
-            async with anyio.create_task_group() as tg:
-                for i, coro in enumerate(coros):
-                    tg.start_soon(runner, coro, i)
+            if total == 0:
+                await map_group(runner, enumerate(coros), results)
+            else:
+                await map_group(runner, enumerate(coros))
     except ExceptionGroup as e:
         if raises:
             raise e.exceptions[0]
 
     return tuple(results)
+
+
+async def map_group(
+    func: AsyncFunc, todos: Iterable, results: list | None = None
+) -> None:
+    async with anyio.create_task_group() as tg:
+        for args in todos:
+            if results is not None:
+                results.append(None)
+            tg.start_soon(func, *args)
 
 
 async def gather(*coros: Coroutine) -> tuple:
