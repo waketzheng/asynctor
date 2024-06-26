@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
-from asyncur import AsyncRedis
+from asynctor import AsyncRedis
 
 
 @asynccontextmanager

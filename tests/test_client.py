@@ -4,7 +4,7 @@ import pytest
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
 
-from asyncur import AsyncRedis
+from asynctor import AsyncRedis
 
 from .main import app
 

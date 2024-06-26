@@ -7,9 +7,9 @@ from typing import Any
 import anyio
 import pytest
 
-from asyncur.aio import bulk_gather, gather, run, run_async, start_tasks, wait_for
-from asyncur.exceptions import ParamsError
-from asyncur.timing import Timer
+from asynctor.aio import bulk_gather, gather, run, run_async, start_tasks, wait_for
+from asynctor.exceptions import ParamsError
+from asynctor.timing import Timer
 
 
 def test_run_async():

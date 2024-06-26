@@ -5,7 +5,7 @@ from io import StringIO
 import anyio
 import pytest
 
-from asyncur.timing import Timer, timeit
+from asynctor.timing import Timer, timeit
 
 
 @contextmanager

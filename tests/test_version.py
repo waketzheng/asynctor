@@ -1,6 +1,6 @@
 import subprocess
 
-from asyncur import __version__
+from asynctor import __version__
 
 
 def test_version():

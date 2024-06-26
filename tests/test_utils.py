@@ -1,7 +1,7 @@
 # mypy: disable-error-code="attr-defined"
 import pytest
 
-from asyncur import AttrDict
+from asynctor import AttrDict
 
 
 class TestAttrDict:

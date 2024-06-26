@@ -3,7 +3,7 @@ from pathlib import Path
 import anyio
 import pytest
 
-from asyncur.xls import df_to_datas, load_xls, read_excel
+from asynctor.xls import df_to_datas, load_xls, read_excel
 
 
 @pytest.mark.anyio
