@@ -1,3 +1,66 @@
+from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING, AsyncGenerator, cast
+
+if TYPE_CHECKING:
+    from fastapi import FastAPI
+    from httpx import AsyncClient
+    from httpx._transports.asgi import _ASGIApp
+
+
+@asynccontextmanager
+async def client_manager(
+    app: "FastAPI", base_url="http://test", mount_lifespan=True, **kwargs
+) -> AsyncGenerator["AsyncClient", None]:
+    """Async test client
+
+    Usage::
+
+    ```py
+    from typing import AsyncGenerator
+
+    import pytest
+    from asynctor.utils import TestClient
+    from httpx import AsyncClient
+
+    from main import app
+
+
+    @pytest.fixture(scope='session')
+    async def client() -> AsyncGenerator[AsyncClient, None]:
+        async with client_manager(app) as c:
+            yield c
+
+
+    @pytest.fixture(scope="session")
+    def anyio_backend():
+        return "asyncio"
+
+
+    @pytest.mark.anyio
+    async def test_api(client: AsyncClient):
+        response = await client.get("/")
+        assert response.status_code == 200
+    ```
+    """
+    import httpx
+
+    if mount_lifespan:
+        from asgi_lifespan import LifespanManager
+
+        async with LifespanManager(app) as manager:
+            transport = httpx.ASGITransport(cast("_ASGIApp", manager.app))
+            async with httpx.AsyncClient(
+                transport=transport, base_url=base_url, **kwargs
+            ) as c:
+                yield c
+    else:
+        # TODO: remove `cast("_ASGIApp"` if "httpx>0.27.0" released
+        transport = httpx.ASGITransport(cast("_ASGIApp", app))
+        kwargs.update(transport=transport, base_url=base_url)
+        async with httpx.AsyncClient(**kwargs) as c:
+            yield c
+
+
 class AttrDict(dict):
     """Support get dict value by attribution
 
