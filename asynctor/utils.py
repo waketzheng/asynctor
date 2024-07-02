@@ -19,7 +19,7 @@ async def client_manager(
     from typing import AsyncGenerator
 
     import pytest
-    from asynctor.utils import TestClient
+    from asynctor.utils import client_manager
     from httpx import AsyncClient
 
     from main import app
