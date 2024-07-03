@@ -1,0 +1,51 @@
+import random
+import time
+
+from asynctor.tasks import ThreadGroup
+
+
+def sleep(seconds=0.1):
+    time.sleep(seconds)
+    return seconds
+
+
+def test_thread_group():
+    total = 10
+    start = time.time()
+    with ThreadGroup() as tg:
+        for _ in range(total):
+            tg.soonify(sleep)()
+    end = time.time()
+    assert round(end - start, 1) == 0.1
+    assert tg.results == [0.1] * total
+    start = time.time()
+    with ThreadGroup() as tg:
+        for _ in range(total):
+            tg.soonify(sleep)(0.2)
+    end = time.time()
+    assert round(end - start, 1) == 0.2
+    assert tg.results == [0.2] * total
+    start = time.time()
+    choices = [0.1, 0.2, 0.3]
+    with ThreadGroup() as tg:
+        for _ in range(total):
+            tg.soonify(sleep)(seconds=random.choice(choices))
+    end = time.time()
+    assert round(end - start, 1) == 0.3
+    assert len(tg.results) == total
+    assert all(i in choices for i in tg.results)
+
+
+def test_thread_group_exception():
+    def raise_it(e: Exception):
+        raise e
+
+    with ThreadGroup() as tg:
+        tg.soonify(raise_it)(ValueError("foo"))
+        tg.soonify(raise_it)(TypeError("type"))
+
+    assert len(tg.results) == 2
+    assert isinstance(tg.results[0], ValueError)
+    assert isinstance(tg.results[1], TypeError)
+    assert str(tg.results[0]) == "foo"
+    assert str(tg.results[1]) == "type"
