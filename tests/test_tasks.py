@@ -36,6 +36,21 @@ def test_thread_group():
     assert all(i in choices for i in tg.results)
 
 
+def test_thread_group_timeout():
+    def foo():
+        return 1
+
+    start = time.time()
+    with ThreadGroup(timeout=0.1) as tg:
+        tg.soonify(sleep)(seconds=0.2)
+        tg.soonify(foo)()
+    end = time.time()
+    assert round(end - start, 1) == 0.1
+    assert isinstance(tg.results[0], TimeoutError)
+    assert tg.results[1] == 1
+    assert len(tg.results) == 2
+
+
 def test_thread_group_exception():
     def raise_it(e: Exception):
         raise e
@@ -49,3 +64,24 @@ def test_thread_group_exception():
     assert isinstance(tg.results[1], TypeError)
     assert str(tg.results[0]) == "foo"
     assert str(tg.results[1]) == "type"
+
+    with ThreadGroup(max_workers=None) as tg:
+        tg.soonify(raise_it)(ValueError("foo"))
+        tg.soonify(raise_it)(TypeError("type"))
+
+    assert len(tg.results) == 2
+    assert isinstance(tg.results[0], ValueError)
+    assert isinstance(tg.results[1], TypeError)
+    assert str(tg.results[0]) == "foo"
+    assert str(tg.results[1]) == "type"
+
+
+def test_thread_group_with_pool():
+    start = time.time()
+    with ThreadGroup(max_workers=1) as tg:
+        tg.soonify(sleep)(seconds=0.1)
+        tg.soonify(sleep)(seconds=0.2)
+    end = time.time()
+    assert round(end - start, 1) == 0.3
+    assert tg.results[0] == 0.1
+    assert tg.results[1] == 0.2

@@ -1,18 +1,23 @@
 from __future__ import annotations
 
+import concurrent.futures
 import functools
 import sys
 from contextlib import AbstractContextManager
+from functools import cached_property
 from threading import Thread
-from typing import Any, Callable, TypeVar
+from typing import Annotated, Any, Callable, TypeAlias, TypeVar
 
 if sys.version_info >= (3, 10):
-    from typing import ParamSpec
+    from typing import ParamSpec, Self
 else:  # pragma: no cover
-    from typing_extensions import ParamSpec
+    from typing_extensions import ParamSpec, Self
 
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
+FuncResults: TypeAlias = Annotated[
+    list, "The return value of each funtion or the exception that it raises"
+]
 
 
 class StoredThread(Thread):
@@ -43,13 +48,33 @@ class ThreadGroup(AbstractContextManager):
 
     ## Arguments
 
+    `max_workers`: if != 0, use `concurrent.futures.ThreadPoolExecutor(max_workers)`
     `timeout`: floating point number that specifying a timeout for the operation in seconds.
     """
 
-    def __init__(self, timeout: float | None = None):
-        self.threads: list[StoredThread] = []
-        self.results: list[Any] = []
-        self.timeout = timeout
+    def __init__(self, max_workers: int | None = 0, timeout: float | None = None):
+        self._threads: list[StoredThread] = []
+        self._results: list[Any] = []
+        self._timeout = timeout
+        self._max_workers = max_workers
+        self._executor: concurrent.futures.ThreadPoolExecutor | None = None
+        self._future_idx: dict[concurrent.futures.Future, int] = {}
+
+    @property
+    def results(self) -> FuncResults:
+        return self._results
+
+    @cached_property
+    def use_pool(self) -> bool:
+        """Whether use ThreadPoolExecutor"""
+        return self._max_workers != 0
+
+    def __enter__(self) -> Self:
+        if self.use_pool:
+            self._executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=self._max_workers
+            ).__enter__()
+        return self
 
     def soonify(self, func: Callable[T_ParamSpec, Any]) -> Callable[T_ParamSpec, None]:
         """
@@ -68,17 +93,39 @@ class ThreadGroup(AbstractContextManager):
         """
 
         @functools.wraps(func)
-        def runner(*args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs):
-            t = StoredThread(target=func, args=args, kwargs=kwargs)
-            t.start()
-            self.threads.append(t)
+        def runner(*args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs) -> None:
+            if self._executor is not None:
+                fut = self._executor.submit(func, *args, **kwargs)
+                self._future_idx[fut] = len(self._future_idx)
+            else:
+                t = StoredThread(target=func, args=args, kwargs=kwargs)
+                t.start()
+                self._threads.append(t)
 
         return runner
 
-    def __exit__(self, *args, **kw):
-        for t in self.threads:
-            t.join(timeout=self.timeout)
-        self.results = [t._result for t in self.threads]
+    def __exit__(self, *args, **kwargs):
+        if fs := self._future_idx:
+            self._results = [None] * len(fs)
+            for future in concurrent.futures.as_completed(fs, timeout=self._timeout):
+                idx = fs[future]
+                try:
+                    res = future.result()
+                except Exception as exc:
+                    res = exc
+                self._results[idx] = res
+        else:
+            for t in self._threads:
+                t.join(timeout=self._timeout)
+            for t in self._threads:
+                if t.is_alive():
+                    fn, gs, kw = t._target, t._args, t._kwargs  # type:ignore[attr-defined]
+                    if len(msg := f"{fn}(*{gs!r}, **{kw!r})") > 50:
+                        msg = msg[:47] + "..."
+                    res = TimeoutError(msg)
+                else:
+                    res = t._result
+                self._results.append(res)
 
 
 def _test() -> None:  # pragma: no cover
