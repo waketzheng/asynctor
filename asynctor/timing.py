@@ -84,7 +84,8 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        self._echo()
+        if exc_type is not SystemExit or not str(exc_val):
+            self._echo()
 
     def _recreate_cm(self) -> "Self":
         return self.__class__(
