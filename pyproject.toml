@@ -8,8 +8,8 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.10"
 anyio = ">=3.7.1"
-pandas = {version = "^2.2.2", optional = true}
-openpyxl = {version = "^3.1.4", optional = true}
+pandas = {version = ">=2.2.0", optional = true}
+openpyxl = {version = ">=3.1.0", optional = true}
 redis = ">=5.0.0"
 # requires by anyio:
 #    "exceptiongroup >= 1.0.2; python_version < '3.11'",
@@ -20,9 +20,9 @@ xls = ["pandas", "openpyxl"]
 
 
 [tool.poetry.group.dev.dependencies]
-fast-dev-cli = "^0.8.3"
+fast-dev-cli = "^0.9.1"
 pandas = "^2.2.2"
-openpyxl = "^3.1.4"
+openpyxl = "^3.1.5"
 fastapi-slim = "^0.111.0"
 httpx = "*"
 asgi-lifespan = "^2.1.0"
