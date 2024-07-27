@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10", 3.11, 3.12]
+        python-version: ["3.10", 3.11, 3.12, pypy3.10]
         # 2024-06-15 pydantic does not support 3.13 yet
         # https://github.com/pydantic/pydantic-core/issues/1292
         # python-version: ["3.10", 3.11, 3.12, 3.13]

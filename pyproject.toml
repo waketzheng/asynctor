@@ -2,6 +2,8 @@
 name = "asynctor"
 version = "0.6.3"
 description = "Async functions to compare with anyio and asyncio, and toolkit to read excel with async/await."
+homepage = "https://github.com/waketzheng/asynctor"
+repository = "https://github.com/waketzheng/asynctor.git"
 authors = ["Waket Zheng <waketzheng@gmail.com>"]
 readme = "README.md"
 
@@ -20,7 +22,7 @@ xls = ["pandas", "openpyxl"]
 
 
 [tool.poetry.group.dev.dependencies]
-fast-dev-cli = "^0.9.1"
+fast-dev-cli = "^0.9.2"
 pandas = "^2.2.2"
 openpyxl = "^3.1.5"
 fastapi-slim = "^0.111.0"
