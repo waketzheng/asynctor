@@ -129,6 +129,50 @@ class TestTimer:
         assert "0.12" not in stdout2
 
     @pytest.mark.anyio
+    async def test_start_capture(self):
+        # Manual capture
+        clock = Timer("testing start capture", decimal_places=2, verbose=False)
+        assert repr(clock) == "Timer('testing start capture', 2, False)"
+        start = time.time()
+        assert clock._start <= start
+        time.sleep(0.5)
+        clock.start()
+        assert clock._start > start
+        with capture_stdout() as stream:
+            await raw_sleep(0.23)
+            clock.capture()
+        assert not stream.getvalue()
+        assert clock.cost == 0.23 or clock.cost == 0.24
+        assert str(clock) == f"testing start capture Cost: {clock.cost} seconds"
+        # with syntax
+        with capture_stdout() as stream:
+            with Timer("Let it move:", verbose=False) as watch:
+                time.sleep(0.3)
+        assert not stream.getvalue()
+        assert watch.cost == 0.3
+        assert str(watch) == "Let it move: Cost: 0.3 seconds"
+        # Explicit set verbose as True
+        with capture_stdout() as stream:
+            with Timer("Let it move:", verbose=True):
+                time.sleep(0.3)
+        assert stream.getvalue().strip() == "Let it move: Cost: 0.3 seconds"
+        # Initial with verbose False, but capture with verbose True
+        pendulum = Timer("Initial verbose False but capture True", verbose=False)
+        time.sleep(0.2)
+        with capture_stdout() as stream:
+            pendulum.capture(verbose=True)
+        assert (
+            stream.getvalue().strip()
+            == "Initial verbose False but capture True Cost: 0.2 seconds"
+        )
+        # Initial with verbose True, capture will auto print cost message
+        timepiece = Timer("I'm a teapot --")
+        time.sleep(0.1)
+        with capture_stdout() as stream:
+            timepiece.capture()
+        assert stream.getvalue().strip() == "I'm a teapot -- Cost: 0.1 seconds"
+
+    @pytest.mark.anyio
     async def test_with(self):
         start = time.time()
         message = "Welcome to guangdong"

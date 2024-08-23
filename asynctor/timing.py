@@ -47,26 +47,35 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         ...     # ... async code ...
     """
 
-    def __init__(self, message: str | Callable, decimal_places=1) -> None:
+    def __init__(self, message: str | Callable, decimal_places=1, verbose=True) -> None:
         if callable(message):  # Use as decorator
             func = message
             self.__name__ = message = func.__name__
             self.func: Callable = func
         self.message = message
-        self.decimal_places = decimal_places
-        self.end = self.start = time.time()
+        self._decimal_places = decimal_places
+        self._end = self._start = time.time()
+        self._verbose = verbose
 
-    def _echo(self) -> None:
-        self.end = self.echo_cost(self.start, self.decimal_places, self.message)
+    def start(self) -> None:
+        self._start = time.time()
 
-    @staticmethod
-    def echo_cost(start: float, decimal_places: int, message: str) -> float:
-        end = time.time()
-        cost = end - start
-        if decimal_places is not None:
-            cost = round(cost, decimal_places)
-        print(message, "Cost:", cost, "seconds")
-        return end
+    def capture(self, verbose=None) -> None:
+        self._end = time.time()
+        if verbose is None:
+            verbose = self._verbose
+        if verbose:
+            print(self)
+
+    @property
+    def cost(self) -> float:
+        return round(self._end - self._start, self._decimal_places)
+
+    def __str__(self) -> str:
+        return f"{self.message} Cost: {self.cost} seconds"
+
+    def __repr__(self) -> str:
+        return f"{type(self).__name__}({self.message!r}, {self._decimal_places}, {self._verbose})"
 
     async def __aenter__(self) -> "Timer":
         return self.__enter__()
@@ -75,7 +84,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         self.__exit__(*args, **kwargs)
 
     def __enter__(self) -> "Self":
-        self.start = time.time()
+        self.start()
         return self
 
     def __exit__(
@@ -85,11 +94,13 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         exc_tb: TracebackType | None,
     ) -> None:
         if exc_type is not SystemExit or not str(exc_val):
-            self._echo()
+            self.capture()
 
     def _recreate_cm(self) -> "Self":
         return self.__class__(
-            getattr(self, "func", None) or self.message, self.decimal_places
+            getattr(self, "func", None) or self.message,
+            self._decimal_places,
+            self._verbose,
         )
 
     def __call__(self, *args, **kwargs) -> Any:

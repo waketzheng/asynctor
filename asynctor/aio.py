@@ -17,7 +17,7 @@ import anyio
 
 from .exceptions import ParamsError
 
-if sys.version_info >= (3, 11):
+if sys.version_info >= (3, 11):  # pragma: no cover
     from typing import TypeVarTuple, Unpack
 else:
     from exceptiongroup import ExceptionGroup  # pragma: no cover

@@ -8,7 +8,7 @@ from functools import cached_property
 from threading import Thread
 from typing import Annotated, Any, Callable, TypeAlias, TypeVar
 
-if sys.version_info >= (3, 11):
+if sys.version_info >= (3, 11):  # pragma: no cover
     from typing import ParamSpec, Self
 else:  # pragma: no cover
     from typing_extensions import ParamSpec, Self

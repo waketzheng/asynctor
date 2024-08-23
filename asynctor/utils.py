@@ -54,7 +54,7 @@ async def client_manager(
             ) as c:
                 yield c
     else:
-        # TODO: remove `cast("_ASGIApp"` if "httpx>0.27.0" released
+        # TODO: remove `cast("_ASGIApp"` if "httpx >= 0.27.1" released
         transport = httpx.ASGITransport(cast("_ASGIApp", app))
         kwargs.update(transport=transport, base_url=base_url)
         async with httpx.AsyncClient(**kwargs) as c:
