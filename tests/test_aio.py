@@ -90,7 +90,7 @@ class TestGather:
 
     @staticmethod
     def is_the_same_error(e1, e2):
-        return type(e1) == type(e2) and str(e1) == str(e2)
+        return type(e1) is type(e2) and str(e1) == str(e2)
 
     def create_coros_for_raise(self):
         coro1 = self.raise_error_later(0.2, ValueError)
