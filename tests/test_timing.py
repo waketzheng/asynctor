@@ -145,16 +145,14 @@ class TestTimer:
         assert clock.cost == 0.23 or clock.cost == 0.24
         assert str(clock) == f"testing start capture Cost: {clock.cost} seconds"
         # with syntax
-        with capture_stdout() as stream:
-            with Timer("Let it move:", verbose=False) as watch:
-                time.sleep(0.3)
+        with capture_stdout() as stream, Timer("Let it move:", verbose=False) as watch:
+            time.sleep(0.3)
         assert not stream.getvalue()
         assert watch.cost == 0.3
         assert str(watch) == "Let it move: Cost: 0.3 seconds"
         # Explicit set verbose as True
-        with capture_stdout() as stream:
-            with Timer("Let it move:", verbose=True):
-                time.sleep(0.3)
+        with capture_stdout() as stream, Timer("Let it move:", verbose=True):
+            time.sleep(0.3)
         assert stream.getvalue().strip() == "Let it move: Cost: 0.3 seconds"
         # Initial with verbose False, but capture with verbose True
         pendulum = Timer("Initial verbose False but capture True", verbose=False)
@@ -176,11 +174,10 @@ class TestTimer:
     async def test_with(self):
         start = time.time()
         message = "Welcome to guangdong"
-        with capture_stdout() as stream:
-            with Timer(message):
-                await raw_sleep1()
-                raw_wait_for()
-                await raw_sleep(0.21)
+        with capture_stdout() as stream, Timer(message):
+            await raw_sleep1()
+            raw_wait_for()
+            await raw_sleep(0.21)
         end = time.time()
         assert round(end - start, 1) == (0.1 + 0.1 + 0.2)
         stdout = stream.getvalue()
@@ -198,11 +195,10 @@ class TestTimer:
 async def test_with_timeit():
     start = time.time()
     message = "hello kitty"
-    with capture_stdout() as stream:
-        with timeit(message):
-            await raw_sleep1()
-            raw_wait_for()
-            await raw_sleep(0.21)
+    with capture_stdout() as stream, timeit(message):
+        await raw_sleep1()
+        raw_wait_for()
+        await raw_sleep(0.21)
     end = time.time()
     assert round(end - start, 1) == (0.1 + 0.1 + 0.2)
     stdout = stream.getvalue()

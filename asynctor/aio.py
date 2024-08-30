@@ -174,7 +174,7 @@ async def bulk_gather(
                 await map_group(runner, enumerate(coros))
     except ExceptionGroup as e:
         if raises:
-            raise e.exceptions[0]
+            raise e.exceptions[0] from e
 
     return tuple(results)
 

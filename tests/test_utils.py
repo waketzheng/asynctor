@@ -2,6 +2,7 @@
 import pytest
 
 from asynctor import AttrDict
+from asynctor.utils import get_machine_ip
 
 
 class TestAttrDict:
@@ -19,9 +20,9 @@ class TestAttrDict:
 
     def test_raises(self):
         with pytest.raises(AttributeError):
-            AttrDict().a
+            assert AttrDict().a
         with pytest.raises(KeyError):
-            AttrDict()["a"]
+            assert AttrDict()["a"]
 
     def test_key_startswith_underline(self):
         d = AttrDict({"_a": 1, "__b": 2, "___c": 3, "____d": 4})
@@ -30,11 +31,11 @@ class TestAttrDict:
         assert d["___c"] == 3
         assert d["____d"] == 4
         with pytest.raises(AttributeError):
-            d.__b
+            assert d.__b
         with pytest.raises(AttributeError):
-            d.___c
+            assert d.___c
         with pytest.raises(AttributeError):
-            d.____d
+            assert d.____d
 
     def test_initial(self):
         assert AttrDict() == {} == dict()
@@ -61,12 +62,21 @@ class TestAttrDict:
         assert d["a-b"] == 1
         assert d[("a", "b")] == 2
         with pytest.raises(AttributeError):
-            d.a_b
+            assert d.a_b
         with pytest.raises(AttributeError):
-            d.ab
+            assert d.ab
         assert d["c_d"] == d.c_d == 4
         assert d["e f"] == 5
         with pytest.raises(AttributeError):
-            d.e_f
+            assert d.e_f
         with pytest.raises(AttributeError):
-            d.ef
+            assert d.ef
+
+
+def test_get_ip(mocker):
+    my_ip = get_machine_ip()
+    nets = my_ip.split(".")
+    assert len(nets) == 4
+    assert all(0 <= int(i) <= 255 for i in nets)
+    mocker.patch("socket.socket.getsockname", return_value=True)
+    assert get_machine_ip() == "127.0.0.1"

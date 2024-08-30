@@ -33,4 +33,5 @@ async def test_apis(client):
     assert r.status_code == 200, r.text
     assert r.json()["b"] == "1"
     os.environ["REDIS_HOST"] = "localhost"
-    await AsyncRedis().get("b") == b"1"
+    cached = await AsyncRedis().get("b")
+    assert cached == b"1"

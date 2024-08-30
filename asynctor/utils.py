@@ -1,3 +1,4 @@
+import socket
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, AsyncGenerator, cast
 
@@ -100,6 +101,27 @@ class AttrDict(dict):
 
     def __repr__(self) -> str:
         return self.__class__.__name__ + "(" + super().__repr__() + ")"
+
+
+def get_machine_ip() -> str:
+    """Get IP of current machine by socket, if failed, return '127.0.0.1'
+
+    Usage::
+        >>> my_ip = get_machine_ip()
+        >>> inets = my_ip.split('.')
+        >>> len(inets) == 4
+        True
+        >>> all(0 <= int(i) <= 255 for i in inets)
+        True
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        s.settimeout(0)
+        try:
+            # doesn't even have to be reachable
+            s.connect(("10.254.254.254", 1))
+            return s.getsockname()[0]
+        except Exception:
+            return "127.0.0.1"
 
 
 def _test() -> None:  # pragma: no cover
