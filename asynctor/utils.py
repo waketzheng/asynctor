@@ -1,8 +1,9 @@
 import socket
-from contextlib import asynccontextmanager
+from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from typing import TYPE_CHECKING, AsyncGenerator
 
 if TYPE_CHECKING:
+    from asgi_lifespan import LifespanManager
     from fastapi import FastAPI
     from httpx import AsyncClient
 
@@ -58,6 +59,73 @@ async def client_manager(
         kwargs.update(transport=transport, base_url=base_url)
         async with httpx.AsyncClient(**kwargs) as c:
             yield c
+
+
+class AsyncTestClient(AbstractAsyncContextManager):
+    """Async test client for FastAPI
+
+    :param app: a fastapi instance.
+    :param mount_lifespan: if True, auto mount lifespan for app.
+    :param base_url: scheme and host for the httpx AsyncClient.
+    :param kwargs: other kwargs to pass to httpx AsyncClient.
+
+    Usage::
+
+    ... code-block:: python3
+
+        from typing import AsyncGenerator
+
+        import pytest
+        from asynctor import AsyncTestClient
+        from httpx import AsyncClient
+
+        from main import app
+
+        @pytest.fixture(scope='session')
+        async def client() -> AsyncGenerator[AsyncClient, None]:
+            async with AsyncTestClient(app) as c:
+                yield c
+
+        @pytest.fixture(scope="session")
+        def anyio_backend():
+            return "asyncio"
+
+        @pytest.mark.anyio
+        async def test_api(client: AsyncClient):
+            response = await client.get("/")
+            assert response.status_code == 200
+
+    """
+
+    def __init__(
+        self, app: "FastAPI", mount_lifespan=True, base_url="http://test", **kwargs
+    ) -> None:
+        self._app = app
+        self._mount_lifespan = mount_lifespan
+        self._manager: LifespanManager | None = None
+        self._client: AsyncClient | None = None
+        self._kwargs = dict(kwargs, base_url=base_url)
+
+    async def __aenter__(self) -> "AsyncClient":
+        from httpx import ASGITransport, AsyncClient
+
+        if self._mount_lifespan:
+            from asgi_lifespan import LifespanManager
+
+            self._manager = manager = await LifespanManager(self._app).__aenter__()
+            transport = ASGITransport(manager.app)
+        else:
+            transport = ASGITransport(self._app)
+        self._client = client = await AsyncClient(
+            transport=transport, **self._kwargs
+        ).__aenter__()
+        return client
+
+    async def __aexit__(self, *args, **kw) -> None:
+        if self._client:
+            await self._client.__aexit__(*args, **kw)
+        if self._manager:
+            await self._manager.__aexit__(*args, **kw)
 
 
 class AttrDict(dict):

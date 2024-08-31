@@ -13,11 +13,19 @@ async def lifespan(app):
 
 
 app = FastAPI(lifespan=lifespan)
+app_for_utils_test = FastAPI(lifespan=lifespan)
+app_default_to_mount_lifespan = FastAPI(lifespan=lifespan)
 
 
 @app.get("/")
 async def root(request: Request) -> list[str]:
     return await AsyncRedis(request).keys()
+
+
+@app_default_to_mount_lifespan.get("/state")
+@app_for_utils_test.get("/state")
+async def state(request: Request):
+    return {"redis": str(getattr(request.app.state, "redis", None))}
 
 
 @app.get("/redis")

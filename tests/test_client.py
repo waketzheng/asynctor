@@ -1,21 +1,17 @@
 import os
 
 import pytest
-from asgi_lifespan import LifespanManager
-from httpx import ASGITransport, AsyncClient
 from redis.asyncio import Redis
 
-from asynctor import AsyncRedis
+from asynctor import AsyncRedis, AsyncTestClient
 
 from .main import app
 
 
 @pytest.fixture(scope="session")
 async def client():
-    async with LifespanManager(app) as manager:
-        transport = ASGITransport(app=manager.app)
-        async with AsyncClient(transport=transport, base_url="http://test") as client:
-            yield client
+    async with AsyncTestClient(app, mount_lifespan=True) as c:
+        yield c
 
 
 @pytest.mark.anyio

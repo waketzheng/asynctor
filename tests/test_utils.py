@@ -2,7 +2,37 @@
 import pytest
 
 from asynctor import AttrDict
-from asynctor.utils import get_machine_ip
+from asynctor.utils import AsyncTestClient, get_machine_ip
+
+from .main import app_default_to_mount_lifespan, app_for_utils_test
+
+
+@pytest.fixture(scope="session")
+async def client():
+    async with AsyncTestClient(app_default_to_mount_lifespan) as c:
+        yield c
+
+
+@pytest.fixture(scope="session")
+async def client_without_lifespan():
+    async with AsyncTestClient(app_for_utils_test, mount_lifespan=False) as c:
+        yield c
+
+
+@pytest.mark.anyio
+async def test_async_test_client(client):
+    path = "/state"
+    r = await client.get(path)
+    assert r.status_code == 200
+    assert r.json()["redis"] != "None"
+
+
+@pytest.mark.anyio
+async def test_async_test_client2(client_without_lifespan):
+    path = "/state"
+    r = await client_without_lifespan.get(path)
+    assert r.status_code == 200
+    assert r.json() == {"redis": "None"}
 
 
 class TestAttrDict:
