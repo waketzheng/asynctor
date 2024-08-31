@@ -129,7 +129,6 @@ class ThreadGroup(AbstractContextManager):
 
 
 def _test() -> None:  # pragma: no cover
-    import random
     import time
 
     def saying(msg="haha", loop=5, ident=0) -> float:
@@ -143,9 +142,9 @@ def _test() -> None:  # pragma: no cover
 
     with ThreadGroup() as tg:
         for i in range(10):
-            tg.soonify(saying)(f"t{i+1}", ident=i, loop=random.randint(1, 5))
+            tg.soonify(saying)(f"t{i+1}", ident=i, loop=((i + 1) * 2 % 5 + 1))
     print(tg.results)
-    print("haha")
+    print("Done.")
 
 
 if __name__ == "__main__":

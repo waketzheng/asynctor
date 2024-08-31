@@ -45,7 +45,7 @@ def ensure_afunc(
 def run_async(
     coro: Coroutine[None, None, T_Retval] | Callable[..., Awaitable[T_Retval]],
 ) -> T_Retval:
-    """Compare with anyio.run and asyncio.run
+    """Deprecated! Usage `asynctor.run` instead.
 
     Usage::
         >>> async def afunc(n=1):
@@ -71,19 +71,22 @@ def run(
     """Combine `asyncio.run` and `anyio.run`
 
     :param func: async function or coroutine.
-    :param *args: arguments that will pass to `func` if it's a function.
+    :param args: arguments that will pass to `func` if it's a function.
     :param backend: should be 'asyncio' or 'trio'.
     :param backend_options: will pass to `anyio.run`.
 
     Usage::
 
-    .. code-block:: python3
+    ... code-block:: python3
+
+        from functools import partial
 
         async def foo(a, b, *, c=3):
             return a, b, c
 
-        from functools import partial
-        assert run(partial(foo, c=0), 1, 2) == run(foo(1, 2, c=0))
+        result_asyncio_format = run(foo(1, 2, c=0))
+        result_anyio_format = run(partial(foo, c=0), 1, 2)
+        assert result_asyncio_format == result_anyio_format
 
     """
     if not callable(func):
@@ -200,7 +203,7 @@ async def start_tasks(coro: Coroutine | Callable, *more: Coroutine | Callable):
 
     Usage:
 
-    .. code-block:: python3
+    ... code-block:: python3
 
         async def startup():
             # cost a long time to do sth async

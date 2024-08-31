@@ -3,6 +3,7 @@ import os
 import pytest
 from asgi_lifespan import LifespanManager
 from httpx import ASGITransport, AsyncClient
+from redis.asyncio import Redis
 
 from asynctor import AsyncRedis
 
@@ -12,7 +13,7 @@ from .main import app
 @pytest.fixture(scope="session")
 async def client():
     async with LifespanManager(app) as manager:
-        transport = ASGITransport(app=manager.app)  # type:ignore[arg-type]
+        transport = ASGITransport(app=manager.app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
             yield client
 
@@ -35,3 +36,20 @@ async def test_apis(client):
     os.environ["REDIS_HOST"] = "localhost"
     cached = await AsyncRedis().get("b")
     assert cached == b"1"
+
+
+def test_redis_host_port():
+    remote_ip = "192.168.0.2"
+    redis = AsyncRedis(remote_ip)
+    assert isinstance(redis, Redis)
+    assert redis.connection_pool.connection_kwargs["host"] == remote_ip
+
+    redis = AsyncRedis(host=remote_ip)
+    assert redis.connection_pool.connection_kwargs["host"] == remote_ip
+
+    redis = AsyncRedis("localhost", host=remote_ip)
+    assert redis.connection_pool.connection_kwargs["host"] == remote_ip
+
+    custom_port = 8888
+    redis = AsyncRedis(port=custom_port)
+    assert redis.connection_pool.connection_kwargs["port"] == custom_port

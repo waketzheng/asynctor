@@ -31,20 +31,40 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
     """Print time cost of the function.
 
     Usage::
-        >>> @Timer
-        >>> async def main():
-        ...     # ... async code or sync code ...
 
-        >>> @Timer
-        >>> def read_text(filename):
-        ...     from pathlib import Path
-        ...     return Path(filename).read_text()
+    ... code-block:: python3
 
-        >>> with Timer('do sth ...'):
-        ...     # ... sync code ...
+        import time
+        from loguru import logger
 
-        >>> async with Timer('do sth ...'):
-        ...     # ... async code ...
+        def do_staff():
+            time.sleep(0.1)
+
+        with Timer('do sth ...'):
+            do_staff()
+        # do sth ... Cost: 0.1 seconds
+
+        with Timer('do sth ...', verbose=False) as t:
+            do_staff()
+        assert isinstance(t.cost, float)
+        logger.info(str(t))
+        # do sth ... Cost: 0.1 seconds
+
+        @Timer
+        async def main():
+            do_staff()
+
+        await main()
+        # main Cost: 0.1 seconds
+
+        @Timer
+        def read_text(filename):
+            from pathlib import Path
+            time.sleep(0.2222)
+            return Path(filename).read_text()
+
+        read_text('a.txt')
+        # read_text Cost: 0.2 seconds
     """
 
     def __init__(self, message: str | Callable, decimal_places=1, verbose=True) -> None:
@@ -133,21 +153,40 @@ def timeit(func: str | Callable[..., T_Retval]) -> Timer | Callable[..., T_Retva
     """Print time cost of the function.
 
     Usage::
-        >>> @timeit
-        >>> async def main():
-        ...     # ... async code ...
 
-        >>> @timeit
-        >>> def read_text(filename):
-        ...     from pathlib import Path
-        ...     return Path(filename).read_text()
-        >>> args, kwargs = (), {}
-        >>> def sync_func(): ...
-        >>> res = timeit(sync_func)(*args, **kwargs)
-        >>> async def async_func(): ...
-        >>> result = await timeit(async_func)(*args, **kwargs)
-        >>> with timeit('message'):
-        ...     await main()
+    ... code-block:: python3
+
+        import anyio, time
+
+        @timeit
+        async def main():
+            await anyio.sleep(0.1)
+
+        await main()
+        # main Cost: 0.1 seconds
+
+        @timeit
+        def read_text(filename):
+            from pathlib import Path
+            time.sleep(0.25)
+            return Path(filename).read_text()
+
+        read_text('a.txt')
+        # read_text Cost: 0.2 seconds
+
+        args, kwargs = (), {}
+        def sync_func(): time.sleep(0.24)
+        res = timeit(sync_func)(*args, **kwargs)
+        # sync_func Cost: 0.2 seconds
+
+        async def async_func():
+            await anyio.sleep(1)
+        result = await timeit(async_func)(*args, **kwargs)
+        # async_func Cost: 1.0 seconds
+
+        with timeit('message'):
+            await async_func()
+        # message Cost: 1.0 seconds
 
     """
     if isinstance(func, str):

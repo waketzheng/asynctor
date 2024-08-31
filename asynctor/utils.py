@@ -1,11 +1,10 @@
 import socket
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, AsyncGenerator, cast
+from typing import TYPE_CHECKING, AsyncGenerator
 
 if TYPE_CHECKING:
     from fastapi import FastAPI
     from httpx import AsyncClient
-    from httpx._transports.asgi import _ASGIApp
 
 
 @asynccontextmanager
@@ -49,14 +48,13 @@ async def client_manager(
         from asgi_lifespan import LifespanManager
 
         async with LifespanManager(app) as manager:
-            transport = httpx.ASGITransport(cast("_ASGIApp", manager.app))
+            transport = httpx.ASGITransport(manager.app)
             async with httpx.AsyncClient(
                 transport=transport, base_url=base_url, **kwargs
             ) as c:
                 yield c
     else:
-        # TODO: remove `cast("_ASGIApp"` if "httpx >= 0.27.1" released
-        transport = httpx.ASGITransport(cast("_ASGIApp", app))
+        transport = httpx.ASGITransport(app)
         kwargs.update(transport=transport, base_url=base_url)
         async with httpx.AsyncClient(**kwargs) as c:
             yield c
@@ -111,8 +109,8 @@ def get_machine_ip() -> str:
         >>> inets = my_ip.split('.')
         >>> len(inets) == 4
         True
-        >>> all(0 <= int(i) <= 255 for i in inets)
-        True
+        >>> sum(map(lambda x: 0 <= int(x) <= 255, inets))
+        4
     """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.settimeout(0)

@@ -14,7 +14,7 @@ class RedisClient(aioredis.Redis, AbstractAsyncContextManager):
             kw["host"] = host
         super().__init__(**kw)
 
-    async def __aexit__(self, *args, **kw):
+    async def __aexit__(self, exc_type, exc_value, traceback) -> None:
         await self.aclose()  # type:ignore[attr-defined]
 
 
@@ -42,14 +42,19 @@ class AsyncRedis(RedisClient):
     """
 
     def __new__(cls, app: "FastAPI | Request | None" = None, **kw) -> "AsyncRedis":
-        if (_app := getattr(app, "app", None)) and (
-            state := getattr(_app, "state", None)
+        if (
+            app is not None
+            and (app := getattr(app, "app", None))
+            and (state := getattr(app, "state", None))
         ):
             # isinstance(app, Request)
             return state.redis
-        return super().__new__(cls, **kw)
+        return super().__new__(cls)
 
     def __init__(self, app=None, **kw) -> None:
+        if isinstance(app, str):
+            kw.setdefault("host", app)
+            app = None
         super().__init__(**kw)
         if app is not None and hasattr(app, "state"):
             # isinstance(app, FastAPI)
