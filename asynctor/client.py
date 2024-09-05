@@ -8,6 +8,9 @@ if TYPE_CHECKING:  # pragma: no cover
     from fastapi import FastAPI, Request
 
 
+# The `RedisClient` class is a subclass of `aioredis.Redis` and `AbstractAsyncContextManager` that
+# initializes a Redis client with a host parameter from an environment variable if not provided, and
+# implements an asynchronous exit method to close the client.
 class RedisClient(aioredis.Redis, AbstractAsyncContextManager):
     def __init__(self, **kw) -> None:
         if "host" not in kw and (host := os.getenv("REDIS_HOST")):

@@ -185,6 +185,20 @@ async def bulk_gather(
 async def map_group(
     func: AsyncFunc, todos: Iterable, results: list | None = None
 ) -> None:
+    """
+    The `map_group` function asynchronously executes a given function for each set of arguments in a
+    provided iterable using `anyio.create_task_group()`.
+
+    :param func: The `func` parameter is an asynchronous function that will be applied to each item in
+    the `todos` iterable
+    :param todos: The `todos` parameter in the `map_group` function represents an iterable containing
+    the arguments that will be passed to the `func` function for each task that is started in the task
+    group. Each element in `todos` is a set of arguments that will be unpacked and passed to the `
+    :param results: The `results` parameter in the `map_group` function is a list that stores the
+    results of the asynchronous function calls. If the `results` parameter is provided with an initial
+    list, the results of each function call will be appended to this list. If `results` is not provided,
+    it
+    """
     async with anyio.create_task_group() as tg:
         for args in todos:
             if results is not None:
