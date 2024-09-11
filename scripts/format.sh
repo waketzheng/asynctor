@@ -3,5 +3,4 @@ set -x
 
 [ -f ../pyproject.toml ] && cd ..
 
-poetry run ruff format .
-poetry run ruff check --extend-select=I --fix .
+SKIP_MYPY=1 poetry run fast lint
