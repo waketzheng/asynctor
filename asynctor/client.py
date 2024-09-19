@@ -44,7 +44,9 @@ class AsyncRedis(RedisClient):
         ...
     """
 
-    def __new__(cls, app: "FastAPI | Request | None" = None, **kw) -> "AsyncRedis":
+    def __new__(
+        cls, app: "FastAPI | Request | str | None" = None, check_connection=True, **kw
+    ) -> "AsyncRedis":
         if (
             app is not None
             and (app := getattr(app, "app", None))
@@ -54,16 +56,18 @@ class AsyncRedis(RedisClient):
             return state.redis
         return super().__new__(cls)
 
-    def __init__(self, app=None, **kw) -> None:
+    def __init__(self, app=None, check_connection=True, **kw) -> None:
         if isinstance(app, str):
             kw.setdefault("host", app)
             app = None
         super().__init__(**kw)
+        self._check_connection = check_connection
         if app is not None and hasattr(app, "state"):
             # isinstance(app, FastAPI)
             app.state.redis = self
 
     async def __aenter__(self) -> "AsyncRedis":
         # Check connection when app startup
-        await self.ping()
+        if self._check_connection:
+            await self.ping()
         return self
