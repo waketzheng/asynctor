@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 @asynccontextmanager
 async def client_manager(
-    app: "FastAPI", base_url="http://test", mount_lifespan=True, **kwargs
+    app: "FastAPI", base_url="http://test", mount_lifespan=True, timeout=30, **kwargs
 ) -> AsyncGenerator["AsyncClient", None]:
     """Async test client
 
@@ -51,13 +51,13 @@ async def client_manager(
         async with LifespanManager(app) as manager:
             transport = httpx.ASGITransport(manager.app)
             async with httpx.AsyncClient(
-                transport=transport, base_url=base_url, **kwargs
+                timeout=timeout, transport=transport, base_url=base_url, **kwargs
             ) as c:
                 yield c
     else:
         transport = httpx.ASGITransport(app)
         kwargs.update(transport=transport, base_url=base_url)
-        async with httpx.AsyncClient(**kwargs) as c:
+        async with httpx.AsyncClient(timeout=timeout, **kwargs) as c:
             yield c
 
 
@@ -98,13 +98,20 @@ class AsyncTestClient(AbstractAsyncContextManager):
     """
 
     def __init__(
-        self, app: "FastAPI", mount_lifespan=True, base_url="http://test", **kwargs
+        self,
+        app: "FastAPI",
+        mount_lifespan=True,
+        base_url="http://test",
+        timeout=30,
+        **kwargs,
     ) -> None:
         self._app = app
         self._mount_lifespan = mount_lifespan
         self._manager: LifespanManager | None = None
         self._client: AsyncClient | None = None
-        self._kwargs = dict(kwargs, base_url=base_url)
+        self._base_url = base_url
+        self._timeout = timeout
+        self._kwargs = kwargs
 
     async def __aenter__(self) -> "AsyncClient":
         from httpx import ASGITransport, AsyncClient
@@ -117,7 +124,10 @@ class AsyncTestClient(AbstractAsyncContextManager):
         else:
             transport = ASGITransport(self._app)
         self._client = client = await AsyncClient(
-            transport=transport, **self._kwargs
+            transport=transport,
+            base_url=self._base_url,
+            timeout=self._timeout,
+            **self._kwargs,
         ).__aenter__()
         return client
 
