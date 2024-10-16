@@ -1,11 +1,14 @@
+import functools
 import socket
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from typing import TYPE_CHECKING, AsyncGenerator
+from typing import TYPE_CHECKING, AsyncGenerator, Callable, TypeVar
 
 if TYPE_CHECKING:
     from asgi_lifespan import LifespanManager
     from fastapi import FastAPI
     from httpx import AsyncClient
+
+T = TypeVar("T")
 
 
 @asynccontextmanager
@@ -180,10 +183,13 @@ class AttrDict(dict):
 
 
 def get_machine_ip() -> str:
-    """Get IP of current machine by socket, if failed, return '127.0.0.1'
+    r"""Get IP of current machine by socket, if failed, return '127.0.0.1'
 
     Usage::
+        >>> import re
         >>> my_ip = get_machine_ip()
+        >>> bool(re.search(r'^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}', my_ip))
+        True
         >>> inets = my_ip.split('.')
         >>> len(inets) == 4
         True
@@ -198,6 +204,48 @@ def get_machine_ip() -> str:
             return s.getsockname()[0]
         except Exception:
             return "127.0.0.1"
+
+
+def cache_attr(func: Callable[..., T]) -> Callable[..., T]:
+    """Cache result to class attribute
+
+    Usage::
+    ```py
+    class A:
+        @classmethod
+        @cache_attr
+        def do_sth(cls):
+            ...
+
+    result = A.do_sth()
+    ```
+
+    Example::
+        >>> from datetime import datetime
+        >>> class A:
+        ...     @classmethod
+        ...     @cache_attr
+        ...     def now(cls) -> datetime:
+        ...         return datetime.now()
+        >>> now_a = A.now()
+        >>> now = datetime.now()
+        >>> now_a == A.now()
+        True
+        >>> A.now() <= now
+        True
+
+    """
+
+    @functools.wraps(func)
+    def run(cls) -> T:
+        key = "-cache-" + func.__name__
+        if hasattr(cls, key):
+            return getattr(cls, key)
+        res = func(cls)
+        setattr(cls, key, res)
+        return res
+
+    return run
 
 
 def _test() -> None:  # pragma: no cover

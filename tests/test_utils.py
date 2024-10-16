@@ -1,8 +1,11 @@
 # mypy: disable-error-code="attr-defined"
+import re
+from datetime import datetime
+
 import pytest
 
 from asynctor import AttrDict
-from asynctor.utils import AsyncTestClient, get_machine_ip
+from asynctor.utils import AsyncTestClient, cache_attr, get_machine_ip
 
 from .main import app_default_to_mount_lifespan, app_for_utils_test
 
@@ -105,8 +108,30 @@ class TestAttrDict:
 
 def test_get_ip(mocker):
     my_ip = get_machine_ip()
+    assert re.search(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}", my_ip)
     nets = my_ip.split(".")
     assert len(nets) == 4
     assert all(0 <= int(i) <= 255 for i in nets)
     mocker.patch("socket.socket.getsockname", return_value=True)
     assert get_machine_ip() == "127.0.0.1"
+
+
+def test_cache_attr():
+    from asynctor import cache_attr as _cache_attr
+
+    class A:
+        def __init__(self) -> None:
+            self.started = self.first_instance_created_at()
+
+        @classmethod
+        @cache_attr
+        def first_instance_created_at(cls) -> datetime:
+            return datetime.now()
+
+    a = A()
+    b = A()
+    now = datetime.now()
+    assert a.started == b.started
+    c = A()
+    assert c.started < now
+    assert _cache_attr is cache_attr
