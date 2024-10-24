@@ -64,7 +64,7 @@ jobs:
       - name: Install library
         run: poetry install --no-interaction
       - name: Check code style and Type Hint
-        run: bash scripts/check.sh
+        run: ./scripts/check.py
       - name: build
         run: poetry build
       - name: Test with pytest
