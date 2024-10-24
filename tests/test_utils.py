@@ -135,3 +135,4 @@ def test_cache_attr():
     c = A()
     assert c.started < now
     assert _cache_attr is cache_attr
+    assert a.first_instance_created_at() == b.started
