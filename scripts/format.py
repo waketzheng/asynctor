@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding:utf-8 -*-
 """
 Run `ruff format` to make style and `ruff check --fix` to remove unused imports
 

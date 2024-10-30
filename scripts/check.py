@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding:utf-8 -*-
 """
 Check style by `ruff` and verify type hints by `mypy`,
 then run `bandit -r <package>` to find security issue.
@@ -31,4 +32,4 @@ if BANDIT:
     print("-->", cmd)
     if os.system(cmd) != 0:
         sys.exit(1)
-print("Done.")
+print("Done. ✨ 🍰 ✨")
