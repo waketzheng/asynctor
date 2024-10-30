@@ -39,11 +39,10 @@ jobs:
           path: ~/.local  # the path depends on the OS
           key: poetry-0  # increment to reset cache
       - name: Install Poetry
-        if: steps.cached-poetry.outputs.cache-hit != 'true'
         uses: snok/install-poetry@v1
-      - name: Configure poetry
-        if: steps.cached-poetry.outputs.cache-hit == 'true'
-        run: poetry config virtualenvs.in-project true
+        with:
+          virtualenvs-in-project: true
+          plugins: poetry-plugin-version
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v4
