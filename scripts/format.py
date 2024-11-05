@@ -9,17 +9,15 @@ Usage:
 """
 
 import os
-import shlex
-import subprocess
 import sys
-from pathlib import Path
 
-CMD = "fast lint"
-TOOL = ("poetry", "pdm", "")[0]
-work_dir = Path(__file__).parent.resolve().parent
-if Path.cwd() != work_dir:
-    os.chdir(str(work_dir))
+CMD = "fast lint --skip-mypy"
+TOOL = ("poetry", "pdm", "uv", "")[0]
+_parent = os.path.abspath(os.path.dirname(__file__))
+work_dir = os.path.dirname(_parent)
+if os.getcwd() != work_dir:
+    os.chdir(work_dir)
 
 cmd = (TOOL and f"{TOOL} run ") + CMD
-r = subprocess.run(shlex.split(cmd), env=dict(os.environ, SKIP_MYPY="1"))
-sys.exit(None if r.returncode == 0 else 1)
+if os.system(cmd) != 0:
+    sys.exit(1)

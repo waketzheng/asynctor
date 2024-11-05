@@ -27,11 +27,12 @@ def test_thread_group():
     assert tg.results == [0.2] * total
     start = time.time()
     choices = [0.1, 0.2, 0.3]
+    seconds = [random.choice(choices) for _ in range(total)]
     with ThreadGroup() as tg:
-        for _ in range(total):
-            tg.soonify(sleep)(seconds=random.choice(choices))
+        for t in seconds:
+            tg.soonify(sleep)(seconds=t)
     end = time.time()
-    assert round(end - start, 1) == 0.3
+    assert round(end - start, 1) == max(seconds)
     assert len(tg.results) == total
     assert all(i in choices for i in tg.results)
 
