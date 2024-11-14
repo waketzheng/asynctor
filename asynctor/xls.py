@@ -1,10 +1,13 @@
+from __future__ import annotations
+
 from io import BytesIO
 from pathlib import Path
+from typing import Union
 
 import anyio
 import pandas as pd
 
-FileLike = str | Path | anyio.Path | bytes
+FileLike = Union[str, Path, anyio.Path, bytes]
 
 
 async def read_excel(file: FileLike, as_str=False, **kw) -> pd.DataFrame:
@@ -12,7 +15,7 @@ async def read_excel(file: FileLike, as_str=False, **kw) -> pd.DataFrame:
 
     :param as_str: whether to read as dtype=str
     """
-    if isinstance(file, str | Path | anyio.Path):
+    if isinstance(file, (str, Path, anyio.Path)):
         file = await anyio.Path(file).read_bytes()
     if as_str:
         kw.setdefault("dtype", str)

@@ -24,7 +24,7 @@ poetry add asynctor
 
 ## Usage
 
-- bulk_gather/gather/run
+- Async function that compare asyncio but use anyio: `bulk_gather/gather/run`
 ```py
 >>> import asynctor
 >>> async def foo():

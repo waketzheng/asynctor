@@ -6,7 +6,7 @@ import sys
 from contextlib import AbstractContextManager
 from functools import cached_property
 from threading import Thread
-from typing import Annotated, Any, Callable, TypeAlias, TypeVar
+from typing import Annotated, Any, Callable, TypeVar
 
 if sys.version_info >= (3, 11):  # pragma: no cover
     from typing import ParamSpec, Self
@@ -15,7 +15,7 @@ else:  # pragma: no cover
 
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
-FuncResults: TypeAlias = Annotated[
+FuncResults = Annotated[
     list, "The return value of each funtion or the exception that it raises"
 ]
 
