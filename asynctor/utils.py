@@ -165,6 +165,9 @@ class AttrDict(dict):
         True
         >>> dd['keys'] == 2
         True
+        >>> d3 = AttrDict({b'a': 1})
+        >>> d3[b'a'] == 1 and getattr(d3, 'a', None) is None
+        True
     """
 
     def __init__(self, *args, **kw) -> None:
