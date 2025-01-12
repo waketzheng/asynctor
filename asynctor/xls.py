@@ -25,8 +25,7 @@ async def read_excel(file: FileLike, as_str=False, **kw) -> pd.DataFrame:
 def df_to_datas(df: pd.DataFrame) -> list[dict]:
     """Convert dataframe to list of dict"""
     cols = list(df.columns)
-    values: list[list] = df.values.tolist()
-    return [dict(zip(cols, v)) for v in values]
+    return [dict(zip(cols, v)) for v in df.values.tolist()]
 
 
 async def load_xls(file: FileLike, as_str=False, **kw) -> list[dict]:
