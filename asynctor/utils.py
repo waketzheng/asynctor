@@ -11,12 +11,13 @@ if TYPE_CHECKING:
     from httpx import AsyncClient
 
 T = TypeVar("T")
+AsyncClientGenerator = AsyncGenerator["AsyncClient", None]
 
 
 @asynccontextmanager
 async def client_manager(
     app: "FastAPI", base_url="http://test", mount_lifespan=True, timeout=30, **kwargs
-) -> AsyncGenerator["AsyncClient", None]:
+) -> AsyncClientGenerator:
     """Async test client
 
     Usage::
@@ -78,16 +79,14 @@ class AsyncTestClient(AbstractAsyncContextManager):
 
     ... code-block:: python3
 
-        from typing import AsyncGenerator
-
         import pytest
-        from asynctor import AsyncTestClient
+        from asynctor import AsyncTestClient, AsyncClientGenerator
         from httpx import AsyncClient
 
         from main import app
 
         @pytest.fixture(scope='session')
-        async def client() -> AsyncGenerator[AsyncClient, None]:
+        async def client() -> AsyncClientGenerator:
             async with AsyncTestClient(app) as c:
                 yield c
 

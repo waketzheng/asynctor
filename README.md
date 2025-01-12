@@ -81,7 +81,28 @@ async def get_value_from_redis_by_key(request: Request, key: str) -> str:
         return ''
     return value.decode()
 ```
+- AsyncTestClient
+```py
+import pytest
+from asynctor import AsyncTestClient, AsyncClientGenerator
+from httpx import AsyncClient
 
+from main import app
+
+@pytest.fixture(scope='session')
+async def client() -> AsyncClientGenerator:
+    async with AsyncTestClient(app) as c:
+        yield c
+
+@pytest.fixture(scope="session")
+def anyio_backend():
+    return "asyncio"
+
+@pytest.mark.anyio
+async def test_api(client: AsyncClient):
+    response = await client.get("/")
+    assert response.status_code == 200
+```
 
 - Read Excel File(need to install with xls extra: `pip install "asynctor[xls]"`)
 ```py
