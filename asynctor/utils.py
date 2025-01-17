@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, AsyncGenerator, Callable, TypeVar
 
 if TYPE_CHECKING:
     from asgi_lifespan import LifespanManager
+    from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
     from httpx import AsyncClient
 
@@ -111,7 +112,7 @@ class AsyncTestClient(AbstractAsyncContextManager):
     ) -> None:
         self._app = app
         self._mount_lifespan = mount_lifespan
-        self._manager: LifespanManager | None = None
+        self._manager: "LifespanManager | None" = None
         self._client: AsyncClient | None = None
         self._base_url = base_url
         self._timeout = timeout
@@ -120,15 +121,14 @@ class AsyncTestClient(AbstractAsyncContextManager):
     async def __aenter__(self) -> "AsyncClient":
         from httpx import ASGITransport, AsyncClient
 
+        app: "ASGIApp" = self._app
         if self._mount_lifespan:
             from asgi_lifespan import LifespanManager
 
-            self._manager = manager = await LifespanManager(self._app).__aenter__()
-            transport = ASGITransport(manager.app)
-        else:
-            transport = ASGITransport(self._app)
+            self._manager = manager = await LifespanManager(app).__aenter__()
+            app = manager.app
         self._client = client = await AsyncClient(
-            transport=transport,
+            transport=ASGITransport(app),
             base_url=self._base_url,
             timeout=self._timeout,
             **self._kwargs,
