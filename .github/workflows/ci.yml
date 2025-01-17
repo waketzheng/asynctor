@@ -15,6 +15,9 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis
     strategy:
       matrix:
         python-version: [3.9, "3.10", 3.11, 3.12, 3.13]
@@ -26,9 +29,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
-      - uses: shogo82148/actions-setup-redis@v1
-        with:
-          redis-version: "7.x"
       - name: Load cached Poetry installation
         id: cached-poetry
         uses: actions/cache@v4
