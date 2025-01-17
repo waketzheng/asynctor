@@ -2,8 +2,9 @@ from __future__ import annotations
 
 import functools
 import socket
+from collections.abc import AsyncGenerator, Callable
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from typing import TYPE_CHECKING, AsyncGenerator, Callable, TypeVar
+from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
     from asgi_lifespan import LifespanManager

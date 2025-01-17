@@ -4,19 +4,13 @@ import functools
 import inspect
 import sys
 import time
+from collections.abc import Awaitable, Callable
 from contextlib import (
     AbstractAsyncContextManager,
     AbstractContextManager,
 )
 from types import TracebackType
-from typing import (
-    TYPE_CHECKING,
-    Any,
-    Awaitable,
-    Callable,
-    TypeVar,
-    overload,
-)
+from typing import TYPE_CHECKING, Any, TypeVar, overload
 
 if TYPE_CHECKING:  # pragma: no cover
     if sys.version_info >= (3, 11):

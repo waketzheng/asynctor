@@ -7,19 +7,24 @@ from typing import Union
 import anyio
 import pandas as pd
 
-FileLike = Union[str, Path, anyio.Path, bytes]
+FilePathType = Union[str, Path, anyio.Path]
 
 
-async def read_excel(file: FileLike, as_str=False, **kw) -> pd.DataFrame:
+async def read_excel(file: FilePathType | bytes, as_str=False, **kw) -> pd.DataFrame:
     """Read excel from local file or bytes
 
     :param as_str: whether to read as dtype=str
+    :param kw: other kwargs that will pass to the `pd.read_excel` function
     """
-    if isinstance(file, (str, Path, anyio.Path)):
-        file = await anyio.Path(file).read_bytes()
-    if as_str:
+    if isinstance(file, anyio.Path):
+        file = await file.read_bytes()
+    if as_str and "dtype" not in kw:
         kw.setdefault("dtype", str)
-    return pd.read_excel(BytesIO(file), keep_default_na=False, **kw)
+    kw.setdefault("keep_default_na", False)
+    if isinstance(file, bytes):
+        return pd.read_excel(BytesIO(file), **kw)
+    else:
+        return pd.read_excel(file, **kw)
 
 
 def df_to_datas(df: pd.DataFrame) -> list[dict]:
@@ -28,6 +33,6 @@ def df_to_datas(df: pd.DataFrame) -> list[dict]:
     return [dict(zip(cols, v)) for v in df.values.tolist()]
 
 
-async def load_xls(file: FileLike, as_str=False, **kw) -> list[dict]:
+async def load_xls(file: FilePathType | bytes, as_str=False, **kw) -> list[dict]:
     """Read excel file or content to be list of dict"""
     return df_to_datas(await read_excel(file, as_str, **kw))

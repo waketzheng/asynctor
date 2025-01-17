@@ -3,17 +3,16 @@ from __future__ import annotations
 import itertools
 import sys
 import warnings
-from contextlib import asynccontextmanager
-from typing import (
-    Any,
+from collections.abc import (
     Awaitable,
     Callable,
     Coroutine,
     Generator,
     Iterable,
     Sequence,
-    TypeVar,
 )
+from contextlib import asynccontextmanager
+from typing import Any, TypeVar
 
 import anyio
 
