@@ -143,7 +143,7 @@ def _test() -> None:  # pragma: no cover
 
     with ThreadGroup() as tg:
         for i in range(10):
-            tg.soonify(saying)(f"t{i+1}", ident=i, loop=((i + 1) * 2 % 5 + 1))
+            tg.soonify(saying)(f"t{i + 1}", ident=i, loop=((i + 1) * 2 % 5 + 1))
     print(tg.results)
     print("Done.")
 
