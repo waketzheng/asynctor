@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 
 
 async def prepare_stuff(app):
-    app.state.redis = "RedisClient"
+    app.state.attr = "foo"
 
 
 @asynccontextmanager
@@ -20,4 +20,4 @@ app2 = FastAPI(lifespan=lifespan)
 @app.get("/")
 @app2.get("/")
 async def index(request: Request):
-    return {"state": getattr(request.app.state, "redis", None)}
+    return {"state": getattr(request.app.state, "attr", None)}

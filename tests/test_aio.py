@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import asyncio
 import functools
 from contextlib import asynccontextmanager
@@ -141,9 +143,7 @@ class TestGather:
             assert sum(i == MockServer.OK for i in results) == total
         with Timer("Without sema:"):
             tasks = [MockServer.response() for _ in range(total)]
-            results = await bulk_gather(
-                tasks, batch_size=MockServer.limit, wait_last=True
-            )
+            results = await bulk_gather(tasks, batch_size=MockServer.limit, wait_last=True)
             assert all(i == MockServer.OK for i in results)
 
     @pytest.mark.anyio
@@ -155,9 +155,7 @@ class TestGather:
             assert sum(i == MockServer.OK for i in results) == total
         with Timer("Without sema(generator):"):
             tasks = (MockServer.response() for _ in range(total))
-            results = await bulk_gather(
-                tasks, batch_size=MockServer.limit, wait_last=True
-            )
+            results = await bulk_gather(tasks, batch_size=MockServer.limit, wait_last=True)
             assert all(i == MockServer.OK for i in results)
 
     @pytest.mark.anyio
@@ -188,13 +186,9 @@ class TestGather:
     async def test_bulk_conflict_or_warning(self):
         tasks = [MockServer.response() for _ in range(200)]
         with pytest.raises(ParamsError):
-            await bulk_gather(
-                tasks, batch_size=MockServer.limit + 1, limit=MockServer.limit
-            )
+            await bulk_gather(tasks, batch_size=MockServer.limit + 1, limit=MockServer.limit)
         with pytest.deprecated_call():
-            await bulk_gather(
-                tasks, batch_size=MockServer.limit, limit=MockServer.limit
-            )
+            await bulk_gather(tasks, batch_size=MockServer.limit, limit=MockServer.limit)
 
     @pytest.mark.anyio
     async def test_bulk_gather_generator(self):

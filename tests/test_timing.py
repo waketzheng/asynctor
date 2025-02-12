@@ -162,8 +162,7 @@ class TestTimer:
         with capture_stdout() as stream:
             pendulum.capture(verbose=True)
         assert (
-            stream.getvalue().strip()
-            == "Initial verbose False but capture True Cost: 0.2 seconds"
+            stream.getvalue().strip() == "Initial verbose False but capture True Cost: 0.2 seconds"
         )
         # Initial with verbose True, capture will auto print cost message
         timepiece = Timer("I'm a teapot --")

@@ -16,9 +16,7 @@ else:  # pragma: no cover
 
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
-FuncResults = Annotated[
-    list, "The return value of each funtion or the exception that it raises"
-]
+FuncResults = Annotated[list, "The return value of each funtion or the exception that it raises"]
 
 
 class StoredThread(Thread):

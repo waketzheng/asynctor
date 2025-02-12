@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from typing import Optional
 
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
@@ -32,9 +31,7 @@ async def state(request: Request):
 
 
 @app.get("/redis")
-async def get_value_from_redis_by_key(
-    request: Request, key: str
-) -> dict[str, Optional[str]]:
+async def get_value_from_redis_by_key(request: Request, key: str) -> dict[str, str | None]:
     value = await AsyncRedis(request).get(key)
     return {key: value and value.decode()}
 
@@ -45,7 +42,7 @@ class Item(BaseModel):
 
 
 @app.post("/redis")
-async def set_redis_key_value(request: Request, item: Item) -> dict[str, Optional[str]]:
+async def set_redis_key_value(request: Request, item: Item) -> dict[str, str | None]:
     redis = AsyncRedis(request)
     await redis.set(item.key, item.value)
     return {item.key: (v := await redis.get(item.key)) and v.decode()}

@@ -18,14 +18,14 @@ AsyncClientGenerator = AsyncGenerator["AsyncClient", None]
 
 @asynccontextmanager
 async def client_manager(
-    app: "FastAPI", base_url="http://test", mount_lifespan=True, timeout=30, **kwargs
+    app: FastAPI, base_url="http://test", mount_lifespan=True, timeout=30, **kwargs
 ) -> AsyncClientGenerator:
     """Async test client
 
     Usage::
 
     ```py
-    from typing import AsyncGenerator
+    from collections.abc import AsyncGenerator
 
     import pytest
     from asynctor.utils import client_manager
@@ -105,7 +105,7 @@ class AsyncTestClient(AbstractAsyncContextManager):
 
     def __init__(
         self,
-        app: "FastAPI",
+        app: FastAPI,
         mount_lifespan=True,
         base_url="http://test",
         timeout=30,
@@ -113,16 +113,16 @@ class AsyncTestClient(AbstractAsyncContextManager):
     ) -> None:
         self._app = app
         self._mount_lifespan = mount_lifespan
-        self._manager: "LifespanManager | None" = None
+        self._manager: LifespanManager | None = None
         self._client: AsyncClient | None = None
         self._base_url = base_url
         self._timeout = timeout
         self._kwargs = kwargs
 
-    async def __aenter__(self) -> "AsyncClient":
+    async def __aenter__(self) -> AsyncClient:
         from httpx import ASGITransport, AsyncClient
 
-        app: "ASGIApp" = self._app
+        app: ASGIApp = self._app
         if self._mount_lifespan:
             from asgi_lifespan import LifespanManager
 

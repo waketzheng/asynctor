@@ -5,7 +5,7 @@ import pytest
 async def test_index(client):
     response = await client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"state": "RedisClient"}
+    assert response.json() == {"state": "foo"}
 
 
 @pytest.mark.anyio

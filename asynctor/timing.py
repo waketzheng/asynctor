@@ -91,13 +91,13 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.message!r}, {self._decimal_places}, {self._verbose})"
 
-    async def __aenter__(self) -> "Timer":
+    async def __aenter__(self) -> Timer:
         return self.__enter__()
 
     async def __aexit__(self, *args, **kwargs) -> None:
         self.__exit__(*args, **kwargs)
 
-    def __enter__(self) -> "Self":
+    def __enter__(self) -> Self:
         self.start()
         return self
 
@@ -110,7 +110,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         if exc_type is not SystemExit or not str(exc_val):
             self.capture()
 
-    def _recreate_cm(self) -> "Self":
+    def _recreate_cm(self) -> Self:
         return self.__class__(
             getattr(self, "func", None) or self.message,
             self._decimal_places,

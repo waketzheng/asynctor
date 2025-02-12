@@ -1,4 +1,6 @@
 # mypy: disable-error-code="attr-defined"
+from __future__ import annotations
+
 import re
 from datetime import datetime
 
@@ -71,13 +73,11 @@ class TestAttrDict:
             assert d.____d
 
     def test_initial(self):
-        assert AttrDict() == {} == dict()
-        assert AttrDict(a=1) == {"a": 1} == dict(a=1)
-        assert AttrDict(a=1, b=2) == {"a": 1, "b": 2} == dict(a=1, b=2)
+        assert AttrDict() == {} == {}
+        assert AttrDict(a=1) == {"a": 1} == {"a": 1}
+        assert AttrDict(a=1, b=2) == {"a": 1, "b": 2} == {"a": 1, "b": 2}
         assert (
-            AttrDict({1: 2}, a=1, b=2)
-            == {1: 2, "a": 1, "b": 2}
-            == dict({1: 2}, a=1, b=2)  # type:ignore[dict-item]
+            AttrDict({1: 2}, a=1, b=2) == {1: 2, "a": 1, "b": 2} == dict({1: 2}, a=1, b=2)  # type:ignore[dict-item]
         )
         assert AttrDict({1: 0}, a=1, b=2, **{"c": 3}) == {1: 0, "a": 1, "b": 2, "c": 3}
 

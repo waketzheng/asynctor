@@ -5,14 +5,13 @@ import sys
 import warnings
 from collections.abc import (
     Awaitable,
-    Callable,
     Coroutine,
     Generator,
     Iterable,
     Sequence,
 )
 from contextlib import asynccontextmanager
-from typing import Any, TypeVar
+from typing import Any, Callable, TypeVar
 
 import anyio
 
@@ -61,10 +60,7 @@ def run_async(
 
 
 def run(
-    func: (
-        Coroutine[None, None, T_Retval]
-        | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]]
-    ),
+    func: (Coroutine[None, None, T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]]),
     *args: Unpack[PosArgsT],
     backend: str = "asyncio",
     backend_options: dict[str, Any] | None = None,
@@ -107,7 +103,9 @@ async def bulk_gather(
     *,
     limit: int | None = None,
 ) -> tuple:
-    """Similar like `asyncio.gather`, if batch_size is not zero, running tasks will CapacityLimiter({batch_size}).
+    """
+    Similar like `asyncio.gather`, but support the `batch_size` parameter.
+    If batch_size is not zero, running tasks will CapacityLimiter({batch_size}).
 
     :param coros: Coroutines
     :param batch_size: running tasks limit number, set 0 to be unlimit.
@@ -137,12 +135,11 @@ async def bulk_gather(
             if batch_size:
                 if batch_size != limit:
                     raise ParamsError(f"Conflict value with {limit=} & {batch_size=}")
-                else:
-                    warnings.warn(
-                        "`limit` is deprecated, it's replaced by `batch_size`, feel free to keep only one.",
-                        DeprecationWarning,
-                        stacklevel=2,
-                    )
+                warnings.warn(
+                    "`limit` is deprecated, use `batch_size` only.",
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
             else:
                 batch_size = limit
         if batch_size:
@@ -160,9 +157,7 @@ async def bulk_gather(
                 else:
                     for start in range(0, total, batch_size):
                         coros_slice = itertools.islice(coros, start, start + batch_size)
-                        args_items = (
-                            (start + i, coro) for i, coro in enumerate(coros_slice)
-                        )
+                        args_items = ((start + i, coro) for i, coro in enumerate(coros_slice))
                         await map_group(runner, args_items)
             else:
                 limiter = anyio.CapacityLimiter(batch_size)
@@ -183,22 +178,22 @@ async def bulk_gather(
     return tuple(results)
 
 
-async def map_group(
-    func: AsyncFunc, todos: Iterable, results: list | None = None
-) -> None:
+async def map_group(func: AsyncFunc, todos: Iterable, results: list | None = None) -> None:
     """
     The `map_group` function asynchronously executes a given function for each set of arguments in a
     provided iterable using `anyio.create_task_group()`.
 
-    :param func: The `func` parameter is an asynchronous function that will be applied to each item in
-    the `todos` iterable
-    :param todos: The `todos` parameter in the `map_group` function represents an iterable containing
-    the arguments that will be passed to the `func` function for each task that is started in the task
-    group. Each element in `todos` is a set of arguments that will be unpacked and passed to the `
-    :param results: The `results` parameter in the `map_group` function is a list that stores the
-    results of the asynchronous function calls. If the `results` parameter is provided with an initial
-    list, the results of each function call will be appended to this list. If `results` is not provided,
-    it
+    :param func: The `func` parameter is an asynchronous function that will be applied to
+        each item in the `todos` iterable
+    :param todos: The `todos` parameter in the `map_group` function represents an iterable
+        containing the arguments that will be passed to the `func` function for each task
+        that is started in the task group. Each element in `todos` is a set of arguments
+        that will be unpacked and passed to the `func`.
+    :param results: The `results` parameter in the `map_group` function is a list that
+        stores the results of the asynchronous function calls.
+        If the `results` parameter is provided with an initial list,
+        the results of each function call will be appended to this list.
+        If `results` is None or not provided, tasks will run without any return.
     """
     async with anyio.create_task_group() as tg:
         for args in todos:
@@ -240,9 +235,7 @@ async def start_tasks(coro: Coroutine | Callable, *more: Coroutine | Callable):
                 tg.cancel_scope.cancel()
 
 
-async def wait_for(
-    coro: Coroutine[None, None, T_Retval], timeout: int | float
-) -> T_Retval:
+async def wait_for(coro: Coroutine[None, None, T_Retval], timeout: int | float) -> T_Retval:
     """Similar like asyncio.wait_for"""
     with anyio.fail_after(timeout):
         return await coro
