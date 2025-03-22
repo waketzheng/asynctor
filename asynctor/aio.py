@@ -3,13 +3,7 @@ from __future__ import annotations
 import itertools
 import sys
 import warnings
-from collections.abc import (
-    Awaitable,
-    Coroutine,
-    Generator,
-    Iterable,
-    Sequence,
-)
+from collections.abc import Awaitable, Coroutine, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
 from typing import Any, Callable, TypeVar
 
