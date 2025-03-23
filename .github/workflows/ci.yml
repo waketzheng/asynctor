@@ -68,6 +68,7 @@ jobs:
       #----------------------------------------------
       - name: Install library
         run: poetry install --no-interaction
+      - uses: astral-sh/ruff-action@v3
       - name: Check code style and Type Hint
         run: ./scripts/check.py
       - name: build

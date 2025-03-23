@@ -13,8 +13,8 @@ Usage::
 import os
 import sys
 
-CMD = "fast check"
-TOOL = ("poetry", "pdm", "")[0]
+CMD = "fast check --skip-mypy"
+TOOL = ("poetry", "pdm", "uv")[0]
 BANDIT = True
 parent = os.path.abspath(os.path.dirname(__file__))
 work_dir = os.path.dirname(parent)
@@ -24,6 +24,9 @@ if os.getcwd() != work_dir:
 cmd = "{} run {}".format(TOOL, CMD) if TOOL else CMD
 if os.system(cmd) != 0:
     print("\033[1m Please run './scripts/format.py' to auto-fix style issues \033[0m")
+    sys.exit(1)
+cmd = "{} run ".format(TOOL) * bool(TOOL) + "mypy ."
+if os.system(cmd) != 0:
     sys.exit(1)
 
 if BANDIT:
