@@ -12,7 +12,7 @@ from .main import app
 
 @pytest.fixture(scope="session")
 async def client():
-    async with AsyncTestClient(app, mount_lifespan=True) as c:
+    async with AsyncTestClient(app) as c:
         yield c
 
 
