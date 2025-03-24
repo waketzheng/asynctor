@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
 from asynctor import AsyncRedis
+from asynctor.contrib.fastapi import AioRedis, register_aioredis
 
 
 @asynccontextmanager
@@ -14,14 +15,15 @@ async def lifespan(app):
         yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 app_for_utils_test = FastAPI(lifespan=lifespan)
 app_default_to_mount_lifespan = FastAPI(lifespan=lifespan)
+register_aioredis(app)
 
 
 @app.get("/")
-async def root(request: Request) -> list[str]:
-    return await AsyncRedis(request).keys()
+async def root(redis: AioRedis) -> list[str]:
+    return await redis.keys()
 
 
 @app_default_to_mount_lifespan.get("/state")
@@ -31,8 +33,8 @@ async def state(request: Request):
 
 
 @app.get("/redis")
-async def get_value_from_redis_by_key(request: Request, key: str) -> dict[str, str | None]:
-    value = await AsyncRedis(request).get(key)
+async def get_value_from_redis_by_key(redis: AioRedis, key: str) -> dict[str, str | None]:
+    value = await redis.get(key)
     return {key: value and value.decode()}
 
 
@@ -42,7 +44,6 @@ class Item(BaseModel):
 
 
 @app.post("/redis")
-async def set_redis_key_value(request: Request, item: Item) -> dict[str, str | None]:
-    redis = AsyncRedis(request)
+async def set_redis_key_value(redis: AioRedis, item: Item) -> dict[str, str | None]:
     await redis.set(item.key, item.value)
     return {item.key: (v := await redis.get(item.key)) and v.decode()}
