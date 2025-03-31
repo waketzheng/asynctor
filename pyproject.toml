@@ -41,6 +41,7 @@ pandas-stubs = {version=">=2.2.0", python="^3.10"}
 pytest-mock = "^3.14.0"
 bandit = "^1.8.3"
 eval-type-backport = "^0.2.2"
+coveralls = {git = "https://github.com/waketzheng/coveralls-python"}
 
 [tool.ruff]
 line-length = 100
@@ -77,5 +78,5 @@ exclude_lines = [
 ]
 
 [build-system]
-requires = ["poetry-plugin-version>=0.5"]
+requires = ["poetry-plugin-version"]
 build-backend = "poetry_plugin_version.api"
