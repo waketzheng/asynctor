@@ -94,7 +94,10 @@ jobs:
     steps:
     - name: Finished
       run: |
-        pip3 install --upgrade "coveralls @ git+https://github.com/waketzheng/coveralls-python"
+        apt update -y
+        apt install -y git
+        pip install --upgrade pip
+        pip install --upgrade "coveralls @ git+https://github.com/waketzheng/coveralls-python"
         coveralls --service=github --finish
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
