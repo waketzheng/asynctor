@@ -14,7 +14,7 @@ up:
 	poetry run fast upgrade
 
 deps:
-	poetry install
+	poetry install --all-extras
 
 _check:
 	./scripts/check.py

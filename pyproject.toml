@@ -9,10 +9,12 @@ dynamic = [ "version" ]
 dependencies = [
     "anyio>=3.7.1",
     "redis>=5.0.0",
+    "eval-type-backport (>=0.2.2,<1.0.0); python_version < '3.10'",
 ]
 # requires by anyio:
 #    "exceptiongroup >= 1.0.2; python_version < '3.11'",
 #    "typing_extensions >= 4.1; python_version < '3.11'",
+
 [project.optional-dependencies]
 xls = ["pandas>=2.2.0", "openpyxl>=3.1.0"]
 
@@ -21,27 +23,21 @@ homepage = "https://github.com/waketzheng/asynctor"
 repository = "https://github.com/waketzheng/asynctor.git"
 "Bug Tracker" = "https://github.com/waketzheng/asynctor/issues"
 
-
 [tool.poetry]
 version = "0"  # Managed by poetry-plugin-version
-requires-poetry = ">=2.0"
-
-[tool.poetry.dependencies]
-python = ">=3.9,<4.0"
 
 [tool.poetry.group.dev.dependencies]
 fast-dev-cli = "^0.14.0"
-pandas = "^2.2.3"
-openpyxl = "^3.1.5"
 fastapi = {extras = ["standard"], version = "^0.115.12"}
 httpx = "^0.28.1"
 asgi-lifespan = "^2.1.0"
 types-redis = "^4.6.0.20241004"
 pandas-stubs = {version=">=2.2.0", python="^3.10"}
-pytest-mock = "^3.14.0"
 bandit = "^1.8.3"
-eval-type-backport = "^0.2.2"
-coveralls = {git = "https://github.com/waketzheng/coveralls-python"}
+pytest-mock = "^3.14.0"
+
+[tool.poetry.group.ci.dependencies]
+coveralls = {git = "https://github.com/waketzheng/coveralls-python", python="^3.9"}
 
 [tool.ruff]
 line-length = 100
