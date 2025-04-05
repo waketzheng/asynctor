@@ -226,6 +226,7 @@ def cache_attr(func: Callable[..., T]) -> Callable[..., T]:
     ```
 
     Example::
+        >>> import time
         >>> from datetime import datetime
         >>> class A:
         ...     @classmethod
@@ -233,10 +234,11 @@ def cache_attr(func: Callable[..., T]) -> Callable[..., T]:
         ...     def now(cls) -> datetime:
         ...         return datetime.now()
         >>> now_a = A.now()
+        >>> time.sleep(0.1)
         >>> now = datetime.now()
-        >>> now_a == A.now()
+        >>> A.now() == now_a == getattr(A, '-cache-now')
         True
-        >>> A.now() <= now
+        >>> A.now() < now
         True
 
     """

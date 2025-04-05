@@ -6,13 +6,22 @@ from typing import Annotated, Any
 from fastapi import Depends, FastAPI, Request
 from fastapi.routing import _merge_lifespan_context
 
-from asynctor import AsyncRedis
+from ..client import AsyncRedis
 
 
 def register_aioredis(
     app: FastAPI,
-    **kwargs: Annotated[dict[str, Any], "Kwargs that will pass to `redis.asyncio.Redis.__init__`"],
+    check_connection: bool = True,
+    **kwargs: Annotated[Any, "Kwargs that will pass to `redis.asyncio.Redis.__init__`"],
 ) -> None:
+    """
+    Register redis to fastapi application
+
+    :param app: the fastapi application instance
+    :param check_connection: whether check redis server pingable
+    :param kwargs: such like: host, port, etc.
+    """
+
     @asynccontextmanager
     async def redis_lifespan(app_instance: FastAPI):
         async with AsyncRedis(app_instance, **kwargs):

@@ -1,5 +1,5 @@
 import pytest
-from main import app, app2
+from main import app
 
 from asynctor import AsyncClientGenerator, AsyncTestClient
 
@@ -12,10 +12,4 @@ def anyio_backend():
 @pytest.fixture(scope="session")
 async def client() -> AsyncClientGenerator:
     async with AsyncTestClient(app) as c:
-        yield c
-
-
-@pytest.fixture(scope="session")
-async def client_no_lifespan() -> AsyncClientGenerator:
-    async with AsyncTestClient(app2, mount_lifespan=False) as c:
         yield c
