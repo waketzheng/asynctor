@@ -1,5 +1,5 @@
 help:
-	@echo  "FastDevCli development makefile"
+	@echo  "Asynctor development makefile"
 	@echo
 	@echo  "Usage: make <target>"
 	@echo  "Targets:"

@@ -62,7 +62,7 @@ sleep_test2 Cost: 3.1 seconds
 - AioRedis
 ```py
 from asynctor.contrib.fastapi import AioRedis, register_aioredis
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 
 app = FastAPI()
 register_aioredis(app)
