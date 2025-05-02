@@ -1,10 +1,19 @@
+from __future__ import annotations
+
 import os
 from typing import TYPE_CHECKING
 
 from redis import asyncio as aioredis
 
 if TYPE_CHECKING:  # pragma: no cover
+    import sys
+
     from fastapi import FastAPI, Request
+
+    if sys.version_info >= (3, 11):
+        from typing import Self
+    else:
+        from typing_extensions import Self
 
 
 class RedisClient(aioredis.Redis):
@@ -38,8 +47,8 @@ class AsyncRedis(RedisClient):
     """
 
     def __new__(
-        cls, app: "FastAPI | Request | str | None" = None, check_connection=True, **kw
-    ) -> "AsyncRedis":
+        cls, app: FastAPI | Request | str | None = None, check_connection=True, **kw
+    ) -> AsyncRedis:
         if (
             app is not None
             and (app := getattr(app, "app", None))
@@ -59,7 +68,7 @@ class AsyncRedis(RedisClient):
             # isinstance(app, FastAPI)
             app.state.redis = self
 
-    async def __aenter__(self) -> "AsyncRedis":
+    async def __aenter__(self) -> Self:
         # Check connection when app startup
         if self._check_connection:
             await self.ping()

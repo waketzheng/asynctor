@@ -10,7 +10,7 @@ import pandas as pd
 FilePathType = Union[str, Path, anyio.Path]
 
 
-async def read_excel(file: FilePathType | bytes, as_str=False, **kw) -> pd.DataFrame:
+async def read_excel(file: FilePathType | bytes, as_str: bool = False, **kw) -> pd.DataFrame:
     """Read excel from local file or bytes
 
     :param as_str: whether to read as dtype=str
