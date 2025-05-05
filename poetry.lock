@@ -1400,14 +1400,14 @@ jupyter = ["ipywidgets (>=7.5.1,<9)"]
 
 [[package]]
 name = "setuptools"
-version = "80.2.0"
+version = "80.3.0"
 description = "Easily download, build, install, upgrade, and uninstall Python packages"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "setuptools-80.2.0-py3-none-any.whl", hash = "sha256:5f982284ad5d644764e1985baca205e235651b55f9a7ea8d46878d37104aa5e5"},
-    {file = "setuptools-80.2.0.tar.gz", hash = "sha256:16a390b41627e1455567193435e7cafa9101803ffaa2fdd9ecd0af098301981d"},
+    {file = "setuptools-80.3.0-py3-none-any.whl", hash = "sha256:a65cffc4fb86167e3020b3ef58e08226baad8b29a3b34ce2c9d07e901bac481d"},
+    {file = "setuptools-80.3.0.tar.gz", hash = "sha256:ec8308eb180b2312062b1c5523204acf872cd8b0a9e6c2ae76431b22bc4065d7"},
 ]
 
 [package.extras]
@@ -1614,14 +1614,14 @@ types-pyOpenSSL = "*"
 
 [[package]]
 name = "types-setuptools"
-version = "80.1.0.20250503"
+version = "80.3.0.20250505"
 description = "Typing stubs for setuptools"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "types_setuptools-80.1.0.20250503-py3-none-any.whl", hash = "sha256:b25bcbfeebae06bc4d2d09231b0c0622e95bdbb36df070cfe40b925fcef97dd3"},
-    {file = "types_setuptools-80.1.0.20250503.tar.gz", hash = "sha256:3cbdbe42c12e1d9179e6e87644a2cf176259411b5a3cc1d0fb0d824dc711d9ed"},
+    {file = "types_setuptools-80.3.0.20250505-py3-none-any.whl", hash = "sha256:117c86a82367306388b55310d04da807ff4c3ecdf769656a5fdc0fdd06a2c1b6"},
+    {file = "types_setuptools-80.3.0.20250505.tar.gz", hash = "sha256:5fd3d34b8fa3441d68d010fef95e232d1e48f3f5cb578f3477b7aae4f8374502"},
 ]
 
 [package.dependencies]
@@ -1669,6 +1669,26 @@ files = [
     {file = "tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9"},
 ]
 
+[[package]]
+name = "uvicorn"
+version = "0.34.2"
+description = "The lightning-fast ASGI server."
+optional = false
+python-versions = ">=3.9"
+groups = ["dev"]
+files = [
+    {file = "uvicorn-0.34.2-py3-none-any.whl", hash = "sha256:deb49af569084536d269fe0a6d67e3754f104cf03aba7c11c40f01aadf33c403"},
+    {file = "uvicorn-0.34.2.tar.gz", hash = "sha256:0e929828f6186353a80b58ea719861d2629d766293b6d19baf086ba31d4f3328"},
+]
+
+[package.dependencies]
+click = ">=7.0"
+h11 = ">=0.8"
+typing-extensions = {version = ">=4.0", markers = "python_version < \"3.11\""}
+
+[package.extras]
+standard = ["colorama (>=0.4) ; sys_platform == \"win32\"", "httptools (>=0.6.3)", "python-dotenv (>=0.13)", "pyyaml (>=5.1)", "uvloop (>=0.14.0,!=0.15.0,!=0.15.1) ; sys_platform != \"win32\" and sys_platform != \"cygwin\" and platform_python_implementation != \"PyPy\"", "watchfiles (>=0.13)", "websockets (>=10.4)"]
+
 [extras]
 fastapi = ["asgi-lifespan", "fastapi", "httpx", "redis"]
 redis = ["redis"]
@@ -1677,4 +1697,4 @@ xls = ["openpyxl", "pandas"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.9"
-content-hash = "714657ac2cbb6c1a66137e39945af1d6e7a9fa6f3b9929dedc3f069c6960e527"
+content-hash = "4f28c0bb16a59ff6d8372796db8df96566b02f4382e19017b68d6582e6f7781b"

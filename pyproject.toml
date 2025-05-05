@@ -34,6 +34,7 @@ pandas-stubs = {version=">=2.2.0", python="^3.10"}
 bandit = "^1.8.3"
 pytest-mock = "^3.14.0"
 fastapi-cdn-host = "^0.9.1"
+uvicorn = "^0.34.2"
 
 [tool.poetry.group.ci.dependencies]
 coveralls = {git = "https://github.com/waketzheng/coveralls-python", rev = "4.1.1", python="^3.9"}
