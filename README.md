@@ -18,9 +18,9 @@ $ pip install asynctor
 ---> 100%
 Successfully installed asynctor
 ```
-Or use poetry:
+with extras:
 ```console
-poetry add asynctor
+pip install "asynctor[xls,redis,fastapi]"
 ```
 
 </div>
@@ -60,6 +60,8 @@ sleep_test Cost: 3.0 seconds
 sleep_test2 Cost: 3.1 seconds
 ```
 - AioRedis
+
+*pip install "asynctor[fastapi]"*
 ```py
 from asynctor.contrib.fastapi import AioRedis, register_aioredis
 from fastapi import FastAPI

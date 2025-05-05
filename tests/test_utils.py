@@ -105,6 +105,14 @@ class TestAttrDict:
         with pytest.raises(AttributeError):
             assert d.ef
 
+    def test_exclude(self):
+        d = AttrDict({"keys": {"a": 1}})
+        assert not isinstance(d.keys, AttrDict)
+        assert not isinstance(d["keys"], AttrDict)
+        assert d.keys() == {"keys": ""}.keys()
+        d2 = AttrDict({"_a": {"a": 1}})
+        assert not isinstance(d2["_a"], AttrDict)
+
 
 def test_get_ip(mocker):
     my_ip = get_machine_ip()

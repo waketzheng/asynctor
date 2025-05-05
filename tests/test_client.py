@@ -51,3 +51,18 @@ def test_redis_host_port():
     custom_port = 8888
     redis = AsyncRedis(port=custom_port)
     assert redis.connection_pool.connection_kwargs["port"] == custom_port
+
+
+@pytest.mark.anyio
+async def test_redis_not_installed(monkeypatch):
+    import sys
+
+    monkeypatch.setitem(sys.modules, "redis", None)
+    monkeypatch.delattr(Redis, "aclose")
+
+    with pytest.raises(RuntimeError, match=r"pip install redis"):
+        async with AsyncRedis():
+            pass
+    with pytest.raises(RuntimeError, match=r'pip install "asynctor\[redis\]"'):
+        async with AsyncRedis(check_connection=False):
+            pass

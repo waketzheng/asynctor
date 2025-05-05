@@ -8,7 +8,6 @@ requires-python = ">=3.9"
 dynamic = [ "version" ]
 dependencies = [
     "anyio>=3.7.1",
-    "redis>=5.0.0",
     "eval-type-backport (>=0.2.2,<1.0.0); python_version < '3.10'",
 ]
 # requires by anyio:
@@ -17,7 +16,8 @@ dependencies = [
 
 [project.optional-dependencies]
 xls = ["pandas>=2.2.0", "openpyxl>=3.1.0"]
-fastapi = ["fastapi>=0.115.0", "httpx>=0.28.1", "asgi-lifespan>=2.1.0"]
+fastapi = ["redis", "fastapi>=0.115.0", "httpx>=0.28.1", "asgi-lifespan>=2.1.0"]
+redis = ["redis>=5.0.0"]
 
 [project.urls]
 homepage = "https://github.com/waketzheng/asynctor"
@@ -33,9 +33,10 @@ types-redis = "^4.6.0.20241004"
 pandas-stubs = {version=">=2.2.0", python="^3.10"}
 bandit = "^1.8.3"
 pytest-mock = "^3.14.0"
+fastapi-cdn-host = "^0.9.1"
 
 [tool.poetry.group.ci.dependencies]
-coveralls = {git = "https://github.com/waketzheng/coveralls-python", python="^3.9"}
+coveralls = {git = "https://github.com/waketzheng/coveralls-python", rev = "4.1.1", python="^3.9"}
 
 [tool.ruff]
 line-length = 100

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Annotated, Any
 
@@ -23,7 +24,7 @@ def register_aioredis(
     """
 
     @asynccontextmanager
-    async def redis_lifespan(app_instance: FastAPI):
+    async def redis_lifespan(app_instance: FastAPI) -> AsyncGenerator[None]:
         async with AsyncRedis(app_instance, **kwargs):
             yield
 
