@@ -9,12 +9,13 @@ help:
 	@echo  "    test    Runs all tests"
 	@echo  "    style   Auto-formats the code"
 	@echo  "    lint    Auto-formats the code and check type hints"
+	@echo  "    build   Build wheel file and tar file from source to dist/"
 
 up:
 	pdm run fast upgrade
 
 deps:
-	pdm install --verbose --group :all --without=ci
+	pdm install --verbose --group :all --without=ci --frozen
 
 _check:
 	./scripts/check.py
@@ -36,5 +37,8 @@ _build:
 	rm -fR dist/
 	pdm build
 build: deps _build
+
+publish: deps _build
+	pdm run fast upload
 
 ci: check _build _test
