@@ -50,6 +50,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           use_uv: true
+        if: ${{ matrix.python-version != '3.14' }}
+      - name: Set up PDM by Pipx
+        run: |
+          pip install --user --upgrade pipx pip
+          pipx install pdm
+        if: ${{ matrix.python-version == '3.14' }}
       - name: Check code style and Type Hint then Test with pytest
         run: make ci
         env:
