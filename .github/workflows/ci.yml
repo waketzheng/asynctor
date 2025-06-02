@@ -43,11 +43,13 @@ jobs:
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('**/pdm.lock') }}
+      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/ruff-action@v3
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - uses: astral-sh/ruff-action@v3
+          use_uv: true
       - name: Check code style and Type Hint then Test with pytest
         run: make ci
         env:
