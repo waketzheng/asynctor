@@ -38,49 +38,26 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
-      - name: Load cached Poetry installation
-        id: cached-poetry
-        uses: actions/cache@v4
+      - uses: actions/cache@v4
+        id: cache
         with:
-          path: ~/.local  # the path depends on the OS
-          key: poetry-0  # increment to reset cache
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('**/pdm.lock') }}
+      - name: Set up PDM
+        uses: pdm-project/setup-pdm@v4
         with:
-          virtualenvs-in-project: true
-          plugins: poetry-plugin-version
-      - name: Load cached venv
-        id: cached-poetry-dependencies
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
-      #----------------------------------------------
-      # install dependencies if cache does not exist
-      #----------------------------------------------
-      - name: Install dependencies
-        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
-        run: poetry install --no-interaction --no-root --all-extras --all-groups
-        env:
-          PYO3_USE_ABI3_FORWARD_COMPATIBILITY: 1
-      #----------------------------------------------
-      # install your root project, if package-mode is true
-      #----------------------------------------------
-      - name: Install library
-        run: poetry install --no-interaction
+          python-version: ${{ matrix.python-version }}
       - uses: astral-sh/ruff-action@v3
-      - name: Check code style and Type Hint
-        run: ./scripts/check.py
-      - name: build
-        run: poetry build
-      - name: Test with pytest
-        run: poetry run fast test
+      - name: Check code style and Type Hint then Test with pytest
+        run: make ci
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost
+      - name: Install library
+        run: pdm sync -d -G :all
       - name: Upload Coverage
         run: |
-          poetry run coveralls --service=github
+          pdm run coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}

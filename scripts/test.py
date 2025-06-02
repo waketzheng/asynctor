@@ -7,7 +7,7 @@ import sys
 import time
 from pathlib import Path
 
-TOOL = ("poetry", "pdm", "")[0]
+TOOL = ("poetry", "pdm", "")[1]
 work_dir = Path(__file__).parent.resolve().parent
 if Path.cwd() != work_dir:
     os.chdir(str(work_dir))

@@ -18,6 +18,6 @@ repos:
     hooks:
       - id: format
         name: check and reformat by ruff/mypy
-        entry: poetry run fast lint
+        entry: pdm run fast lint
         language: system
         types: [python]
