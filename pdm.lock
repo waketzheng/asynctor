@@ -5,7 +5,7 @@
 groups = ["default", "ci", "dev", "fastapi", "redis", "xls"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:c0b6e6e7c9c65d31eb820ca90356b8f07ae8cd1ffd6c7ac12110ec6602a4eef7"
+content_hash = "sha256:096fade18927f958cdeb2a452da47cb3c624db4ed6035e64c918ff599a3453a3"
 
 [[metadata.targets]]
 requires_python = ">=3.9"

@@ -31,7 +31,7 @@ version = {source="file", path="asynctor/__init__.py"}
 dev = [
     "fast-dev-cli>=0.15.1",
     "types-redis>=4.6.0.20241004",
-    "pandas-stubs",
+    "pandas-stubs>=2.2.0",
     "bandit>=1.8.3",
     "pytest-mock>=3.14.1",
     "fastapi-cdn-host>=0.9.1",
