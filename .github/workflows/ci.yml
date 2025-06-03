@@ -69,9 +69,11 @@ jobs:
       - name: Test with pytest
         if: ${{ matrix.python-version == '3.14' }}
         run: |
-          pip install -e ".[xls,redis]"
-          pip install ruff mypy pytest-mock
-          ruff check .
+          python -m pip install --upgrade pip
+          pip install --upgrade -e ".[xls,redis]"
+          pip install --upgrade ruff mypy pytest-mock
+          ruff check
+          ruff format --check
           mypy .
           # TODO: test all if pydantic/fastapi support python3.14
           pytest tests/test_aio.py tests/test_tasks.py tests/test_xls.py tests/test_version.py tests/test_timing.py
