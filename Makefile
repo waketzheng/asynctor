@@ -41,4 +41,4 @@ build: deps _build
 publish: deps _build
 	pdm run fast upload
 
-ci: check _build _test
+ci: check _test

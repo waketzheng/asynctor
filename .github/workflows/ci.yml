@@ -57,12 +57,14 @@ jobs:
           pipx install pdm
         if: ${{ matrix.python-version == '3.14' }}
       - name: Check code style and Type Hint then Test with pytest
-        run: make ci
+        run: |
+          pdm sync -d -G :all
+          make _build
+          make _check
+          make _test
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost
-      - name: Install library
-        run: pdm sync -d -G :all
       - name: Upload Coverage
         run: |
           pdm run coveralls --service=github
