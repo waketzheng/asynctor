@@ -57,6 +57,7 @@ jobs:
           pipx install pdm
         if: ${{ matrix.python-version == '3.14' }}
       - name: Check code style and Type Hint then Test with pytest
+        if: ${{ matrix.python-version != '3.14' }}
         run: |
           pdm sync -d -G :all
           make _build
@@ -64,6 +65,17 @@ jobs:
           make _test
         env:
           # The hostname used to communicate with the Redis service container
+          REDIS_HOST: localhost
+      - name: Test with pytest
+        if: ${{ matrix.python-version == '3.14' }}
+        run: |
+          pip install -e ".[xls,redis]"
+          pip install ruff mypy pytest-mock
+          ruff check .
+          mypy .
+          # TODO: test all if pydantic/fastapi support python3.14
+          pytest tests/test_aio.py tests/test_tasks.py tests/test_xls.py tests/test_version.py tests/test_timing.py
+        env:
           REDIS_HOST: localhost
       - name: Upload Coverage
         run: |
