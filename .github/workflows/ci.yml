@@ -76,6 +76,7 @@ jobs:
           ruff check
           ruff format --check
           pdm run mypy .
+          pdm list --fields=name,version --csv
           # TODO: test all if pydantic/fastapi support python3.14
           pdm run pytest tests/test_aio.py tests/test_tasks.py tests/test_xls.py tests/test_version.py tests/test_timing.py
         env:
