@@ -72,7 +72,8 @@ jobs:
           pdm run python -m ensurepip
           pdm run pip install --upgrade pip
           pdm run pip install --upgrade -e ".[xls,redis]"
-          pdm run pip install --upgrade mypy pytest-mock
+          pdm run pip install --upgrade mypy pytest-mock types-redis pandas-stubs
+          pdm run pip install "coveralls @ git+https://github.com/waketzheng/coveralls-python@4.1.1"
           ruff check
           ruff format --check
           pdm run mypy .
