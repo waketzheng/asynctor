@@ -14,6 +14,9 @@ help:
 up:
 	pdm run fast upgrade
 
+lock:
+	pdm lock --group :all --strategy inherit_metadata
+
 deps:
 	pdm install --verbose --group :all --without=ci --frozen
 
@@ -41,4 +44,4 @@ build: deps _build
 publish: deps _build
 	pdm run fast upload
 
-ci: check _build _test
+ci: check _test

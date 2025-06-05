@@ -29,7 +29,7 @@ jobs:
           - 6379:6379
     strategy:
       matrix:
-        python-version: [3.9, "3.10", 3.11, 3.12, 3.13]
+        python-version: [3.9, "3.10", 3.11, 3.12, 3.13, 3.14]
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
@@ -50,13 +50,38 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           use_uv: true
+        if: ${{ matrix.python-version != '3.14' }}
+      - name: Set up PDM by Pipx
+        run: |
+          pip install --user --upgrade pipx pip
+          pipx install pdm
+        if: ${{ matrix.python-version == '3.14' }}
       - name: Check code style and Type Hint then Test with pytest
-        run: make ci
+        if: ${{ matrix.python-version != '3.14' }}
+        run: |
+          pdm sync -d -G :all
+          make _build
+          make _check
+          make _test
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost
-      - name: Install library
-        run: pdm sync -d -G :all
+      - name: Test with pytest
+        if: ${{ matrix.python-version == '3.14' }}
+        run: |
+          pdm run python -m ensurepip
+          pdm run pip install --upgrade pip
+          pdm run pip install --upgrade -e ".[xls,redis]"
+          pdm run pip install --upgrade mypy pytest-mock types-redis pandas-stubs
+          pdm run pip install "coveralls @ git+https://github.com/waketzheng/coveralls-python@4.1.1"
+          ruff check
+          ruff format --check
+          pdm run mypy .
+          pdm list --fields=name,version --csv
+          # TODO: test all if pydantic/fastapi support python3.14
+          pdm run pytest -s tests/test_aio.py tests/test_tasks.py tests/test_xls.py tests/test_version.py tests/test_timing.py
+        env:
+          REDIS_HOST: localhost
       - name: Upload Coverage
         run: |
           pdm run coveralls --service=github
