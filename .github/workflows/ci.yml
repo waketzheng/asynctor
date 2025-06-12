@@ -59,10 +59,7 @@ jobs:
         if: ${{ matrix.python-version != '3.14' }}
         run: |
           pdm config use_uv true
-          pdm sync -d -G :all
-          make _build
-          make _check
-          make _test
+          make ci
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost
@@ -72,36 +69,29 @@ jobs:
           pdm run python -m ensurepip
           pdm run pip install --upgrade pip
           pdm run pip install --upgrade -e ".[xls,redis]"
-          pdm run pip install --upgrade mypy pytest-mock types-redis pandas-stubs
-          pdm run pip install "coveralls @ git+https://github.com/waketzheng/coveralls-python@4.1.1"
+          pdm run pip install --upgrade mypy coverage pytest-mock types-redis pandas-stubs
           ruff check
           ruff format --check
           pdm run mypy .
           pdm list --fields=name,version --csv
           # TODO: test all if pydantic/fastapi support python3.14
-          pdm run pytest -s tests/test_aio.py tests/test_tasks.py tests/test_xls.py tests/test_version.py tests/test_timing.py
+          pdm run coverage run -m pytest -s tests/test_aio.py tests/test_tasks.py tests/test_xls.py tests/test_version.py tests/test_timing.py
         env:
           REDIS_HOST: localhost
+      - name: Generate coverage report
+        run: coverage xml
       - name: Upload Coverage
-        run: |
-          pdm run coveralls --service=github
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
-          COVERALLS_PARALLEL: true
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel: true
+          file: coverage.xml
 
   coveralls:
-    name: Indicate completion to coveralls.io
+    name: Finish Coveralls
     needs: test
     runs-on: ubuntu-latest
-    container: python:3-slim
     steps:
     - name: Finished
-      run: |
-        apt update -y
-        apt install -y git
-        pip install --upgrade pip
-        pip install --upgrade "coveralls @ git+https://github.com/waketzheng/coveralls-python"
-        coveralls --service=github --finish
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: coverallsapp/github-action@v2
+      with:
+        parallel-finished: true

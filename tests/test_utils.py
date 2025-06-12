@@ -7,7 +7,7 @@ from datetime import datetime
 import pytest
 
 from asynctor import AttrDict
-from asynctor.utils import AsyncTestClient, cache_attr, get_machine_ip
+from asynctor.utils import AsyncTestClient, cache_attr, client_manager, get_machine_ip
 
 from .main import app_default_to_mount_lifespan, app_for_utils_test
 
@@ -24,20 +24,34 @@ async def client_without_lifespan():
         yield c
 
 
-@pytest.mark.anyio
-async def test_async_test_client(client):
-    path = "/state"
-    r = await client.get(path)
-    assert r.status_code == 200
-    assert r.json()["redis"] != "None"
+@pytest.fixture(scope="session")
+async def client_func_style():
+    async with client_manager(app_default_to_mount_lifespan) as c:
+        yield c
+
+
+@pytest.fixture(scope="session")
+async def client_func_style_without_lifespan():
+    async with client_manager(app_for_utils_test, mount_lifespan=False) as c:
+        yield c
 
 
 @pytest.mark.anyio
-async def test_async_test_client2(client_without_lifespan):
+async def test_async_test_client(client, client_func_style):
     path = "/state"
-    r = await client_without_lifespan.get(path)
-    assert r.status_code == 200
-    assert r.json() == {"redis": "None"}
+    for c in (client, client_func_style):
+        r = await c.get(path)
+        assert r.status_code == 200
+        assert r.json()["redis"] != "None"
+
+
+@pytest.mark.anyio
+async def test_async_test_client2(client_without_lifespan, client_func_style_without_lifespan):
+    path = "/state"
+    for c in (client_without_lifespan, client_func_style_without_lifespan):
+        r = await c.get(path)
+        assert r.status_code == 200
+        assert r.json() == {"redis": "None"}
 
 
 class TestAttrDict:
