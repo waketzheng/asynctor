@@ -79,7 +79,7 @@ jobs:
         env:
           REDIS_HOST: localhost
       - name: Generate coverage report
-        run: coverage xml
+        run: pdm run coverage xml
       - name: Upload Coverage
         uses: coverallsapp/github-action@v2
         with:
