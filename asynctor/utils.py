@@ -7,13 +7,20 @@ from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
+    import sys
+
     from asgi_lifespan import LifespanManager
     from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
     from httpx import AsyncClient
 
+    if sys.version_info >= (3, 10):
+        from typing import TypeAlias
+    else:
+        from typing_extensions import TypeAlias
+
 T = TypeVar("T")
-AsyncClientGenerator = AsyncGenerator["AsyncClient", None]
+AsyncClientGenerator: TypeAlias = AsyncGenerator["AsyncClient", None]
 
 
 @asynccontextmanager

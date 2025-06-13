@@ -7,16 +7,24 @@ from collections.abc import Callable
 from contextlib import AbstractContextManager
 from functools import cached_property
 from threading import Thread
-from typing import Annotated, Any, TypeVar
+from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
 if sys.version_info >= (3, 11):  # pragma: no cover
     from typing import ParamSpec, Self
 else:  # pragma: no cover
     from typing_extensions import ParamSpec, Self
 
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 10):
+        from typing import TypeAlias
+    else:
+        from typing_extensions import TypeAlias
+
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
-FuncResults = Annotated[list, "The return value of each funtion or the exception that it raises"]
+FuncResults: TypeAlias = Annotated[
+    list[Any], "The return value of each funtion or the exception that it raises"
+]
 
 
 class StoredThread(Thread):
@@ -68,13 +76,6 @@ class ThreadGroup(AbstractContextManager):
         """Whether use ThreadPoolExecutor"""
         return self._max_workers != 0
 
-    def __enter__(self) -> Self:
-        if self.use_pool:
-            self._executor = concurrent.futures.ThreadPoolExecutor(
-                max_workers=self._max_workers
-            ).__enter__()
-        return self
-
     def soonify(self, func: Callable[T_ParamSpec, Any]) -> Callable[T_ParamSpec, None]:
         """
         Create and start a Thread instance then add it to this group.
@@ -103,7 +104,14 @@ class ThreadGroup(AbstractContextManager):
 
         return runner
 
-    def __exit__(self, *args, **kwargs):
+    def __enter__(self) -> Self:
+        if self.use_pool:
+            self._executor = concurrent.futures.ThreadPoolExecutor(
+                max_workers=self._max_workers
+            ).__enter__()
+        return self
+
+    def __exit__(self, *args, **kwargs) -> None:
         if fs := self._future_idx:
             self._results = [None] * len(fs)
             for future in concurrent.futures.as_completed(fs, timeout=self._timeout):

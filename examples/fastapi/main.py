@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import fastapi_cdn_host
@@ -13,24 +14,29 @@ from asynctor.contrib.fastapi import AioRedis, register_aioredis
 fake_db = {"users": [{"id": 1, "name": "John"}]}
 
 
-@asynccontextmanager
-async def lifespan(app):
+async def init_db(app: FastAPI) -> None:
     db = copy.deepcopy(fake_db)
     app.state.db = db
+
+
+async def teardown(app: FastAPI) -> None:
+    app.state.db.clear()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+    await init_db(app)
     yield
-    del db
+    await teardown(app)
 
 
 app = FastAPI(lifespan=lifespan)
-register_aioredis(
-    app,
-    host="127.0.0.1",  # default is: os.getenv('REDIS_HOST', 'localhost')
-)
+register_aioredis(app, host="127.0.0.1")
 fastapi_cdn_host.patch_docs(app)
 
 
 @app.get("/users")
-async def get_user_list(request: Request):
+async def get_user_list(request: Request) -> list[dict[str, int | str]]:
     db = request.app.state.db
     users = db["users"]
     return users
@@ -48,8 +54,12 @@ class KeyValueExpire(BaseModel):
     expire: int | None = None
 
 
-@app.post("/redis/set")
-async def cache_to_redis(redis: AioRedis, data: KeyValueExpire):
+class MsgResponse(BaseModel):
+    msg: str
+
+
+@app.post("/redis/set", response_model=MsgResponse)
+async def cache_to_redis(redis: AioRedis, data: KeyValueExpire) -> dict[str, str]:
     await redis.set(data.key, data.value, data.expire)
     return {"msg": "OK"}
 

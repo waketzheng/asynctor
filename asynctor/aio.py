@@ -5,7 +5,7 @@ import sys
 import warnings
 from collections.abc import Awaitable, Coroutine, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
-from typing import Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import anyio
 
@@ -17,10 +17,15 @@ else:
     from exceptiongroup import ExceptionGroup  # pragma: no cover
     from typing_extensions import TypeVarTuple, Unpack  # pragma: no cover
 
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 10):
+        from typing import TypeAlias
+    else:
+        from typing_extensions import TypeAlias
 
 T_Retval = TypeVar("T_Retval")
 PosArgsT = TypeVarTuple("PosArgsT")
-AsyncFunc = Callable[..., Coroutine]
+AsyncFunc: TypeAlias = Callable[..., Coroutine]
 
 
 def ensure_afunc(

@@ -2,12 +2,20 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import anyio
 import pandas as pd
 
-FilePathType = Union[str, Path, anyio.Path]
+if TYPE_CHECKING:
+    import sys
+
+    if sys.version_info >= (3, 10):
+        from typing import TypeAlias
+    else:
+        from typing_extensions import TypeAlias
+
+FilePathType: TypeAlias = Union[str, Path, anyio.Path]
 
 
 async def read_excel(file: FilePathType | bytes, as_str: bool = False, **kw) -> pd.DataFrame:
