@@ -50,7 +50,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
         if: ${{ matrix.python-version != '3.14' }}
-      - name: Set up PDM by Pipx
+      - name: Set up PDM by Pipx for Python3.14
         run: |
           pip install --user --upgrade pipx pip
           pipx install pdm

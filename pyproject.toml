@@ -37,7 +37,6 @@ dev = [
     "fastapi-cdn-host>=0.9.1",
     "uvicorn>=0.34.3",
 ]
-ci = ["coveralls @ git+https://github.com/waketzheng/coveralls-python@4.1.1"]
 
 [tool.ruff]
 line-length = 100
