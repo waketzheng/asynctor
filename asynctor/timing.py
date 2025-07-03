@@ -9,16 +9,23 @@ from contextlib import (
     AbstractAsyncContextManager,
     AbstractContextManager,
 )
+from datetime import datetime, timedelta, timezone
 from types import TracebackType
-from typing import TYPE_CHECKING, Any, TypeVar, overload
+from typing import TYPE_CHECKING, Annotated, Any, TypeVar, overload
+
+try:
+    from datetime import UTC  # type:ignore[attr-defined]
+except ImportError:
+    UTC = timezone.utc
 
 if TYPE_CHECKING:  # pragma: no cover
     if sys.version_info >= (3, 11):
-        from typing import Self
+        from typing import Self, TypeAlias
     else:
-        from typing_extensions import Self
+        from typing_extensions import Self, TypeAlias
 
 T_Retval = TypeVar("T_Retval", Awaitable[Any], Any)
+AwareDateTime: TypeAlias = Annotated[datetime, "datetime with tzinfo"]
 
 
 class Timer(AbstractContextManager, AbstractAsyncContextManager):
@@ -132,6 +139,33 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
             with self._recreate_cm():
                 return func(*args, **kwargs)
 
+    @staticmethod
+    def now() -> AwareDateTime:
+        """Get utc now with tzinfo
+
+        Usage::
+            >>> now = Timer.now()
+            >>> str(now).endswith('+00:00')
+            True
+        """
+        return datetime.now(UTC)
+
+    @staticmethod
+    def to_beijing(dt: AwareDateTime) -> AwareDateTime:
+        """Convert tzinfo of aware datetime to beijing timezone"""
+        return dt.astimezone(timezone(timedelta(hours=8)))
+
+    @classmethod
+    def beijing_now(cls) -> AwareDateTime:
+        """Get current beijing time with tzinfo
+
+        Usage::
+            >>> now = Timer.beijing_now()
+            >>> str(now).endswith('+08:00')
+            True
+        """
+        return cls.to_beijing(cls.now())
+
 
 @overload
 def timeit(func: str) -> Timer: ...  # pragma: no cover
@@ -168,6 +202,11 @@ def timeit(func: str | Callable[..., T_Retval]) -> Timer | Callable[..., T_Retva
         read_text('a.txt')
         # read_text Cost: 0.2 seconds
 
+        with timeit('message'):
+            time.sleep(0.1)
+            await anyio.sleep(1)
+        # message Cost: 1.1 seconds
+
         args, kwargs = (), {}
         def sync_func(): time.sleep(0.24)
         res = timeit(sync_func)(*args, **kwargs)
@@ -177,10 +216,6 @@ def timeit(func: str | Callable[..., T_Retval]) -> Timer | Callable[..., T_Retva
             await anyio.sleep(1)
         result = await timeit(async_func)(*args, **kwargs)
         # async_func Cost: 1.0 seconds
-
-        with timeit('message'):
-            await async_func()
-        # message Cost: 1.0 seconds
 
     """
     if isinstance(func, str):

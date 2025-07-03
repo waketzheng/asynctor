@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 from contextlib import contextmanager, redirect_stdout
+from datetime import datetime, timedelta
 from io import StringIO
 
 import anyio
@@ -208,3 +209,21 @@ async def test_with_timeit():
     assert raw_wait_for.__name__ not in stdout
     assert raw_sleep1.__name__ not in stdout
     assert message in stdout
+
+
+def test_nows():
+    utc_now = Timer.now()
+    bj_now = Timer.beijing_now()
+    assert str(utc_now).endswith("+00:00")
+    assert str(bj_now).endswith("+08:00")
+    utc_ts = utc_now.timestamp()
+    bj_ts = bj_now.timestamp()
+    assert bj_ts - utc_ts < 1
+    assert round(utc_ts) == round(bj_ts)
+    assert utc_ts == Timer.to_beijing(utc_now).timestamp()
+    assert str(Timer.to_beijing(utc_now)).endswith("+08:00")
+    fmt = "%Y-%m-%d %H:%M:%S"
+    assert (
+        datetime.strptime(str(Timer.to_beijing(utc_now)).split(".")[0], fmt)
+        - datetime.strptime(str(utc_now).split(".")[0], fmt)
+    ) == timedelta(hours=8)

@@ -64,7 +64,6 @@ extend-select = [
 [tool.mypy]
 pretty = true
 python_version = "3.9"
-ignore_missing_imports = true
 check_untyped_defs = true
 
 [tool.coverage.run]
