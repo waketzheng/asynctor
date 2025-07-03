@@ -1,16 +1,28 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
+import functools
 import os
 import shlex
 import subprocess
 import sys
 import time
-from pathlib import Path
+from enum import IntEnum
 
-TOOL = ("poetry", "pdm", "")[1]
-work_dir = Path(__file__).parent.resolve().parent
-if Path.cwd() != work_dir:
-    os.chdir(str(work_dir))
+
+class Tools(IntEnum):
+    poetry = 0
+    pdm = 1
+    uv = 2
+    none = 3
+
+
+_tool = Tools.pdm
+TOOL = getattr(_tool, "name", str(_tool))
+PREFIX = (TOOL + " run ") if TOOL and Tools.none.name != TOOL else ""
+_parent = os.path.abspath(os.path.dirname(__file__))
+work_dir = os.path.dirname(_parent)
+if os.getcwd() != work_dir:
+    os.chdir(work_dir)
 
 RUN = "coverage run -m pytest"
 ARGS = ' --doctest-glob="utils.py" -s tests'
@@ -21,39 +33,49 @@ CMD = RUN + ARGS
 APPEND = "coverage run --append --source=asynctor -m pytest examples/fastapi"
 
 
-def remove_outdate_files(start_time: float) -> None:
-    for file in work_dir.glob(".coverage*"):
-        if file.stat().st_mtime < start_time:
-            file.unlink()
-            print(f"Removed outdate file: {file}")
+def remove_outdate_files(start_time):
+    # type: (float) -> None
+    for file in os.listdir(work_dir):
+        if not file.startswith(".coverage"):
+            continue
+        if os.path.getmtime(file) < start_time:
+            os.remove(file)
+            print("Removed outdate file: {file}".format(file=file))
 
 
-def run_command(cmd: str, shell=False, tool=TOOL, env=None) -> None:
-    prefix = tool + " run "
-    if tool and not cmd.startswith(prefix):
+def run_command(cmd, shell=False, prefix=PREFIX, env=None):
+    # type: (str, bool, str, None) -> None
+    if prefix and not cmd.startswith(prefix):
         cmd = prefix + cmd
-    print("-->", cmd, flush=True)
-    if env is not None:
-        env = dict(os.environ, **env)
-    r = subprocess.run(cmd if shell else shlex.split(cmd), shell=shell, env=None)
-    r.returncode and sys.exit(1)
+    print("--> {}".format(cmd))
+    sys.stdout.flush()
+    command = cmd if shell else shlex.split(cmd)
+    run = subprocess.Popen
+    if env:
+        run = functools.partial(run, env=dict(os.environ, **env))  # type: ignore
+    r = run(command, shell=shell)
+    r.wait()
+    if r.returncode != 0:
+        sys.exit(1)
 
 
-def combine_result_files(shell=COMBINE) -> None:
-    to_be_combine = [i.name for i in work_dir.glob(".coverage.*")]
-    if to_be_combine:
-        if sys.platform == "win32":
-            if work_dir.joinpath(".coverage").exists():
-                shell = shell.replace("*", " ")
-            else:
-                shell = shell.replace(".coverage*", "")
-            shell += " ".join(to_be_combine)
-        run_command(shell, True)
+def combine_result_files(shell=COMBINE):
+    # type: (str) -> None
+    to_be_combine = [i for i in os.listdir(work_dir) if i.startswith(".coverage.")]
+    if not to_be_combine:
+        return
+    if sys.platform == "win32":
+        if os.path.exists(os.path.join(work_dir, ".coverage")):
+            shell = shell.replace("*", " ")
+        else:
+            shell = shell.replace(".coverage*", "")
+        shell += " ".join(to_be_combine)
+    run_command(shell, True)
 
 
 started_at = time.time()
 run_command(CMD)
-run_command(APPEND, env={"PYTHONPATH": "examples/fastapi"})
+run_command(APPEND, env={"PYTHONPATH": "examples/fastapi"})  # type:ignore
 remove_outdate_files(started_at)
 combine_result_files()
 run_command(REPORT)

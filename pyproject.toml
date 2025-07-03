@@ -17,7 +17,8 @@ dependencies = [
 [project.optional-dependencies]
 redis = ["redis>=5.0.0"]
 xls = ["pandas>=2.2.0", "openpyxl>=3.1.0"]
-fastapi = ["redis", "fastapi>=0.115.0", "httpx>=0.28.1", "asgi-lifespan>=2.1.0"]
+fastapi = ["asynctor[redis]", "fastapi>=0.115.0", "httpx>=0.28.1", "asgi-lifespan>=2.1.0"]
+all = ["asynctor[xls,redis,fastapi]"]
 
 [project.urls]
 homepage = "https://github.com/waketzheng/asynctor"
