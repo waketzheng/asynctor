@@ -17,6 +17,12 @@ up:
 lock:
 	pdm lock --group :all $(options)
 
+venv:
+	pdm venv create $(version)
+
+venv39:
+	$(MAKE) venv version=3.9
+
 deps:
 	pdm install --verbose --group :all --frozen
 
