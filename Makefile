@@ -15,7 +15,7 @@ up:
 	pdm run fast upgrade
 
 lock:
-	pdm lock --group :all --strategy inherit_metadata
+	pdm lock --group :all $(options)
 
 deps:
 	pdm install --verbose --group :all --frozen
@@ -25,7 +25,7 @@ _check:
 check: deps _build _check
 
 _lint:
-	pdm run fast lint
+	pdm run fast lint $(options)
 lint: deps _build _lint
 
 _test:

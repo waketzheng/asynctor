@@ -87,3 +87,7 @@ exclude_lines = [
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
+
+[tool.pdm.scripts]
+lint = 'pdm run fast lint'
+deps = 'pdm sync -G :all'
