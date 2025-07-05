@@ -89,9 +89,11 @@ version = {source="file", path="asynctor/__init__.py"}
 
 [tool.pdm.scripts]
 test = 'pdm run fast test'
+style = {composite = ["ruff format", "ruff check --fix {args}"]}
 check = 'pdm run fast check'
-lint = 'pdm run fast lint'
-deps = 'pdm sync -G :all'
+lint = 'pdm run fast lint {args}'
+deps = 'pdm sync -G :all {args}'
+start = {composite = ["pre-commit install", "deps"]}
 ci = {composite = ["deps", "check", "test"]}
 
 [build-system]

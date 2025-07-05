@@ -26,6 +26,10 @@ venv39:
 deps:
 	pdm install --group :all --frozen $(options)
 
+start:
+	pre-commit install
+	$(MAKE) deps
+
 _check:
 	./scripts/check.py
 check: deps _build _check
