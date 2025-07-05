@@ -24,7 +24,7 @@ venv39:
 	$(MAKE) venv version=3.9
 
 deps:
-	pdm install --verbose --group :all --frozen
+	pdm install --group :all --frozen $(options)
 
 _check:
 	./scripts/check.py
@@ -43,7 +43,6 @@ _style:
 style: deps _style
 
 _build:
-	rm -fR dist/
 	pdm build
 build: deps _build
 
