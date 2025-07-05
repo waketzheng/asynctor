@@ -19,10 +19,12 @@ except ImportError:
     UTC = timezone.utc
 
 if TYPE_CHECKING:  # pragma: no cover
+    from ._types import TypeAlias
+
     if sys.version_info >= (3, 11):
-        from typing import Self, TypeAlias
+        from typing import Self
     else:
-        from typing_extensions import Self, TypeAlias
+        from typing_extensions import Self
 
 T_Retval = TypeVar("T_Retval", Awaitable[Any], Any)
 AwareDateTime: TypeAlias = Annotated[datetime, "datetime with tzinfo"]

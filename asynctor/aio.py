@@ -18,10 +18,7 @@ else:
     from typing_extensions import TypeVarTuple, Unpack  # pragma: no cover
 
 if TYPE_CHECKING:
-    if sys.version_info >= (3, 10):
-        from typing import TypeAlias
-    else:
-        from typing_extensions import TypeAlias
+    from ._types import TypeAlias
 
 T_Retval = TypeVar("T_Retval")
 PosArgsT = TypeVarTuple("PosArgsT")

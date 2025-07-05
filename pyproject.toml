@@ -56,6 +56,7 @@ extend-select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
+"asynctor/_types.py" = ["F401"]
 "test_*.py" = ["E501"]
 "scripts/test.py" = ["E501"]
 "scripts/*.py" = ["UP009","UP032"]

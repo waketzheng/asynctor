@@ -15,10 +15,7 @@ else:  # pragma: no cover
     from typing_extensions import ParamSpec, Self
 
 if TYPE_CHECKING:
-    if sys.version_info >= (3, 10):
-        from typing import TypeAlias
-    else:
-        from typing_extensions import TypeAlias
+    from ._types import TypeAlias
 
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
