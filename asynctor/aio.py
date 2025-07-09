@@ -5,22 +5,24 @@ import sys
 import warnings
 from collections.abc import AsyncGenerator, Awaitable, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Callable, TypeVar
+from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast
 
 import anyio
 from anyio import from_thread
+from anyio.lowlevel import checkpoint
 
 from .exceptions import ParamsError
 
 if sys.version_info >= (3, 11):  # pragma: no cover
-    from typing import TypeVarTuple, Unpack
+    from typing import Self, TypeVarTuple, Unpack
 else:
     from exceptiongroup import ExceptionGroup  # pragma: no cover
-    from typing_extensions import TypeVarTuple, Unpack  # pragma: no cover
+    from typing_extensions import Self, TypeVarTuple, Unpack  # pragma: no cover
 
 if TYPE_CHECKING:
     from ._types import TypeAlias
 
+T = TypeVar("T")
 T_Retval = TypeVar("T_Retval")
 PosArgsT = TypeVarTuple("PosArgsT")
 AsyncFunc: TypeAlias = Callable[..., Awaitable[Any]]
@@ -92,6 +94,38 @@ def run(
     return anyio.run(func, *args, backend=backend, backend_options=backend_options)
 
 
+class LengthFixedList(list[T]):
+    def append(self: Self, _: T) -> None:
+        raise TypeError(f"{self.__class__.__name__} is fixed-size")
+
+
+async def map_group(
+    func: AsyncFunc, todos: Iterable[Any], results: list[Any] | None = None
+) -> None:
+    """
+    The `map_group` function asynchronously executes a given function for each set of arguments in a
+    provided iterable using `anyio.create_task_group()`.
+
+    :param func: The `func` parameter is an asynchronous function that will be applied to
+        each item in the `todos` iterable
+    :param todos: The `todos` parameter in the `map_group` function represents an iterable
+        containing the arguments that will be passed to the `func` function for each task
+        that is started in the task group. Each element in `todos` is a set of arguments
+        that will be unpacked and passed to the `func`.
+    :param results: The `results` parameter in the `map_group` function is a list that
+        stores the results of the asynchronous function calls.
+        If the `results` parameter is provided with an initial list,
+        the results of each function call will be appended to this list.
+        If `results` is None or not provided, tasks will run without any return.
+    """
+    async with anyio.create_task_group() as tg:
+        should_append = results is not None and not isinstance(results, LengthFixedList)
+        for args in todos:
+            if should_append:
+                cast(list[Any], results).append(None)
+            tg.start_soon(func, *args)
+
+
 async def bulk_gather(
     coros: Sequence[Awaitable[T_Retval]] | Generator[Awaitable[T_Retval]],
     batch_size: int = 0,
@@ -111,14 +145,17 @@ async def bulk_gather(
     :param raises: if True, raise Exception when coroutine failed, else return None.
     :param limit: (deprecated) only leave it here to compare with old version.
     """
+    results: list[T_Retval | None]
     try:
         total = len(coros)  # type:ignore[arg-type]
     except TypeError:  # if coros is generator
         total = 0
+        results = []
     else:
         if total == 0:
+            await checkpoint()
             return ()
-    results: list[T_Retval | None] = [None] * total
+        results = LengthFixedList([None] * total)
 
     async def runner(_i: int, _coro: Awaitable[T_Retval]) -> None:
         results[_i] = await _coro
@@ -175,32 +212,6 @@ async def bulk_gather(
             raise e.exceptions[0] from e
 
     return tuple(results)
-
-
-async def map_group(
-    func: AsyncFunc, todos: Iterable[Any], results: list[Any] | None = None
-) -> None:
-    """
-    The `map_group` function asynchronously executes a given function for each set of arguments in a
-    provided iterable using `anyio.create_task_group()`.
-
-    :param func: The `func` parameter is an asynchronous function that will be applied to
-        each item in the `todos` iterable
-    :param todos: The `todos` parameter in the `map_group` function represents an iterable
-        containing the arguments that will be passed to the `func` function for each task
-        that is started in the task group. Each element in `todos` is a set of arguments
-        that will be unpacked and passed to the `func`.
-    :param results: The `results` parameter in the `map_group` function is a list that
-        stores the results of the asynchronous function calls.
-        If the `results` parameter is provided with an initial list,
-        the results of each function call will be appended to this list.
-        If `results` is None or not provided, tasks will run without any return.
-    """
-    async with anyio.create_task_group() as tg:
-        for args in todos:
-            if results is not None:
-                results.append(None)
-            tg.start_soon(func, *args)
 
 
 async def gather(*coros: Awaitable[T_Retval]) -> tuple[T_Retval | None, ...]:
