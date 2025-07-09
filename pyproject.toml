@@ -74,6 +74,7 @@ omit = [
     "/usr/*",
     # omit this single file
     "examples/fastapi/conftest.py",
+    "_types.py",
 ]
 [tool.coverage.report]
 omit = ["*/tests/*", "test_*"]
