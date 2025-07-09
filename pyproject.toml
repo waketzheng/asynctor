@@ -96,8 +96,9 @@ check = 'pdm run fast check {args}'
 lint = 'pdm run fast lint {args}'
 deps = 'pdm sync -G :all {args}'
 prod = 'pdm install --prod --frozen'
-bump = {composite = ["prod", "pdm run fast bump patch --commit {args}"]}
-tag = {composite = ["prod", "pdm run fast tag {args}"]}
+update_self_version = 'pdm sync'
+bump = {composite = ["update_self_version", "pdm run fast bump patch --commit {args}"]}
+tag = {composite = ["update_self_version", "pdm run fast tag {args}"]}
 start = {composite = ["pre-commit install", "deps"]}
 ci = {composite = ["deps", "check", "test"]}
 
