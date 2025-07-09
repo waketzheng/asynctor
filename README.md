@@ -22,6 +22,10 @@ with extras:
 ```console
 pip install "asynctor[xls,redis,fastapi]"
 ```
+Or by pdm:
+```bash
+pdm add "asynctor[redis]"
+```
 
 </div>
 
@@ -61,7 +65,7 @@ sleep_test2 Cost: 3.1 seconds
 ```
 - AioRedis
 
-*pip install "asynctor[fastapi]"*
+*pip install "asynctor[redis]"*
 ```py
 from asynctor.contrib.fastapi import AioRedis, register_aioredis
 from fastapi import FastAPI
@@ -81,6 +85,7 @@ async def get_value_from_redis_by_key(redis: AioRedis, key: str) -> str:
     return value.decode()
 ```
 - AsyncTestClient
+*pip install "asynctor[fastapi]"*
 ```py
 import pytest
 from asynctor import AsyncTestClient, AsyncClientGenerator

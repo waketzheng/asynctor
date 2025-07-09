@@ -13,6 +13,21 @@ dependencies = [
 # requires by anyio:
 #    "exceptiongroup >= 1.0.2; python_version < '3.11'",
 #    "typing_extensions >= 4.1; python_version < '3.11'",
+keywords = ["asyncio", "anyio", "aioredis"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Typing :: Typed",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
 
 [project.optional-dependencies]
 redis = ["redis>=5.0.0"]
