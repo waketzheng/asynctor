@@ -5,7 +5,7 @@ import sys
 import warnings
 from collections.abc import AsyncGenerator, Awaitable, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Callable, TypeVar, cast
+from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar, cast, overload
 
 import anyio
 from anyio import from_thread
@@ -126,6 +126,28 @@ async def map_group(
             tg.start_soon(func, *args)
 
 
+@overload
+async def bulk_gather(
+    coros: Sequence[Awaitable[T_Retval]] | Generator[Awaitable[T_Retval]],
+    batch_size: int = 0,
+    wait_last: bool = False,
+    raises: Literal[True] = True,
+    *,
+    limit: int | None = None,
+) -> tuple[T_Retval, ...]: ...
+
+
+@overload
+async def bulk_gather(
+    coros: Sequence[Awaitable[T_Retval]] | Generator[Awaitable[T_Retval]],
+    batch_size: int = 0,
+    wait_last: bool = False,
+    raises: Literal[False] = False,
+    *,
+    limit: int | None = None,
+) -> tuple[T_Retval | None, ...]: ...
+
+
 async def bulk_gather(
     coros: Sequence[Awaitable[T_Retval]] | Generator[Awaitable[T_Retval]],
     batch_size: int = 0,
@@ -214,7 +236,7 @@ async def bulk_gather(
     return tuple(results)
 
 
-async def gather(*coros: Awaitable[T_Retval]) -> tuple[T_Retval | None, ...]:
+async def gather(*coros: Awaitable[T_Retval]) -> tuple[T_Retval, ...]:
     """Similar like asyncio.gather"""
     return await bulk_gather(coros)
 

@@ -10,6 +10,7 @@ import anyio
 import pytest
 
 from asynctor.aio import (
+    LengthFixedList,
     bulk_gather,
     gather,
     run,
@@ -302,3 +303,6 @@ def test_run_until_complete_function_arguments():
 
     run_until_complete(async_func_argument_with_default_value)
     assert ints == [1]
+
+    with pytest.raises(TypeError):
+        LengthFixedList([0]).append(1)
