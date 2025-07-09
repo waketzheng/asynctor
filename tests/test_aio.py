@@ -9,7 +9,15 @@ from typing import Any
 import anyio
 import pytest
 
-from asynctor.aio import bulk_gather, gather, run, run_async, start_tasks, wait_for
+from asynctor.aio import (
+    bulk_gather,
+    gather,
+    run,
+    run_async,
+    run_until_complete,
+    start_tasks,
+    wait_for,
+)
 from asynctor.exceptions import ParamsError
 from asynctor.timing import Timer
 
@@ -247,3 +255,50 @@ class TestStartTasks:
 
         for name in names:
             assert not await root.joinpath(name).exists()
+
+
+def test_run_until_complete():
+    async def append(container: list, element: Any) -> list:
+        container.append(element)
+        await anyio.sleep(0.01)
+        return container
+
+    a: list[Any] = []
+    coro = append(a, 1)
+    assert run_until_complete(coro) is None  # type:ignore[func-returns-value]
+    assert 1 in a
+    afunc = functools.partial(append, a, 2)
+    assert run_until_complete(afunc) is None  # type:ignore[func-returns-value]
+    assert a == [1, 2]
+
+    async def do_sth():
+        with pytest.raises(RuntimeError):
+            anyio.run(append, a, 3)
+        coro = append(a, 3)
+        with pytest.raises(RuntimeError):
+            asyncio.run(coro)
+        assert 3 not in a
+        run_until_complete(coro)
+        run_until_complete(functools.partial(append, a, 4))
+        await append(a, 5)
+
+    anyio.run(do_sth)
+    assert a == [1, 2, 3, 4, 5]
+
+
+def test_run_until_complete_function_arguments():
+    def sync_func(): ...
+
+    run_until_complete(sync_func)
+
+    def async_func_requires_position_argument(a: int): ...
+
+    with pytest.raises(TypeError):
+        run_until_complete(async_func_requires_position_argument)
+    ints: list[int] = []
+
+    def async_func_argument_with_default_value(a: int = 1):
+        ints.append(a)
+
+    run_until_complete(async_func_argument_with_default_value)
+    assert ints == [1]

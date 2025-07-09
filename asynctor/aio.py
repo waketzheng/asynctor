@@ -8,6 +8,7 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Callable, TypeVar
 
 import anyio
+from anyio import from_thread
 
 from .exceptions import ParamsError
 
@@ -235,3 +236,9 @@ async def wait_for(coro: Coroutine[None, None, T_Retval], timeout: int | float) 
     """Similar like asyncio.wait_for"""
     with anyio.fail_after(timeout):
         return await coro
+
+
+def run_until_complete(async_func: Coroutine | Callable[..., Coroutine]) -> None:
+    """Run async function or coroutine in worker thread"""
+    with from_thread.start_blocking_portal() as portal:
+        portal.call(ensure_afunc(async_func))

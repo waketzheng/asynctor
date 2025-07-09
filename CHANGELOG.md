@@ -5,6 +5,7 @@
 
 #### Added
 - Support `Timer.now()` and `Timer.beijing_now()`
+- Add `run_until_complete` to `asynctor.aio`
 
 #### Changed
 - Use `TypeAlias` to improve type hints
