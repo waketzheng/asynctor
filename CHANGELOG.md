@@ -1,6 +1,17 @@
 # ChangeLog
 
 ## 0.8
+
+### [0.8.4]**(Unreleased)**
+
+#### Added
+- Support `limit` for `asynctor.gather()`
+
+### [0.8.3](../../releases/tag/v0.8.2) - 2025-07-09
+
+#### Fixes
+- Fix mypy complaint for `asynctor.aio.bulk_gather`
+
 ### [0.8.2](../../releases/tag/v0.8.2) - 2025-07-09
 
 #### Changed

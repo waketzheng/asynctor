@@ -144,6 +144,18 @@ class TestGather:
             assert any(i == MockServer.ERROR for i in results)
 
     @pytest.mark.anyio
+    async def test_gather_limit(self):
+        total = 200
+        with Timer("Use sema:"):
+            tasks = [MockServer.response() for _ in range(total)]
+            results = await gather(*tasks, limit=MockServer.limit)
+            assert sum(i == MockServer.OK for i in results) == total
+        with Timer("All start:"):
+            tasks = [MockServer.response() for _ in range(total)]
+            results = await gather(*tasks, limit=0)
+            assert any(i == MockServer.ERROR for i in results)
+
+    @pytest.mark.anyio
     async def test_bulk_batch_size(self):
         total = 200
         with Timer("Use sema:"):

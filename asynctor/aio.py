@@ -236,9 +236,13 @@ async def bulk_gather(
     return tuple(results)
 
 
-async def gather(*coros: Awaitable[T_Retval]) -> tuple[T_Retval, ...]:
-    """Similar like asyncio.gather"""
-    return await bulk_gather(coros)
+async def gather(*coros: Awaitable[T_Retval], limit: int | None = None) -> tuple[T_Retval, ...]:
+    """Similar like asyncio.gather, but support set `limit` to control concurrency number.
+
+    :param coros: Coroutines to be executed in the running loop
+    :param limit: How many coroutines will be run in the same time (none or zero is unlimit).
+    """
+    return await bulk_gather(coros, limit=limit)
 
 
 @asynccontextmanager

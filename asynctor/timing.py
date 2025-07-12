@@ -5,10 +5,7 @@ import inspect
 import sys
 import time
 from collections.abc import Awaitable, Callable
-from contextlib import (
-    AbstractAsyncContextManager,
-    AbstractContextManager,
-)
+from contextlib import AbstractAsyncContextManager, AbstractContextManager
 from datetime import datetime, timedelta, timezone
 from types import TracebackType
 from typing import TYPE_CHECKING, Annotated, Any, TypeVar, overload

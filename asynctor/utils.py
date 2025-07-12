@@ -148,6 +148,9 @@ class AsyncTestClient(AbstractAsyncContextManager):
 class AttrDict(dict):
     """Support get dict value by attribution
 
+    NOTE: mypy will complaint attr-defined when using this class, e.g.:
+    `error: "AttrDict" has no attribute "a"  [attr-defined]`
+
     Usage::
         >>> d = AttrDict({'a': 1, 'b': {'c': 2, 'd': {'e': 3}}})
         >>> d.a == d['a'] == 1

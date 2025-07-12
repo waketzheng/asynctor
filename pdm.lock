@@ -5,7 +5,7 @@
 groups = ["default", "all", "dev", "fastapi", "redis", "xls"]
 strategy = []
 lock_version = "4.5.0"
-content_hash = "sha256:f8c3c4d90b9d0c574799674b79cb44d17898adf583b32673e0eb0aded4fb75bd"
+content_hash = "sha256:84b889ce94a4d298d2144992e138ba24d9274987e247d14cc1bd123d344bd4bf"
 
 [[metadata.targets]]
 requires_python = ">=3.9"
@@ -352,7 +352,7 @@ files = [
 
 [[package]]
 name = "fast-dev-cli"
-version = "0.16.1"
+version = "0.16.2"
 summary = ""
 dependencies = [
     "bumpversion2",
@@ -365,13 +365,13 @@ dependencies = [
     "typer",
 ]
 files = [
-    {file = "fast_dev_cli-0.16.1-py3-none-any.whl", hash = "sha256:076d45d2a33083ddba0230a855d257a2d72b9a9b2458e2a10cec552c557ec3f0"},
-    {file = "fast_dev_cli-0.16.1.tar.gz", hash = "sha256:c1afcf472bceb75af63b711530a3e2ce4ad00ff399b0351af33a4da5add41f5b"},
+    {file = "fast_dev_cli-0.16.2-py3-none-any.whl", hash = "sha256:a26d370a71879dde98c19b7c372006e78b76e718ac58d37b16ac0327e5a4b9c2"},
+    {file = "fast_dev_cli-0.16.2.tar.gz", hash = "sha256:f59cc8fd8c4b249dcf6df5b55c04564cccc62fd63733af79a667759d8ca18d57"},
 ]
 
 [[package]]
 name = "fastapi"
-version = "0.116.0"
+version = "0.116.1"
 summary = ""
 dependencies = [
     "pydantic",
@@ -379,8 +379,8 @@ dependencies = [
     "typing-extensions",
 ]
 files = [
-    {file = "fastapi-0.116.0-py3-none-any.whl", hash = "sha256:fdcc9ed272eaef038952923bef2b735c02372402d1203ee1210af4eea7a78d2b"},
-    {file = "fastapi-0.116.0.tar.gz", hash = "sha256:80dc0794627af0390353a6d1171618276616310d37d24faba6648398e57d687a"},
+    {file = "fastapi-0.116.1-py3-none-any.whl", hash = "sha256:c46ac7c312df840f0c9e220f7964bada936781bc4e2e6eb71f1c4d7553786565"},
+    {file = "fastapi-0.116.1.tar.gz", hash = "sha256:ed52cbf946abfd70c5a0dccb24673f0670deeb517a88b3544d03c2a6bf283143"},
 ]
 
 [[package]]

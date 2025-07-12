@@ -1,3 +1,10 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+version = {source="file", path="asynctor/__init__.py"}
+
 [project]
 name = "asynctor"
 description = "Async functions to compare with anyio and asyncio, and toolkit to read excel with async/await."
@@ -45,7 +52,7 @@ dev = [
     "fast-dev-cli>=0.15.1",
     "types-redis>=4.6.0.20241004",
     "pandas-stubs>=2.2.0",
-    "bandit>=1.8.3",
+    "bandit>=1.8.6",
     "pytest-mock>=3.14.1",
     "fastapi-cdn-host>=0.9.1",
     "uvicorn>=0.34.3",
@@ -71,7 +78,6 @@ extend-select = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"asynctor/_types.py" = ["F401"]
 "test_*.py" = ["E501"]
 "scripts/test.py" = ["E501"]
 "scripts/*.py" = ["UP009","UP032"]
@@ -100,23 +106,17 @@ exclude_lines = [
     "if TYPE_CHECKING:",
 ]
 
-
-[tool.pdm]
-version = {source="file", path="asynctor/__init__.py"}
-
 [tool.pdm.scripts]
-test = 'pdm run fast test'
-style = {composite = ["ruff format", "ruff check --fix {args}"]}
+up = 'pdm update -G :all'
+tree = 'pdm list --tree {args}'
+deps = 'pdm sync -G :all {args}'
+prod = 'pdm install --prod --frozen {args}'
+fresh = {composite = ["up", "deps"]}
+test = 'pdm run fast test {args}'
 check = 'pdm run fast check {args}'
 lint = 'pdm run fast lint {args}'
-deps = 'pdm sync -G :all {args}'
-prod = 'pdm install --prod --frozen'
-update_self_version = 'pdm sync'
-bump = {composite = ["update_self_version", "pdm run fast bump patch --commit {args}"]}
-tag = {composite = ["update_self_version", "pdm run fast tag {args}"]}
-start = {composite = ["pre-commit install", "deps"]}
+tag = {composite = ["pdm sync", "pdm run fast tag {args}"]}
+bump = {composite = ["pdm sync", "pdm run fast bump patch --commit {args}"]}
 ci = {composite = ["deps", "check", "test"]}
-
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
+start = {composite = ["pre-commit install", "deps"]}
+style = {composite = ["ruff format", "ruff check --fix {args}"]}
