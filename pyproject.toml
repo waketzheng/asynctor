@@ -109,7 +109,7 @@ exclude_lines = [
 [tool.pdm.scripts]
 up = 'pdm update -G :all'
 tree = 'pdm list --tree {args}'
-deps = 'pdm sync -G :all {args}'
+deps = 'pdm run python scripts/deps.py {args}'
 prod = 'pdm install --prod --frozen {args}'
 fresh = {composite = ["up", "deps"]}
 test = 'pdm run fast test {args}'
