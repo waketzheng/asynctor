@@ -87,7 +87,14 @@ pretty = true
 python_version = "3.9"
 check_untyped_defs = true
 
+[[tool.mypy.overrides]]
+module = [
+    'tomli',
+]
+ignore_missing_imports = true
+
 [tool.coverage.run]
+source = ["asynctor"]
 omit = [
     # omit anything in a .cache directory anywhere
     "*/.cache/*",

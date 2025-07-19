@@ -2,12 +2,16 @@
 
 ## 0.8
 
-### [0.8.4]**(Unreleased)**
+### [0.8.4](../../releases/tag/v0.8.4) - 2025-07-19
 
 #### Added
 - Support `limit` for `asynctor.gather()`
+- Add `ClientIpDep` to fastapi contrib
 
-### [0.8.3](../../releases/tag/v0.8.2) - 2025-07-09
+#### Changed
+- Use `AioRedisDep` instead of `AioRedis`
+
+### [0.8.3](../../releases/tag/v0.8.3) - 2025-07-09
 
 #### Fixes
 - Fix mypy complaint for `asynctor.aio.bulk_gather`

@@ -6,7 +6,8 @@ from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
 from asynctor import AsyncRedis
-from asynctor.contrib.fastapi import AioRedis, register_aioredis
+from asynctor.contrib.fastapi import AioRedis, AioRedisDep, ClientIpDep, register_aioredis
+from asynctor.utils import get_machine_ip
 
 
 @asynccontextmanager
@@ -44,6 +45,11 @@ class Item(BaseModel):
 
 
 @app.post("/redis")
-async def set_redis_key_value(redis: AioRedis, item: Item) -> dict[str, str | None]:
+async def set_redis_key_value(redis: AioRedisDep, item: Item) -> dict[str, str | None]:
     await redis.set(item.key, item.value)
     return {item.key: (v := await redis.get(item.key)) and v.decode()}
+
+
+@app.get("/ip")
+def get_your_ip(client_ip: ClientIpDep) -> dict[str, str]:
+    return {"client ip": client_ip, "server ip": get_machine_ip()}

@@ -20,7 +20,9 @@ import platform
 import shlex
 import subprocess
 import sys
+from pathlib import Path
 
+__version__ = "0.1.0"
 SHELL = """
 pdm run python -m ensurepip
 pdm run python -m pip install --upgrade pip
@@ -55,14 +57,52 @@ def prefer_pdm() -> bool:
     return platform.system() != "Windows" or is_using_uv()
 
 
+def not_distribution() -> bool:
+    if (toml := Path(__file__).parent / "pyproject.toml").exists() or (
+        (toml := toml.parent.parent / toml.name).exists()
+    ):
+        if sys.version_info >= (3, 11):
+            import tomllib
+        else:
+            try:
+                import tomli as tomllib
+            except ImportError:
+                return False
+        doc = tomllib.loads(toml.read_text("utf8"))
+        try:
+            return not doc["tool"]["pdm"]["distribution"]
+        except KeyError:
+            ...
+    return False
+
+
 def main() -> int | None:
+    args = sys.argv[1:]
+    if len(args) == 1 and args[0] in ("-v", "--version"):
+        print(__version__)
+        return 0
     if prefer_pdm():
         return int(run_and_echo("pdm install --frozen -G :all" + sys_args()))
     shell = SHELL.strip()
-    args = sys.argv[1:]
+    try:
+        index = args.index("--no-dev")
+    except IndexError:
+        ...
+    else:
+        args.pop(index)
+        shell = shell.replace(" --group dev", "")
     if args:
-        shell += " ".join(i if i.startswith("-") else repr(i) for i in args)
+        extras = " ".join(i if i.startswith("-") else repr(i) for i in args)
+        if extras.startswith("-"):
+            shell += " " + extras
+        else:
+            shell += extras  # e.g.: '[xls,fastapi]'
+    elif not_distribution():
+        shell = shell.replace(" -e .", "")
     cmds = shell.splitlines()
+    r = subprocess.run(shlex.split("pdm run python -m pip --version"), capture_output=True)
+    if r.returncode == 0:
+        cmds = cmds[1:]
     for cmd in cmds:
         if run_and_echo(cmd.strip()):
             return 1

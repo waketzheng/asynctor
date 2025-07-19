@@ -9,7 +9,7 @@ import uvicorn
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
-from asynctor.contrib.fastapi import AioRedis, register_aioredis
+from asynctor.contrib.fastapi import AioRedisDep, register_aioredis
 
 fake_db = {"users": [{"id": 1, "name": "John"}]}
 
@@ -43,7 +43,7 @@ async def get_user_list(request: Request) -> list[dict[str, int | str]]:
 
 
 @app.get("/redis/keys")
-async def get_redis_keys(redis: AioRedis) -> list[str]:
+async def get_redis_keys(redis: AioRedisDep) -> list[str]:
     keys = await redis.keys()
     return keys
 
@@ -59,13 +59,13 @@ class MsgResponse(BaseModel):
 
 
 @app.post("/redis/set", response_model=MsgResponse)
-async def cache_to_redis(redis: AioRedis, data: KeyValueExpire) -> dict[str, str]:
+async def cache_to_redis(redis: AioRedisDep, data: KeyValueExpire) -> dict[str, str]:
     await redis.set(data.key, data.value, data.expire)
     return {"msg": "OK"}
 
 
 @app.get("/redis/get")
-async def get_cached_string_from_redis(redis: AioRedis, key: str) -> dict[str, str | None]:
+async def get_cached_string_from_redis(redis: AioRedisDep, key: str) -> dict[str, str | None]:
     value = await redis.get(key)
     if isinstance(value, bytes):
         value = value.decode()
