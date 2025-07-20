@@ -3,11 +3,10 @@
 Install deps by `pdm install -G :all --frozen`
 if value of `pdm config use_uv` is True,
 otherwise by the following shells:
-```bash
-pdm run python -m ensurepip
-pdm run python -m pip install --upgrade pip
-pdm run python -m pip install --group dev -e .
-```
+
+    pdm run python -m ensurepip
+    pdm run python -m pip install --upgrade pip
+    pdm run python -m pip install --group dev -e .
 
 Usage::
     pdm run python scripts/deps.py
@@ -22,7 +21,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __updated_at__ = "2025.07.20"
 SHELL = """
 pdm run python -m ensurepip
@@ -65,21 +64,23 @@ def prefer_pdm(args: list[str]) -> bool:
 
 
 def not_distribution() -> bool:
-    if (toml := Path(__file__).parent / "pyproject.toml").exists() or (
-        (toml := toml.parent.parent / toml.name).exists()
-    ):
-        if sys.version_info >= (3, 11):
-            import tomllib
-        else:
-            try:
-                import tomli as tomllib
-            except ImportError:
-                return False
-        doc = tomllib.loads(toml.read_text("utf8"))
+    toml = Path(__file__).parent / "pyproject.toml"
+    if not toml.exists():
+        toml = toml.parent.parent / toml.name
+        if not toml.exists():
+            return False
+    if sys.version_info >= (3, 11):
+        import tomllib
+    else:
         try:
-            return not doc["tool"]["pdm"]["distribution"]
-        except KeyError:
-            ...
+            import tomli as tomllib
+        except ImportError:
+            return False
+    doc = tomllib.loads(toml.read_text("utf8"))
+    try:
+        return not doc["tool"]["pdm"]["distribution"]
+    except KeyError:
+        ...
     return False
 
 
@@ -95,6 +96,9 @@ def main() -> int | None:
         if run_and_echo(command) == 0:
             return None
         return 1
+    if len(args) == 1 and args[0] in ("-h", "--help"):
+        print(__doc__)
+        return None
     shell = SHELL.strip()
     if pop_if_contains(args, "--no-dev"):
         shell = shell.replace(" --group dev", "")
