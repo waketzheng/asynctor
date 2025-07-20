@@ -22,7 +22,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
+__updated_at__ = "2025.07.20"
 SHELL = """
 pdm run python -m ensurepip
 pdm run python -m pip install --upgrade pip
@@ -30,15 +31,12 @@ pdm run python -m pip install --group dev -e .
 """
 
 
-def sys_args() -> str:
-    if not (args := sys.argv[1:]):
-        return ""
-    return " ".join(repr(i) for i in args)
-
-
-def run_and_echo(cmd: str) -> bool:
-    print("-->", cmd)
-    return os.system(cmd.strip()) != 0
+def run_and_echo(cmd: str, env: dict[str, str] | None = None, verbose: bool = True, **kw) -> int:
+    if verbose:
+        print("-->", cmd)
+    if env is not None:
+        env = dict(os.environ, **env)
+    return subprocess.run(shlex.split(cmd), env=env, **kw).returncode
 
 
 def capture_output(cmd: str) -> str:
@@ -50,9 +48,18 @@ def is_using_uv() -> bool:
     return capture_output("pdm config use_uv").lower() == "true"
 
 
-def prefer_pdm() -> bool:
-    if (s := "--pip") in sys.argv:
-        sys.argv.pop(sys.argv.index(s))
+def pop_if_contains(args: list[str], flag: str) -> bool:
+    try:
+        index = args.index(flag)
+    except ValueError:
+        return False
+    else:
+        args.pop(index)
+        return True
+
+
+def prefer_pdm(args: list[str]) -> bool:
+    if pop_if_contains(args, "--pip"):
         return False
     return platform.system() != "Windows" or is_using_uv()
 
@@ -80,16 +87,16 @@ def main() -> int | None:
     args = sys.argv[1:]
     if len(args) == 1 and args[0] in ("-v", "--version"):
         print(__version__)
-        return 0
-    if prefer_pdm():
-        return int(run_and_echo("pdm install --frozen -G :all" + sys_args()))
+        return None
+    if prefer_pdm(args):
+        command = "pdm install --frozen -G :all"
+        if args:
+            command += " " + " ".join(i if i.startswith("-") else repr(i) for i in args)
+        if run_and_echo(command) == 0:
+            return None
+        return 1
     shell = SHELL.strip()
-    try:
-        index = args.index("--no-dev")
-    except IndexError:
-        ...
-    else:
-        args.pop(index)
+    if pop_if_contains(args, "--no-dev"):
         shell = shell.replace(" --group dev", "")
     if args:
         extras = " ".join(i if i.startswith("-") else repr(i) for i in args)
@@ -100,11 +107,11 @@ def main() -> int | None:
     elif not_distribution():
         shell = shell.replace(" -e .", "")
     cmds = shell.splitlines()
-    r = subprocess.run(shlex.split("pdm run python -m pip --version"), capture_output=True)
-    if r.returncode == 0:
+    rc = run_and_echo("pdm run python -m pip --version", capture_output=True, verbose=False)
+    if rc == 0:  # If pip already exists, skip the step of installing it by ensurepip
         cmds = cmds[1:]
     for cmd in cmds:
-        if run_and_echo(cmd.strip()):
+        if run_and_echo(cmd) != 0:
             return 1
     print("Done.")
     return 0
