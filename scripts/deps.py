@@ -21,8 +21,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-__version__ = "0.1.2"
-__updated_at__ = "2025.07.20"
+__version__ = "0.1.3"
+__updated_at__ = "2025.07.21"
 SHELL = """
 pdm run python -m ensurepip
 pdm run python -m pip install --upgrade pip
@@ -30,9 +30,13 @@ pdm run python -m pip install --group dev -e .
 """
 
 
-def run_and_echo(cmd: str, env: dict[str, str] | None = None, verbose: bool = True, **kw) -> int:
+def run_and_echo(
+    cmd: str, env: dict[str, str] | None = None, dry: bool = False, verbose: bool = True, **kw
+) -> int:
     if verbose:
         print("-->", cmd)
+    if dry:
+        return 0
     if env is not None:
         env = dict(os.environ, **env)
     return subprocess.run(shlex.split(cmd), env=env, **kw).returncode
@@ -84,21 +88,33 @@ def not_distribution() -> bool:
     return False
 
 
+def run_shell(command: str, args: list[str], dry: bool) -> int | None:
+    if args:
+        command += " " + " ".join(i if i.startswith("-") else repr(i) for i in args)
+    if run_and_echo(command, dry=dry) == 0:
+        return None
+    return 1
+
+
 def main() -> int | None:
     args = sys.argv[1:]
-    if len(args) == 1 and args[0] in ("-v", "--version"):
-        print(__version__)
-        return None
+    if len(args) == 1:
+        a1 = args[0]
+        if a1 in ("-v", "--version"):
+            print(__version__)
+            return None
+        elif a1 in ("-h", "--help"):
+            print(__doc__)
+            return None
+    dry = pop_if_contains(args, "--dry") or pop_if_contains(args, "--dry-run")
+    if pop_if_contains(args, "--uv"):
+        if os.path.exists("uv.lock"):
+            return run_shell("uv sync --all-extras --all-groups", args, dry)
+        command = "uv install --all-extras -r pyproject.toml --group dev --no-verify-hashes"
+        return run_shell(command, args, dry)
     if prefer_pdm(args):
         command = "pdm install --frozen -G :all"
-        if args:
-            command += " " + " ".join(i if i.startswith("-") else repr(i) for i in args)
-        if run_and_echo(command) == 0:
-            return None
-        return 1
-    if len(args) == 1 and args[0] in ("-h", "--help"):
-        print(__doc__)
-        return None
+        return run_shell(command, args, dry)
     shell = SHELL.strip()
     if pop_if_contains(args, "--no-dev"):
         shell = shell.replace(" --group dev", "")
@@ -115,9 +131,10 @@ def main() -> int | None:
     if rc == 0:  # If pip already exists, skip the step of installing it by ensurepip
         cmds = cmds[1:]
     for cmd in cmds:
-        if run_and_echo(cmd) != 0:
+        if run_and_echo(cmd, dry=dry) != 0:
             return 1
-    print("Done.")
+    if not dry:
+        print("Done.")
     return 0
 
 
