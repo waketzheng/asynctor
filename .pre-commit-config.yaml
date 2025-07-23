@@ -21,3 +21,8 @@ repos:
         entry: pdm run fast lint
         language: system
         types: [python]
+      - id: pypi
+        name: ensure pypi for uv lock
+        files: 'uv.lock'
+        entry: pdm pypi
+        language: system

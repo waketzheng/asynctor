@@ -114,11 +114,12 @@ exclude_lines = [
 ]
 
 [tool.pdm.scripts]
-up = 'pdm update -G :all'
+pypi = 'pdm run python scripts/uv_pypi.py {args}'
+up = {composite = ['uv lock --upgrade', 'uv sync --frozen', 'pypi', 'pdm update -G :all {args}']}
 tree = 'pdm list --tree {args}'
 deps = 'pdm run python scripts/deps.py {args}'
 prod = 'pdm install --prod --frozen {args}'
-fresh = {composite = ["up", "deps"]}
+fresh = {composite = ["up", "deps --uv", "pypi"]}
 test = 'pdm run fast test {args}'
 check = 'pdm run fast check {args}'
 lint = 'pdm run fast lint {args}'

@@ -12,9 +12,14 @@ help:
 	@echo  "    build   Build wheel file and tar file from source to dist/"
 
 up:
+	uv lock --upgrade
+	uv sync --frozen
 	pdm run fast upgrade
+	pdm run python scripts/uv_pypi.py --verbose
 
 lock:
+	uv lock --upgrade
+	pdm run python scripts/uv_pypi.py
 	pdm lock --group :all $(options)
 
 venv:
@@ -24,6 +29,7 @@ venv39:
 	$(MAKE) venv version=3.9
 
 deps:
+	uv sync --all-extras --all-groups
 	pdm install --group :all --frozen $(options)
 
 start:
