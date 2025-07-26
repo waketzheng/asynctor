@@ -13,24 +13,21 @@ help:
 
 up:
 	uv lock --upgrade
-	uv sync --frozen
-	pdm run fast upgrade
-	pdm run python scripts/uv_pypi.py --verbose
+	uv sync --frozen --inexact
+	pdm run python scripts/uv_pypi.py --quiet
 
 lock:
 	uv lock --upgrade
-	pdm run python scripts/uv_pypi.py
-	pdm lock --group :all $(options)
+	pdm run python scripts/uv_pypi.py --quiet
 
 venv:
-	pdm venv create $(version)
+	pdm venv create $(options) $(version)
 
 venv39:
-	$(MAKE) venv version=3.9
+	$(MAKE) venv version=3.9 options=$(options)
 
 deps:
-	uv sync --all-extras --all-groups
-	pdm install --group :all --frozen $(options)
+	uv sync --all-extras --all-groups --inexact $(options)
 
 start:
 	pre-commit install
@@ -60,3 +57,21 @@ publish: deps _build
 	pdm run fast upload
 
 ci: check _test
+
+_verify: up lock
+	$(MAKE) venv options=--force
+	$(MAKE) venv39 options=--force
+	$(MAKE) venv version=3.12 options=--force
+	$(MAKE) start
+	$(MAKE) deps
+	$(MAKE) check
+	$(MAKE) _check
+	$(MAKE) lint
+	$(MAKE) _lint
+	$(MAKE) test
+	$(MAKE) _test
+	$(MAKE) style
+	$(MAKE) _style
+	$(MAKE) build
+	$(MAKE) _build
+	$(MAKE) ci

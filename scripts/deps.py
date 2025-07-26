@@ -21,8 +21,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-__version__ = "0.1.3"
-__updated_at__ = "2025.07.21"
+__version__ = "0.1.4"
+__updated_at__ = "2025.07.26"
 SHELL = """
 pdm run python -m ensurepip
 pdm run python -m pip install --upgrade pip
@@ -73,9 +73,9 @@ def not_distribution() -> bool:
         toml = toml.parent.parent / toml.name
         if not toml.exists():
             return False
-    if sys.version_info >= (3, 11):
+    try:
         import tomllib
-    else:
+    except ImportError:
         try:
             import tomli as tomllib
         except ImportError:
@@ -108,9 +108,11 @@ def main() -> int | None:
             return None
     dry = pop_if_contains(args, "--dry") or pop_if_contains(args, "--dry-run")
     if pop_if_contains(args, "--uv"):
+        command = "uv pip install --all-extras -r pyproject.toml --group dev --no-verify-hashes"
         if os.path.exists("uv.lock"):
-            return run_shell("uv sync --all-extras --all-groups", args, dry)
-        command = "uv install --all-extras -r pyproject.toml --group dev --no-verify-hashes"
+            command = "uv sync --all-extras --all-groups"
+        if not pop_if_contains(args, "--clean"):
+            command += " --inexact"
         return run_shell(command, args, dry)
     if prefer_pdm(args):
         command = "pdm install --frozen -G :all"

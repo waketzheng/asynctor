@@ -66,6 +66,8 @@ def main() -> int | None:
     size = p.write_text(text, encoding="utf-8")
     if verbose:
         print(f"Updated {p} with {size} bytes.")
+    if "--quiet" in sys.argv:
+        return 0
     return 1
 
 

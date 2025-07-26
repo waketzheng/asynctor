@@ -90,6 +90,7 @@ check_untyped_defs = true
 [[tool.mypy.overrides]]
 module = [
     'tomli',
+    'tomllib',
 ]
 ignore_missing_imports = true
 
