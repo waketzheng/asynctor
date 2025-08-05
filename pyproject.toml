@@ -86,6 +86,7 @@ extend-select = [
 pretty = true
 python_version = "3.9"
 check_untyped_defs = true
+warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = [
@@ -115,17 +116,18 @@ exclude_lines = [
 ]
 
 [tool.pdm.scripts]
+start = {composite = ["pre-commit install", "deps"]}
 pypi = 'pdm run python scripts/uv_pypi.py {args}'
-up = {composite = ['uv lock --upgrade', 'uv sync --frozen', 'pypi', 'pdm update -G :all {args}']}
+up = {composite = ['uv lock --upgrade', 'uv sync --frozen --inexact --all-extras', 'pypi']}
 tree = 'pdm list --tree {args}'
-deps = 'pdm run python scripts/deps.py {args}'
-prod = 'pdm install --prod --frozen {args}'
+deps = 'pdm run python scripts/deps.py --uv {args}'
+prod = 'uv sync --no-dev {args}'
 fresh = {composite = ["up", "deps --uv", "pypi"]}
 test = 'pdm run fast test {args}'
+style = {composite = ["ruff format", "ruff check --fix {args}"]}
 check = 'pdm run fast check {args}'
 lint = 'pdm run fast lint {args}'
-tag = {composite = ["pdm sync", "pdm run fast tag {args}"]}
-bump = {composite = ["pdm sync", "pdm run fast bump patch --commit {args}"]}
+tag = {composite = ["deps", "pdm run fast tag {args}"]}
+bump = {composite = ["deps", "pdm run fast bump patch --commit {args}"]}
 ci = {composite = ["deps", "check", "test"]}
-start = {composite = ["pre-commit install", "deps"]}
-style = {composite = ["ruff format", "ruff check --fix {args}"]}
+release = {composite = ["bump", "tag"]}

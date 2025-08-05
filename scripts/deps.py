@@ -20,6 +20,7 @@ import shlex
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 __version__ = "0.1.4"
 __updated_at__ = "2025.07.26"
@@ -31,7 +32,7 @@ pdm run python -m pip install --group dev -e .
 
 
 def run_and_echo(
-    cmd: str, env: dict[str, str] | None = None, dry: bool = False, verbose: bool = True, **kw
+    cmd: str, env: dict[str, str] | None = None, dry: bool = False, verbose: bool = True, **kw: Any
 ) -> int:
     if verbose:
         print("-->", cmd)

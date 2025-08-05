@@ -52,7 +52,7 @@ def run_command(cmd, shell=False, prefix=PREFIX, env=None):
     command = cmd if shell else shlex.split(cmd)
     run = subprocess.Popen
     if env:
-        run = functools.partial(run, env=dict(os.environ, **env))  # type: ignore
+        run = functools.partial(run, env=dict(os.environ, **env))
     r = run(command, shell=shell)
     r.wait()
     if r.returncode != 0:

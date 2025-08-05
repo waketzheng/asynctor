@@ -8,7 +8,7 @@ try:
 except ImportError:  # pragma: no cover
     from contextlib import AbstractAsyncContextManager
 
-    class Redis(AbstractAsyncContextManager):  # type:ignore[no-redef,assignment]
+    class Redis(AbstractAsyncContextManager):  # type:ignore[no-redef]
         def __aexit__(self, *args, **kw): ...
 
 
