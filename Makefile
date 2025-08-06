@@ -53,8 +53,17 @@ _build:
 	uv build
 build: deps _build
 
-publish: deps _build
-	fast upload
+bump_part = patch
+
+_bump:
+	fast bump $(bump_part) $(bump_opts)
+bump: deps _bump
+
+release: deps _build
+	# fast upload -- Use github action instead
+	$(MAKE) _bump bump_opts=--commit
+	$(MAKE) deps
+	fast tag
 
 ci: check _test
 
