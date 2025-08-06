@@ -3,7 +3,7 @@ from .client import AsyncRedis
 from .timing import timeit
 from .utils import AsyncClientGenerator, AsyncTestClient, AttrDict, cache_attr
 
-__version__ = "0.8.4"
+__version__ = "0.8.5"
 __all__ = (
     "__version__",
     "AsyncClientGenerator",
