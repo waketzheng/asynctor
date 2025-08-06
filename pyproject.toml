@@ -127,7 +127,7 @@ test = 'pdm run fast test {args}'
 style = {composite = ["ruff format", "ruff check --fix {args}"]}
 check = 'pdm run fast check {args}'
 lint = 'pdm run fast lint {args}'
-tag = {composite = ["deps", "pypi", "pdm run fast tag {args}"]}
-bump = {composite = ["deps", "pypi", "pdm run fast bump patch --commit {args}"]}
+tag = {composite = ["deps", "pypi --quiet", "pdm run fast tag {args}"]}
+bump = {composite = ["deps", "pypi --quiet", "pdm run fast bump patch --commit {args}"]}
 ci = {composite = ["deps", "check", "test"]}
 release = {composite = ["bump", "tag"]}
