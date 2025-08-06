@@ -12,6 +12,7 @@ import pytest
 from asynctor.aio import (
     LengthFixedList,
     bulk_gather,
+    create_task,
     gather,
     run,
     run_async,
@@ -278,10 +279,10 @@ def test_run_until_complete():
 
     a: list[Any] = []
     coro = append(a, 1)
-    assert run_until_complete(coro) is None  # type:ignore[func-returns-value]
+    assert run_until_complete(coro) == [1]
     assert 1 in a
     afunc = functools.partial(append, a, 2)
-    assert run_until_complete(afunc) is None  # type:ignore[func-returns-value]
+    assert run_until_complete(afunc) == [1, 2]
     assert a == [1, 2]
 
     async def do_sth():
@@ -307,7 +308,7 @@ def test_run_until_complete_function_arguments():
     def async_func_requires_position_argument(a: int): ...
 
     with pytest.raises(TypeError):
-        run_until_complete(async_func_requires_position_argument)
+        run_until_complete(async_func_requires_position_argument)  # type:ignore[arg-type]
     ints: list[int] = []
 
     def async_func_argument_with_default_value(a: int = 1):
@@ -318,3 +319,17 @@ def test_run_until_complete_function_arguments():
 
     with pytest.raises(TypeError):
         LengthFixedList([0]).append(1)
+
+
+@pytest.mark.anyio
+async def test_create_task():
+    async def do_sth(seconds=0.01):
+        await anyio.sleep(seconds)
+        return seconds
+
+    with Timer("Test concurrency", verbose=False) as t:
+        async with anyio.create_task_group() as tg:
+            create_task(do_sth(0.08), tg)
+            create_task(do_sth(0.09), tg)
+            create_task(do_sth(0.07), tg)
+    assert 0.1 <= t.cost < 0.2

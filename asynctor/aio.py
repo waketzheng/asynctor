@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import functools
 import itertools
 import sys
 import warnings
@@ -8,29 +9,46 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar, cast, overload
 
 import anyio
+import sniffio
 from anyio import from_thread
+from anyio._backends._asyncio import get_running_loop
 from anyio.lowlevel import checkpoint
 
 from .exceptions import ParamsError
 
 if sys.version_info >= (3, 11):  # pragma: no cover
-    from typing import Self, TypeVarTuple, Unpack
+    from typing import ParamSpec, Self, TypeVarTuple, Unpack
 else:
     from exceptiongroup import ExceptionGroup  # pragma: no cover
-    from typing_extensions import Self, TypeVarTuple, Unpack  # pragma: no cover
+    from typing_extensions import ParamSpec, Self, TypeVarTuple, Unpack  # pragma: no cover
 
 if TYPE_CHECKING:
+    from anyio.abc._tasks import TaskGroup
+
     from ._types import TypeAlias
 
 T = TypeVar("T")
 T_Retval = TypeVar("T_Retval")
+T_ParamSpec = ParamSpec("T_ParamSpec")
 PosArgsT = TypeVarTuple("PosArgsT")
 AsyncFunc: TypeAlias = Callable[..., Awaitable[Any]]
 
 
+@overload
 def ensure_afunc(
-    coro: Awaitable[T_Retval] | Callable[..., Awaitable[T_Retval]],
-) -> Callable[..., Awaitable[T_Retval]]:
+    coro: Awaitable[T_Retval],
+) -> Callable[[], Awaitable[T_Retval]]: ...
+
+
+@overload
+def ensure_afunc(
+    coro: Callable[T_ParamSpec, Awaitable[T_Retval]],
+) -> Callable[T_ParamSpec, Awaitable[T_Retval]]: ...
+
+
+def ensure_afunc(
+    coro: Awaitable[T_Retval] | Callable[T_ParamSpec, Awaitable[T_Retval]],
+) -> Callable[[], Awaitable[T_Retval]] | Callable[T_ParamSpec, Awaitable[T_Retval]]:
     """Wrap coroutine to be async function"""
     if callable(coro):
         return coro
@@ -39,23 +57,6 @@ def ensure_afunc(
         return await coro
 
     return do_await
-
-
-def run_async(
-    coro: Awaitable[T_Retval] | Callable[..., Awaitable[T_Retval]],
-) -> T_Retval:
-    """Deprecated! Usage `asynctor.run` instead.
-
-    Usage::
-        >>> async def afunc(n=1):
-        ...     return n
-        ...
-        >>> run_async(afunc)  # get the same result as: await afunc()
-        1
-        >>> run_async(afunc(2))  # get the same result as: await afunc(2)
-        2
-    """
-    return anyio.run(ensure_afunc(coro))
 
 
 def run(
@@ -245,6 +246,20 @@ async def gather(*coros: Awaitable[T_Retval], limit: int | None = None) -> tuple
     return await bulk_gather(coros, limit=limit)
 
 
+def create_task(coro: Awaitable[Any], task_group: TaskGroup, *, name: object = None) -> None:
+    """Start an async task, similar to asyncio.create_task, but need a task_group param.
+
+    :param coro: Coroutine that will be run in the backgroup
+    :param task_group: The backgroup task group
+
+    Usage::
+        >>> async def afunc(): ...
+        >>> async with anyio.create_task_group() as tg:
+        ...     create_task(afunc(), tg)
+    """
+    task_group.start_soon(ensure_afunc(coro), name=name)
+
+
 @asynccontextmanager
 async def start_tasks(
     coro: Awaitable[Any] | Callable[..., Awaitable[Any]],
@@ -282,7 +297,81 @@ async def wait_for(coro: Awaitable[T_Retval], timeout: int | float) -> T_Retval:
         return await coro
 
 
-def run_until_complete(async_func: Awaitable[Any] | Callable[..., Awaitable[Any]]) -> None:
-    """Run async function or coroutine in worker thread"""
+def run_async(
+    async_func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
+    *args: Unpack[PosArgsT],
+) -> T_Retval:
+    """Run async function in worker thread and get the result of it"""
+    # `asyncio.run(async_func())`/`anyio.run(async_func)` can get the result of async function,
+    # but both of them will close the running loop.
+    result: list[T_Retval] = []
+
+    async def runner() -> None:
+        if callable(async_func):
+            coro = async_func(*args)
+            try:
+                res = await coro
+            except TypeError as e:
+                if "can't be used in 'await' expression" in str(e):
+                    # In case of async_func is a sync function
+                    res = cast(T_Retval, coro)
+                    await checkpoint()
+                else:
+                    raise
+        else:
+            res = await async_func
+        result.append(res)
+
     with from_thread.start_blocking_portal() as portal:
-        portal.call(ensure_afunc(async_func))
+        portal.call(runner)
+
+    return result[0]
+
+
+def async_to_sync(
+    func: Callable[T_ParamSpec, Awaitable[T_Retval]],
+) -> Callable[T_ParamSpec, T_Retval]:
+    """Run async function to be sync.
+
+    If there is a running loop, try to run in it,
+    otherwise run in worker thread with new loop
+
+    Usage::
+        >>> async def do_sth():
+        ...     await anyio.sleep(0.1)
+        ...     return 1
+        >>> res = async_to_sync(do_sth)()
+        >>> assert res == 1
+    """
+
+    @functools.wraps(func)
+    def runner(*args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs) -> T_Retval:
+        try:
+            asynclib_name = sniffio.current_async_library()
+        except sniffio.AsyncLibraryNotFoundError:
+            pass
+        else:
+            if asynclib_name == "asyncio":
+                try:
+                    loop = get_running_loop()
+                except RuntimeError:
+                    pass
+                else:
+                    coro = func(*args, **kwargs)
+                    try:
+                        return loop.run_until_complete(coro)
+                    except RuntimeError as e:
+                        if "This event loop is already running" in str(e):
+                            return run_async(ensure_afunc(coro))
+                        else:
+                            raise e
+        return run_async(functools.partial(func, **kwargs), *args)
+
+    return runner
+
+
+def run_until_complete(
+    async_func: Awaitable[T_Retval] | Callable[[], Awaitable[T_Retval]],
+) -> T_Retval:
+    """Run async function or coroutine in runing loop or worker thread"""
+    return async_to_sync(ensure_afunc(async_func))()
