@@ -2,6 +2,12 @@
 
 ## 0.8
 
+### [0.8.5](../../releases/tag/v0.8.5) - 2025-08-07
+
+#### Added
+- Add `async_to_sync` and `run_until_complete` to aio
+- Add `chdir` to new module `asynctor.compat`
+
 ### [0.8.4](../../releases/tag/v0.8.4) - 2025-07-19
 
 #### Added
