@@ -32,7 +32,11 @@ pdm run python -m pip install --group dev -e .
 
 
 def run_and_echo(
-    cmd: str, env: dict[str, str] | None = None, dry: bool = False, verbose: bool = True, **kw: Any
+    cmd: str,
+    env: dict[str, str] | None = None,
+    dry: bool = False,
+    verbose: bool = True,
+    **kw: Any,
 ) -> int:
     if verbose:
         print("-->", cmd)
@@ -68,20 +72,24 @@ def prefer_pdm(args: list[str]) -> bool:
     return platform.system() != "Windows" or is_using_uv()
 
 
+def load_toml_context(toml: Path) -> dict[str, dict]:
+    if sys.version_info >= (3, 11):
+        import tomllib
+    else:
+        try:
+            import tomli as tomllib
+        except ImportError:
+            return {}
+    return tomllib.loads(toml.read_text("utf8"))
+
+
 def not_distribution() -> bool:
     toml = Path(__file__).parent / "pyproject.toml"
     if not toml.exists():
         toml = toml.parent.parent / toml.name
         if not toml.exists():
             return False
-    try:
-        import tomllib
-    except ImportError:
-        try:
-            import tomli as tomllib
-        except ImportError:
-            return False
-    doc = tomllib.loads(toml.read_text("utf8"))
+    doc = load_toml_context(toml)
     try:
         return not doc["tool"]["pdm"]["distribution"]
     except KeyError:
