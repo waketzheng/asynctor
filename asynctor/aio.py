@@ -312,7 +312,12 @@ def run_async(
             try:
                 res = await coro
             except TypeError as e:
-                if "can't be used in 'await' expression" in str(e):
+                msg = (
+                    "object can't be awaited"
+                    if sys.version_info >= (3, 14)
+                    else "can't be used in 'await' expression"
+                )
+                if msg in str(e):
                     # In case of async_func is a sync function
                     res = cast(T_Retval, coro)
                     await checkpoint()

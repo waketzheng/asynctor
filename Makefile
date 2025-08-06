@@ -14,17 +14,17 @@ help:
 up:
 	uv lock --upgrade
 	uv sync --frozen --inexact
-	pdm run python scripts/uv_pypi.py --quiet
+	python scripts/uv_pypi.py --quiet
 
 lock:
 	uv lock --upgrade
-	pdm run python scripts/uv_pypi.py --quiet
+	python scripts/uv_pypi.py --quiet
 
 venv:
 	pdm venv create $(options) $(version)
 
 venv39:
-	$(MAKE) venv version=3.9 options=$(options)
+	$(MAKE) venv version=3.9
 
 deps:
 	uv sync --all-extras --all-groups --inexact $(options)
@@ -38,7 +38,7 @@ _check:
 check: deps _build _check
 
 _lint:
-	pdm run fast lint $(options)
+	fast lint $(options)
 lint: deps _build _lint
 
 _test:
@@ -50,11 +50,11 @@ _style:
 style: deps _style
 
 _build:
-	pdm build
+	uv build
 build: deps _build
 
 publish: deps _build
-	pdm run fast upload
+	fast upload
 
 ci: check _test
 
