@@ -280,7 +280,7 @@ class Shell:
 
     @staticmethod
     def shell_should_be_true(command: list[str] | str) -> bool:
-        return bool(set(command) & {"|", ">"})
+        return bool(set(command) & {"|", ">", "&"})
 
     @classmethod
     def run_by_subprocess(cls, cmd: str, **kw) -> subprocess.CompletedProcess[str]:
