@@ -2,6 +2,11 @@
 
 ## 0.8
 
+### [0.8.6]**(Unreleased)
+
+#### Added
+- Add `StrEnum` to `asynctor.compat`
+
 ### [0.8.5](../../releases/tag/v0.8.5) - 2025-08-07
 
 #### Added
