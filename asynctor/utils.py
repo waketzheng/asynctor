@@ -303,7 +303,7 @@ class Shell:
         if kwargs is None:
             kwargs = self._kwargs
         if kwargs.get("shell") is None and self.shell_should_be_true(self._command):
-            kwargs.update(shell=True)
+            kwargs["shell"] = True
         elif isinstance(self._command, list):
             return subprocess.run(self._command, **kwargs)  # nosec
         return self.run_by_subprocess(self.command, **kwargs)
