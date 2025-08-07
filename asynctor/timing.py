@@ -5,9 +5,10 @@ import inspect
 import time
 from collections.abc import Awaitable, Callable
 from contextlib import AbstractAsyncContextManager, AbstractContextManager
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from types import TracebackType
 from typing import TYPE_CHECKING, Annotated, Any, TypeVar, overload
+from zoneinfo import ZoneInfo
 
 try:
     from datetime import UTC  # type:ignore[attr-defined]
@@ -147,7 +148,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
     @staticmethod
     def to_beijing(dt: AwareDateTime) -> AwareDateTime:
         """Convert tzinfo of aware datetime to beijing timezone"""
-        return dt.astimezone(timezone(timedelta(hours=8)))
+        return dt.astimezone(ZoneInfo("Asia/Shanghai"))
 
     @classmethod
     def beijing_now(cls) -> AwareDateTime:

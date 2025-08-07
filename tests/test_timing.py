@@ -216,6 +216,7 @@ def test_nows():
     bj_now = Timer.beijing_now()
     assert str(utc_now).endswith("+00:00")
     assert str(bj_now).endswith("+08:00")
+    assert "Asia/Shanghai" in repr(bj_now)
     utc_ts = utc_now.timestamp()
     bj_ts = bj_now.timestamp()
     assert bj_ts - utc_ts < 1

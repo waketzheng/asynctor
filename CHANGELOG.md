@@ -2,6 +2,11 @@
 
 ## 0.8
 
+### [0.8.7]*(Unreleased)*
+
+#### Changed
+- refactor: use `ZoneInfo("Asia/Shanghai")` instead `timedelta(hours=8)` for `Timer.beijing_now`
+
 ### [0.8.6](../../releases/tag/v0.8.6) - 2025-08-07
 
 #### Added
