@@ -12,15 +12,10 @@ except ImportError:  # pragma: no cover
         def __aexit__(self, *args, **kw): ...
 
 
-if TYPE_CHECKING:  # pragma: no cover
-    import sys
-
+if TYPE_CHECKING:
     from fastapi import FastAPI, Request
 
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
+    from .compat import Self
 
 
 def ensure_redis_is_installed() -> None:

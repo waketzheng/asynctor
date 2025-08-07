@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import functools
 import inspect
-import sys
 import time
 from collections.abc import Awaitable, Callable
 from contextlib import AbstractAsyncContextManager, AbstractContextManager
@@ -15,13 +14,9 @@ try:
 except ImportError:
     UTC = timezone.utc
 
-if TYPE_CHECKING:  # pragma: no cover
+if TYPE_CHECKING:
     from ._types import TypeAlias
-
-    if sys.version_info >= (3, 11):
-        from typing import Self
-    else:
-        from typing_extensions import Self
+    from .compat import Self
 
 T_Retval = TypeVar("T_Retval", Awaitable[Any], Any)
 AwareDateTime: TypeAlias = Annotated[datetime, "datetime with tzinfo"]

@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 from enum import auto
 from pathlib import Path
+from typing import get_type_hints
 
 import pytest
 
-from asynctor.compat import StrEnum, load_toml
+from asynctor.compat import Self, StrEnum, load_toml
 
 
 class PeopleEnum(StrEnum):
@@ -74,3 +77,23 @@ def test_load_toml():
     file = Path(__file__).parent.parent / "pyproject.toml"
     content = file.read_text("utf-8")
     assert load_toml(content)["project"]["name"] == "asynctor"
+
+
+def test_self():
+    class A:
+        def a_self(self) -> Self:  # Got right type annotation for sub class
+            return self
+
+        def a_class(self) -> A:  # Got error type annotation for sub class
+            return self
+
+    class B(A):
+        _b: str = "B"
+
+    self_b = B().a_self()._b
+    class_b = B().a_class()._b  # type:ignore[attr-defined]
+    assert self_b == class_b == "B"
+
+    assert get_type_hints(B().a_self)["return"] is Self
+    with pytest.raises(NameError):
+        (get_type_hints(B().a_class))
