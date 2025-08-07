@@ -2,12 +2,14 @@
 from __future__ import annotations
 
 import re
+import shlex
 from datetime import datetime
+from pathlib import Path
 
 import pytest
 
 from asynctor import AttrDict
-from asynctor.utils import AsyncTestClient, cache_attr, client_manager, get_machine_ip
+from asynctor.utils import AsyncTestClient, Shell, cache_attr, client_manager, get_machine_ip
 
 from .main import app_default_to_mount_lifespan, app_for_utils_test
 
@@ -158,3 +160,46 @@ def test_cache_attr():
     assert c.started < now
     assert _cache_attr is cache_attr
     assert a.first_instance_created_at() == b.started
+
+
+def test_shell():
+    from asynctor import Shell as _Shell
+
+    assert _Shell is Shell
+    s = Shell("not-exist-command-1")
+    with pytest.raises(FileNotFoundError):
+        s.call()
+    with pytest.raises(FileNotFoundError):
+        s.run()
+    with pytest.raises(FileNotFoundError):
+        s.capture_output()
+    assert Shell(["python", "-V"]).call() == 0
+    cmd = 'python -c "import os;[print(i) for i in sorted(os.listdir()) if os.path.isfile(i)]"'
+    assert Shell(cmd).call() == 0
+    assert Shell(cmd, shell=True, capture_output=True).call() == 0
+    assert Shell(cmd + "|grep 1111111").call() == 1
+    cmd_grep_md = cmd + "|grep md"
+    assert Shell(cmd_grep_md, shell=True).call() == 0
+    command = shlex.split(cmd) + ["|", "grep", "md"]
+    assert Shell(command).command == cmd.replace('"', "'") + " | grep md"
+    assert Shell(command, capture_output=True).call() == 0
+    assert Shell(command, shell=False, capture_output=True).call() == 0
+    out = Shell(command).capture_output()
+    out_shell_false = Shell(command, shell=False).capture_output()
+    assert out != out_shell_false
+    assert out_shell_false == Shell(cmd).capture_output()
+    assert out == Shell(cmd_grep_md).capture_output()
+    r = Shell.run_by_subprocess(cmd_grep_md, text=True, capture_output=True, encoding="utf-8")
+    assert r.stdout == out
+
+
+def test_shell_redirect(tmp_work_dir):
+    file = Path("a")
+    file.touch()
+    cmd = 'python -c "import os;[print(i) for i in os.listdir() if len(i) < 3]"'
+    shell = Shell(cmd)
+    assert file.name in shell.capture_output()
+    out_file = Path("out.txt")
+    shell_out = Shell(f"{cmd} > {out_file}")
+    assert file.name not in shell_out.capture_output()
+    assert file.name in out_file.read_text()

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import functools
+import shlex
 import socket
+import subprocess  # nosec
 from collections.abc import AsyncGenerator, Callable
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from typing import TYPE_CHECKING, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 if TYPE_CHECKING:
     from asgi_lifespan import LifespanManager
@@ -258,6 +260,60 @@ def cache_attr(func: Callable[..., T]) -> Callable[..., T]:
         return res
 
     return run
+
+
+class Shell:
+    """Run shell command by subprocess
+
+    Usage::
+        >>> import sys
+        >>> s = Shell('python -V')
+        >>> r = s.run()
+        >>> r.returncode == s.call() == 0
+        True
+        >>> '{}.{}.{}'.format(*sys.version_info) in s.capture_output()
+        True
+        >>> code = "import sys;sys.exit(1)"
+        >>> Shell(f'python -c {code!r}').call() == 1
+        True
+    """
+
+    @staticmethod
+    def shell_should_be_true(command: list[str] | str) -> bool:
+        return bool(set(command) & {"|", ">"})
+
+    @classmethod
+    def run_by_subprocess(cls, cmd: str, **kw) -> subprocess.CompletedProcess[str]:
+        if (shell := kw.get("shell")) is None and cls.shell_should_be_true(cmd):
+            kw["shell"] = shell = True
+        command = cmd if shell else shlex.split(cmd)
+        return subprocess.run(command, **kw)  # nosec
+
+    def __init__(self, command: list[str] | str, **kwargs) -> None:
+        self._command = command
+        self._kwargs = kwargs
+
+    @property
+    def command(self) -> str:
+        if isinstance(self._command, str):
+            return self._command
+        return " ".join(repr(i) if " " in i else i for i in self._command)
+
+    def run(self, kwargs: dict[str, Any] | None = None) -> subprocess.CompletedProcess[str]:
+        if kwargs is None:
+            kwargs = self._kwargs
+        if kwargs.get("shell") is None and self.shell_should_be_true(self._command):
+            kwargs.update(shell=True)
+        elif isinstance(self._command, list):
+            return subprocess.run(self._command, **kwargs)  # nosec
+        return self.run_by_subprocess(self.command, **kwargs)
+
+    def call(self) -> int:
+        return self.run().returncode
+
+    def capture_output(self) -> str:
+        kw = dict(self._kwargs, text=True, encoding="utf-8", capture_output=True)
+        return self.run(kw).stdout
 
 
 def _test() -> None:  # pragma: no cover
