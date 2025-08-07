@@ -6,6 +6,8 @@
 
 #### Added
 - Add `StrEnum` to `asynctor.compat`
+- Add `Self` to `asynctor.compat`
+- Add `load_toml` to `asynctor.compat`
 
 ### [0.8.5](../../releases/tag/v0.8.5) - 2025-08-07
 

@@ -69,6 +69,7 @@ all = [
     { name = "openpyxl" },
     { name = "pandas" },
     { name = "redis" },
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 fastapi = [
     { name = "asgi-lifespan" },
@@ -78,6 +79,12 @@ fastapi = [
 ]
 redis = [
     { name = "redis" },
+]
+toml = [
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+]
+tomli = [
+    { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
 xls = [
     { name = "openpyxl" },
@@ -102,16 +109,18 @@ dev = [
 requires-dist = [
     { name = "anyio", specifier = ">=3.7.1" },
     { name = "asgi-lifespan", marker = "extra == 'fastapi'", specifier = ">=2.1.0" },
-    { name = "asynctor", extras = ["fastapi", "redis", "xls"], marker = "extra == 'all'" },
+    { name = "asynctor", extras = ["fastapi", "redis", "toml", "xls"], marker = "extra == 'all'" },
     { name = "asynctor", extras = ["redis"], marker = "extra == 'fastapi'" },
+    { name = "asynctor", extras = ["toml"], marker = "extra == 'tomli'" },
     { name = "eval-type-backport", marker = "python_full_version < '3.10'", specifier = ">=0.2.2,<1.0.0" },
     { name = "fastapi", marker = "extra == 'fastapi'", specifier = ">=0.115.0" },
     { name = "httpx", marker = "extra == 'fastapi'", specifier = ">=0.28.1" },
     { name = "openpyxl", marker = "extra == 'xls'", specifier = ">=3.1.0" },
     { name = "pandas", marker = "extra == 'xls'", specifier = ">=2.2.0" },
     { name = "redis", marker = "extra == 'redis'", specifier = ">=5.0.0" },
+    { name = "tomli", marker = "python_full_version < '3.11' and extra == 'toml'", specifier = ">=2.2.1" },
 ]
-provides-extras = ["redis", "xls", "fastapi", "all"]
+provides-extras = ["toml", "redis", "xls", "fastapi", "tomli", "all"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from asynctor.compat import StrEnum
+from asynctor.compat import StrEnum, load_toml
 
 
 class PeopleEnum(StrEnum):
@@ -68,3 +68,9 @@ def test_strenum():
     assert F.a == ""
     assert F.b == "鍝堝柦"
     assert F.c == "哈喽"
+
+
+def test_load_toml():
+    file = Path(__file__).parent.parent / "pyproject.toml"
+    content = file.read_text("utf-8")
+    assert load_toml(content)["project"]["name"] == "asynctor"
