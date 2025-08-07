@@ -108,7 +108,7 @@ omit = [
 ]
 [tool.coverage.report]
 omit = ["*/tests/*", "test_*"]
-exclude_lines = [
+exclude_also = [
     "pragma: no cover",
     "@overload",
     'if __name__ == "__main__":',
