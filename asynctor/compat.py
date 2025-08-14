@@ -9,19 +9,19 @@ import sys
 import warnings
 from typing import Any
 
-__all__ = ("chdir", "StrEnum", "load_toml", "Self")
+__all__ = ("chdir", "StrEnum", "load_toml", "NotRequired", "ParamSpec", "Self")
 
 if sys.version_info >= (3, 11):
     from contextlib import chdir
     from enum import StrEnum
-    from typing import Self
+    from typing import NotRequired, ParamSpec, Self
 
     from tomllib import loads as load_toml
 else:
     import contextlib
     from enum import Enum
 
-    from typing_extensions import Self
+    from typing_extensions import NotRequired, ParamSpec, Self
 
     def load_toml(content: str) -> dict[str, Any]:
         try:

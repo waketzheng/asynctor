@@ -299,21 +299,27 @@ class Shell:
             return self._command
         return " ".join(repr(i) if " " in i else i for i in self._command)
 
-    def run(self, kwargs: dict[str, Any] | None = None) -> subprocess.CompletedProcess[str]:
+    def run(
+        self, kwargs: dict[str, Any] | None = None, *, verbose: bool = False, **kw: Any
+    ) -> subprocess.CompletedProcess[str]:
+        cmd = self.command
+        if verbose:
+            print("-->", cmd)
         if kwargs is None:
             kwargs = self._kwargs
+        kwargs.update(kw)
         if kwargs.get("shell") is None and self.shell_should_be_true(self._command):
             kwargs["shell"] = True
         elif isinstance(self._command, list):
             return subprocess.run(self._command, **kwargs)  # nosec
-        return self.run_by_subprocess(self.command, **kwargs)
+        return self.run_by_subprocess(cmd, **kwargs)
 
-    def call(self) -> int:
-        return self.run().returncode
+    def call(self, *, verbose: bool = False) -> int:
+        return self.run(verbose=verbose).returncode
 
-    def capture_output(self) -> str:
+    def capture_output(self, *, verbose: bool = False) -> str:
         kw = dict(self._kwargs, text=True, encoding="utf-8", capture_output=True)
-        return self.run(kw).stdout
+        return self.run(kw, verbose=verbose).stdout
 
 
 def _test() -> None:  # pragma: no cover

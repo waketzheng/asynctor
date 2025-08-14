@@ -2,17 +2,13 @@ from __future__ import annotations
 
 import concurrent.futures
 import functools
-import sys
 from collections.abc import Callable
 from contextlib import AbstractContextManager
 from functools import cached_property
 from threading import Thread
 from typing import TYPE_CHECKING, Annotated, Any, TypeVar
 
-if sys.version_info >= (3, 11):  # pragma: no cover
-    from typing import ParamSpec, Self
-else:  # pragma: no cover
-    from typing_extensions import ParamSpec, Self
+from .compat import ParamSpec, Self
 
 if TYPE_CHECKING:
     from ._types import TypeAlias

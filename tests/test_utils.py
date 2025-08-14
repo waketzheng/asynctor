@@ -203,3 +203,25 @@ def test_shell_redirect(tmp_work_dir):
     shell_out = Shell(f"{cmd} > {out_file}")
     assert file.name not in shell_out.capture_output()
     assert file.name in out_file.read_text()
+
+
+def test_shell_run_kw(tmp_work_dir):
+    file = Path("a")
+    file.touch()
+    cmd = 'python -c "import os;[print(i) for i in os.listdir() if len(i) < 3]"'
+    shell = Shell(cmd)
+    assert file.name in shell.run(capture_output=True, text=True, encoding="utf-8").stdout
+    out_file = Path("out.txt")
+    shell_out = Shell(f"{cmd} > {out_file}")
+    assert file.name not in shell_out.capture_output()
+    assert file.name in out_file.read_text()
+
+
+def test_shell_run_verbose(capsys):
+    Shell("ls pyproject.toml").run(verbose=True)
+    assert "--> ls pyproject.toml" in capsys.readouterr().out
+    rc = Shell("ls Makefile").call(verbose=True)
+    assert "--> ls Makefile" in capsys.readouterr().out
+    assert rc == 0
+    Shell("ls README.md").capture_output(verbose=True)
+    assert "--> ls README.md" in capsys.readouterr().out

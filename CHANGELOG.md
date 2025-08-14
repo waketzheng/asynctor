@@ -4,8 +4,14 @@
 
 ### [0.8.7]*(Unreleased)*
 
+#### Added
+- Add `asynctor.xls.pd_read_excel`
+- Add `NotRequired` and `ParamSpec` to asynctor.compat
+
 #### Changed
 - refactor: use `ZoneInfo("Asia/Shanghai")` instead `timedelta(hours=8)` for `Timer.beijing_now`
+- `asynctor.util.Shell.run` support `**kw`
+- `asynctor.xls.read_excel` accept UploadFile as parameter
 
 ### [0.8.6](../../releases/tag/v0.8.6) - 2025-08-07
 
