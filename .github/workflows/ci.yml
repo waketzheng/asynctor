@@ -79,23 +79,21 @@ jobs:
           pdm run coverage run -m pytest -s tests/test_aio.py tests/test_tasks.py tests/test_xls.py tests/test_version.py tests/test_timing.py
         env:
           REDIS_HOST: localhost
-      - name: Generate coverage report
-        run: pdm run coverage xml
       - name: Upload Coverage
-        uses: coverallsapp/github-action@v2
-        with:
-          flag-name: run-${{ join(matrix.*, '-') }}
-          parallel: true
-          file: coverage.xml
+        run: uvx coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
+          COVERALLS_PARALLEL: true
 
   coveralls:
     name: Finish Coveralls
     needs: test
-    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
-    - name: Finished
-      uses: coverallsapp/github-action@v2
-      with:
-        parallel-finished: true
-        carryforward: "run-3.9,run-3.10,run-3.11,run-3.12,run-3.13,run-3.14"
+      - name: Finished
+        run: |
+          pip3 install --upgrade coveralls
+          coveralls --finish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
