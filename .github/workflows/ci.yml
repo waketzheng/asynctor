@@ -84,15 +84,18 @@ jobs:
       - name: Upload Coverage
         uses: coverallsapp/github-action@v2
         with:
+          flag-name: run-${{ join(matrix.*, '-') }}
           parallel: true
           file: coverage.xml
 
   coveralls:
     name: Finish Coveralls
     needs: test
+    if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
     - name: Finished
       uses: coverallsapp/github-action@v2
       with:
         parallel-finished: true
+        carryforward: "run-3.9,run-3.10,run-3.11,run-3.12,run-3.13,run-3.14"
