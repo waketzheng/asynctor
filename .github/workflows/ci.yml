@@ -42,7 +42,7 @@ jobs:
         id: cache
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('**/pdm.lock') }}
+          key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('**/uv.lock') }}
       - uses: astral-sh/setup-uv@v6
       - uses: astral-sh/ruff-action@v3
       - name: Set up PDM
@@ -80,7 +80,9 @@ jobs:
         env:
           REDIS_HOST: localhost
       - name: Upload Coverage
-        run: uvx coveralls --service=github
+        run: |
+          pdm run uv pip install "coveralls @ git+https://github.com/waketzheng/coveralls"
+          pdm run coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
