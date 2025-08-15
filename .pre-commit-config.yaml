@@ -5,7 +5,7 @@ default_language_version:
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     # To upgrade hooks run: `pre-commit autoupdate`
-    rev: v5.0.0  # Use the ref you want to point at
+    rev: v6.0.0  # Use the ref you want to point at
     hooks:
       - id: check-added-large-files
       - id: check-toml
