@@ -81,7 +81,7 @@ jobs:
           REDIS_HOST: localhost
       - name: Upload Coverage
         run: |
-          pdm run uv pip install "coveralls @ git+https://github.com/waketzheng/coveralls"
+          pdm run uv pip install "coveralls @ git+https://github.com/waketzheng/coveralls-python"
           pdm run coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
