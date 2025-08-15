@@ -94,6 +94,8 @@ warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = [
+    'fastapi',
+    'fastapi.routing',
     'tomli',
     'tomllib',
 ]
