@@ -50,6 +50,7 @@ _style:
 style: deps _style
 
 _build:
+	rm -fR dist/
 	uv build
 build: deps _build
 

@@ -2,7 +2,7 @@
 
 ## 0.8
 
-### [0.8.7]*(Unreleased)*
+### [0.8.7](../../releases/tag/v0.8.7) - 2025-08-15
 
 #### Added
 - Add `asynctor.xls.pd_read_excel`

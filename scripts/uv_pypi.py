@@ -17,6 +17,9 @@ HOST = "https://files.pythonhosted.org"
 
 
 def main() -> int | None:
+    if "--help" in sys.argv:
+        print(__doc__.replace("<me>", Path(__file__).stem))
+        return None
     verbose = "--verbose" in sys.argv
     p = Path("uv.lock")
     if not p.exists():
