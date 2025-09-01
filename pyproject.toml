@@ -98,6 +98,7 @@ module = [
     'fastapi.routing',
     'tomli',
     'tomllib',
+    'exceptiongroup',
 ]
 ignore_missing_imports = true
 
