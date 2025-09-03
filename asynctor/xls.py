@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Union
 
 import anyio
 import pandas as pd
@@ -52,3 +52,41 @@ async def load_xls(
 ) -> list[dict]:
     """Read excel file or content to be list of dict"""
     return df_to_datas(await read_excel(file, as_str, **kw))
+
+
+class Excel:
+    def __init__(self, filename: str | Path) -> None:
+        self._path = Path(filename)
+
+    @staticmethod
+    def to_df(data: list[dict[str, Any]]) -> pd.DataFrame:
+        columns = list(data[0].keys())
+        df_data: dict[str, list[Any]] = {c: [] for c in columns}
+        for d in data:
+            for k, v in d.items():
+                df_data[k].append(v)
+        return pd.DataFrame(df_data)
+
+    @classmethod
+    def write_buffer(cls, data: list[dict[str, Any]] | pd.DataFrame) -> BytesIO:
+        if not isinstance(data, pd.DataFrame):
+            data = cls.to_df(data)
+        buffer = BytesIO()
+        with pd.ExcelWriter(buffer, engine="openpyxl") as writer:
+            data.to_excel(writer, index=False)
+        buffer.seek(0)
+        return buffer
+
+    def write(self, data: list[dict[str, Any]] | pd.DataFrame) -> None:
+        df = data if isinstance(data, pd.DataFrame) else self.to_df(data)
+        return df.to_excel(self._path, index=False)
+
+    async def awrite(self, data: list[dict[str, Any]] | pd.DataFrame) -> None:
+        bio = self.write_buffer(data)
+        await anyio.Path(self._path).write_bytes(bio.getvalue())
+
+    def read(self, as_str: bool = False, **kw) -> pd.DataFrame:
+        return pd_read_excel(self._path, as_str, **kw)
+
+    async def aread(self, as_str: bool = False, **kw) -> pd.DataFrame:
+        return await read_excel(anyio.Path(self._path), as_str, **kw)
