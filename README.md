@@ -67,18 +67,18 @@ sleep_test2 Cost: 3.1 seconds
 
 *pip install "asynctor[redis]"*
 ```py
-from asynctor.contrib.fastapi import AioRedis, register_aioredis
+from asynctor.contrib.fastapi import AioRedisDep, register_aioredis
 from fastapi import FastAPI
 
 app = FastAPI()
 register_aioredis(app)
 
 @app.get('/')
-async def root(redis: AioRedis) -> list[str]:
+async def root(redis: AioRedisDep) -> list[str]:
     return await redis.keys()
 
 @app.get('/redis')
-async def get_value_from_redis_by_key(redis: AioRedis, key: str) -> str:
+async def get_value_from_redis_by_key(redis: AioRedisDep, key: str) -> str:
     value = await redis.get(key)
     if not value:
         return ''
@@ -108,7 +108,8 @@ async def test_api(client: AsyncClient):
     assert response.status_code == 200
 ```
 
-- Read Excel File(need to install with xls extra: `pip install "asynctor[xls]"`)
+- Read Excel File
+*pandas/openpyxl is required, can be installed with xls extra: `pip install "asynctor[xls]"`*
 ```py
 >>> from asynctor.xls import load_xls
 >>> await load_xls('tests/demo.xlsx')

@@ -2,6 +2,11 @@
 
 ## 0.8
 
+### [0.8.8]*(Unrelease)*
+
+#### Added
+- Add `asynctor.xls.Excel`
+
 ### [0.8.7](../../releases/tag/v0.8.7) - 2025-08-15
 
 #### Added
