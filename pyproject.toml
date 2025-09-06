@@ -99,6 +99,7 @@ module = [
     'tomli',
     'tomllib',
     'exceptiongroup',
+    'orjson',
 ]
 ignore_missing_imports = true
 
