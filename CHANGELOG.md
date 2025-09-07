@@ -1,11 +1,15 @@
 # ChangeLog
 
+## 0.9
+### [0.9.0]*(Unrelease)*
+
 ## 0.8
 
-### [0.8.8]*(Unrelease)*
+### [0.8.8](../../releases/tag/v0.8.8) - 2025-09-07
 
 #### Added
 - Add `asynctor.xls.Excel`
+- Add `asynctor.jsons`
 
 ### [0.8.7](../../releases/tag/v0.8.7) - 2025-08-15
 
