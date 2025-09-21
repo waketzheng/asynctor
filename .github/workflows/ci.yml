@@ -31,24 +31,19 @@ jobs:
       matrix:
         python-version: [3.9, "3.10", 3.11, 3.12, 3.13, 3.14]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Setup Python
         id: setup-python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
-      - uses: actions/cache@v4
-        id: cache
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-python-${{ env.pythonLocation }}-${{ hashFiles('**/uv.lock') }}
       - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
       - uses: astral-sh/ruff-action@v3
       - name: Set up PDM
         uses: pdm-project/setup-pdm@v4
-        with:
-          python-version: ${{ matrix.python-version }}
         if: ${{ matrix.python-version != '3.14' }}
       - name: Set up PDM by Pipx for Python3.14
         run: |
@@ -68,7 +63,6 @@ jobs:
         if: ${{ matrix.python-version == '3.14' }}
         run: |
           pdm run python -V
-          pdm run uv pip install "anyio @ git+https://github.com/agronholm/anyio"
           pdm run uv pip install -e ".[xls,redis]"
           pdm run uv pip install mypy coverage pytest-mock types-redis pandas-stubs exceptiongroup
           ruff check
