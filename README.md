@@ -109,9 +109,9 @@ async def test_api(client: AsyncClient):
 ```
 
 - Read Excel File
-*pandas/openpyxl is required, can be installed with xls extra: `pip install "asynctor[xls]"`*
+*pandas/openpyxl is required, can be installed with xlsx extra: `pip install "asynctor[xlsx]"`*
 ```py
->>> from asynctor.xls import load_xls
->>> await load_xls('tests/demo.xlsx')
+>>> from asynctor.xlsx import load_xlsx
+>>> await load_xlsx('tests/demo.xlsx')
 [{'Column1': 'row1-\\t%c', 'Column2\nMultiLines': 0, 'Column 3': 1, 4: ''}, {'Column1': 'r2c1\n00', 'Column2\nMultiLines': 'r2 c2', 'Column 3': 2, 4: ''}]
 ```
