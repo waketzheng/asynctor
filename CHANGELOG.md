@@ -1,7 +1,13 @@
 # ChangeLog
 
 ## 0.9
-### [0.9.0]*(Unrelease)*
+
+### [0.9.1]*(Unrelease)*
+
+### [0.9.0](../../releases/tag/v0.9.0) - 2025-09-22
+
+#### Changed
+- refactor: rename `asynctor.xls` to `asynctor.xlsx`
 
 ## 0.8
 
