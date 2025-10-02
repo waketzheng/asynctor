@@ -20,7 +20,7 @@ Successfully installed asynctor
 ```
 with extras:
 ```console
-pip install "asynctor[xls,redis,fastapi]"
+pip install "asynctor[xlsx,redis,fastapi]"
 ```
 Or by pdm:
 ```bash
