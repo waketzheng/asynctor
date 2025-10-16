@@ -7,7 +7,7 @@ from collections.abc import Awaitable, Callable
 from contextlib import AbstractAsyncContextManager, AbstractContextManager
 from datetime import datetime, timezone
 from types import TracebackType
-from typing import TYPE_CHECKING, Annotated, Any, TypeVar, overload
+from typing import TYPE_CHECKING, Annotated, Any, TypeAlias, TypeVar, overload
 from zoneinfo import ZoneInfo
 
 try:
@@ -16,7 +16,6 @@ except ImportError:
     UTC = timezone.utc
 
 if TYPE_CHECKING:
-    from ._types import TypeAlias
     from .compat import Self
 
 T_Retval = TypeVar("T_Retval", Awaitable[Any], Any)

@@ -4,9 +4,9 @@ import functools
 import itertools
 import sys
 import warnings
-from collections.abc import AsyncGenerator, Awaitable, Generator, Iterable, Sequence
+from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Callable, Literal, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, cast, overload
 
 import anyio
 import sniffio
@@ -25,7 +25,6 @@ else:
 if TYPE_CHECKING:
     from anyio.abc._tasks import TaskGroup
 
-    from ._types import TypeAlias
 
 T = TypeVar("T")
 T_Retval = TypeVar("T_Retval")

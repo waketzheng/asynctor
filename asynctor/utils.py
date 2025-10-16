@@ -6,7 +6,7 @@ import socket
 import subprocess  # nosec
 from collections.abc import AsyncGenerator, Callable
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
     from asgi_lifespan import LifespanManager
@@ -14,7 +14,6 @@ if TYPE_CHECKING:
     from fastapi import FastAPI
     from httpx import AsyncClient
 
-    from ._types import TypeAlias
 
 T = TypeVar("T")
 AsyncClientGenerator: TypeAlias = AsyncGenerator["AsyncClient", None]

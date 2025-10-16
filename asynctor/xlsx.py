@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from io import BytesIO
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import anyio
 import pandas as pd
@@ -10,9 +10,8 @@ import pandas as pd
 if TYPE_CHECKING:
     from fastapi import UploadFile
 
-    from ._types import TypeAlias
 
-FilePathType: TypeAlias = Union[str, Path, anyio.Path]
+FilePathType: TypeAlias = str | Path | anyio.Path
 
 
 async def read_excel(
@@ -45,7 +44,7 @@ def pd_read_excel(
 def df_to_datas(df: pd.DataFrame) -> list[dict]:
     """Convert dataframe to list of dict"""
     cols = list(df.columns)
-    return [dict(zip(cols, v)) for v in df.values.tolist()]
+    return [dict(zip(cols, v, strict=False)) for v in df.values.tolist()]
 
 
 async def load_xlsx(

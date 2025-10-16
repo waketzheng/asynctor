@@ -11,7 +11,7 @@ description = "Async functions to compare with anyio and asyncio, and toolkit to
 authors = [{ name = "Waket Zheng", email = "waketzheng@gmail.com" }]
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 dynamic = [ "version" ]
 dependencies = [
     "anyio>=3.7.1",
@@ -28,7 +28,6 @@ classifiers = [
     "Operating System :: OS Independent",
     "Typing :: Typed",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -89,7 +88,7 @@ extend-select = [
 
 [tool.mypy]
 pretty = true
-python_version = "3.9"
+python_version = "3.10"
 check_untyped_defs = true
 warn_unused_ignores = true
 
