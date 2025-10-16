@@ -1,8 +1,15 @@
 # ChangeLog
 
-## 0.9
+## 0.10
 
-### [0.9.2]*(Unrelease)*
+### [0.10.1]*(Unrelease)*
+
+### [0.10.0](../../releases/tag/v0.10.0) - 2025-10-16
+
+#### Changed
+- refactor: drop support for Python3.9
+
+## 0.9
 
 ### [0.9.1](../../releases/tag/v0.9.1) - 2025-10-16
 
