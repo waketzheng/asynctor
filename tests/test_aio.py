@@ -8,9 +8,11 @@ from typing import Any
 
 import anyio
 import pytest
+from anyio.lowlevel import checkpoint
 
 from asynctor.aio import (
     LengthFixedList,
+    async_to_sync,
     bulk_gather,
     create_task,
     gather,
@@ -34,6 +36,16 @@ def test_run_async():
     assert run_async(foo(None)) is None
     assert run_async(foo(foo)) == foo
     assert run_async(functools.partial(foo, 2)) == 2
+
+    async def convert(s: Any) -> int:
+        return int(s)
+
+    with pytest.raises(TypeError):
+        run_async(convert, None)
+    coro = convert("1")
+    with pytest.warns(UserWarning, match="`run_async` for coroutine, does not handle 'args'."):
+        res = run_async(coro, 2)
+    assert res == 1
 
 
 def test_run():
@@ -299,6 +311,12 @@ def test_run_until_complete():
     anyio.run(do_sth)
     assert a == [1, 2, 3, 4, 5]
 
+    async def never():
+        raise RuntimeError("Never ever")
+
+    with pytest.raises(RuntimeError, match="Never ever"):
+        run_until_complete(never())
+
 
 def test_run_until_complete_function_arguments():
     def sync_func(): ...
@@ -333,3 +351,16 @@ async def test_create_task():
             create_task(do_sth(0.09), tg)
             create_task(do_sth(0.07), tg)
     assert 0.1 <= t.cost < 0.2
+
+
+def test_async_to_sync():
+    async def hi(who: Any = False):
+        await checkpoint()
+        if who:
+            return f"Hello, {who}."
+        raise RuntimeError("foo")
+
+    with pytest.raises(RuntimeError, match="foo"):
+        async_to_sync(hi)()
+
+    assert async_to_sync(hi)("World") == "Hello, World."
