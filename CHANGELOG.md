@@ -2,7 +2,9 @@
 
 ## 0.9
 
-### [0.9.1]*(Unrelease)*
+### [0.9.2]*(Unrelease)*
+
+### [0.9.1](../../releases/tag/v0.9.1) - 2025-10-16
 
 #### Added
 - Add `be_awaitable` decorator to the aio module
