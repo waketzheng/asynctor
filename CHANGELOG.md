@@ -4,6 +4,12 @@
 
 ### [0.9.1]*(Unrelease)*
 
+#### Added
+- Add `be_awaitable` decorator to the aio module
+
+#### Changed
+- refactor: simplify `run_async`
+
 ### [0.9.0](../../releases/tag/v0.9.0) - 2025-09-22
 
 #### Changed
