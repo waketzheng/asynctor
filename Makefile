@@ -28,6 +28,7 @@ venv39:
 
 deps:
 	uv sync --all-extras --all-groups --inexact $(options)
+	uv pip install -e .
 	uv run --no-sync fast pypi --quiet
 
 start:
