@@ -86,13 +86,7 @@ def run(
         assert result_asyncio_format == result_anyio_format
 
     """
-    if not callable(func):
-
-        async def do_await() -> T_Retval:
-            return await func
-
-        return anyio.run(do_await, backend=backend, backend_options=backend_options)
-    return anyio.run(func, *args, backend=backend, backend_options=backend_options)
+    return anyio.run(be_awaitable(func), *args, backend=backend, backend_options=backend_options)
 
 
 class LengthFixedList(list[T]):
@@ -297,18 +291,13 @@ async def wait_for(coro: Awaitable[T_Retval], timeout: int | float) -> T_Retval:
         return await coro
 
 
-def run_async(
+def be_awaitable(
     async_func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
-    *args: Unpack[PosArgsT],
-) -> T_Retval:
-    """Run async function in worker thread and get the result of it"""
-    # `asyncio.run(async_func())`/`anyio.run(async_func)` can get the result of async function,
-    # but both of them will close the running loop.
-    result: list[T_Retval] = []
-
-    async def runner() -> None:
+) -> Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]]:
+    @functools.wraps(async_func)  # type:ignore[arg-type]
+    async def do_await(*gs: Unpack[PosArgsT]) -> T_Retval:
         if callable(async_func):
-            coro = async_func(*args)
+            coro = async_func(*gs)
             try:
                 res = await coro
             except TypeError as e:
@@ -323,14 +312,28 @@ def run_async(
                     await checkpoint()
                 else:
                     raise
+            return res
         else:
-            res = await async_func
-        result.append(res)
+            if gs:
+                warnings.warn("`run_async` for coroutine, does not handle 'args'.", stacklevel=1)
+            return await async_func
+
+    return do_await
+
+
+def run_async(
+    async_func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
+    *args: Unpack[PosArgsT],
+) -> T_Retval:
+    """Run async function in worker thread and get the result of it"""
+    # `asyncio.run(async_func())`/`anyio.run(async_func)` can get the result of async function,
+    # but both of them will close the running loop.
 
     with from_thread.start_blocking_portal() as portal:
-        portal.call(runner)
+        future = portal.start_task_soon(be_awaitable(async_func), *args)
+        return_value = future.result()
 
-    return result[0]
+    return return_value
 
 
 def async_to_sync(

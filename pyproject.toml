@@ -3,6 +3,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm]
+distrubition = true
 version = {source="file", path="asynctor/__init__.py"}
 
 [project]
