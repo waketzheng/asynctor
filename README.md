@@ -19,12 +19,24 @@ $ pip install asynctor
 Successfully installed asynctor
 ```
 with extras:
-```console
+```shell
 pip install "asynctor[xlsx,redis,fastapi]"
 ```
 Or by pdm:
 ```bash
 pdm add "asynctor[redis]"
+```
+Or by uv:
+```sh
+uv add asynctor
+```
+Or install the latest from *github*
+```
+uv pip install "asynctor @git+https://github.com/waketzheng/asynctor"
+```
+Or install by ssh
+```
+uv pip install "asynctor[redis] @git+ssh://git@github.com/waketzheng/asynctor.git"
 ```
 
 </div>
