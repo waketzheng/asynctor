@@ -52,31 +52,14 @@ jobs:
           pdm config use_uv true
         if: ${{ matrix.python-version == '3.14' }}
       - name: Check code style and Type Hint then Test with pytest
-        if: ${{ matrix.python-version != '3.14' }}
         run: |
           pdm config use_uv true
           make ci
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost
-      - name: Test with pytest
-        if: ${{ matrix.python-version == '3.14' }}
-        run: |
-          pdm run python -V
-          pdm run uv pip install -e ".[xls,redis]"
-          pdm run uv pip install mypy coverage pytest-mock types-redis pandas-stubs exceptiongroup
-          ruff check
-          ruff format --check
-          pdm run mypy --ignore-missing-imports .
-          pdm list --fields=name,version --csv
-          # TODO: test all if pydantic/fastapi support python3.14
-          pdm run coverage run -m pytest -s tests/test_aio.py tests/test_tasks.py tests/test_xls.py tests/test_version.py tests/test_timing.py
-        env:
-          REDIS_HOST: localhost
       - name: Upload Coverage
-        run: |
-          pdm run uv pip install "coveralls @ git+https://github.com/waketzheng/coveralls-python"
-          pdm run coveralls --service=github
+        run: uvx coveralls --service=github
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COVERALLS_FLAG_NAME: ${{ matrix.python-version }}
@@ -87,9 +70,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
+      - uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
       - name: Finished
-        run: |
-          pip3 install --upgrade coveralls
-          coveralls --finish
+        run: uvx coveralls --finish
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
