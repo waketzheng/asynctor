@@ -6,6 +6,7 @@
 
 #### Added
 - Add `asynctor.testing` module
+- Add `testing` extra
 
 #### Changed
 - refactor: use async func for ClientIpDep
