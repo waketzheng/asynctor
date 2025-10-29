@@ -2,7 +2,9 @@
 
 ## 0.10
 
-### [0.10.1]*(Unrelease)*
+### [0.10.2]*(Unrelease)*
+
+### [0.10.1](../../releases/tag/v0.10.1) - 2025-10-29
 
 #### Added
 - Add `asynctor.testing` module
