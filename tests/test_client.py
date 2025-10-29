@@ -5,15 +5,12 @@ import os
 import pytest
 from redis.asyncio import Redis
 
-from asynctor import AsyncRedis, AsyncTestClient
+from asynctor import AsyncRedis
+from asynctor.testing import async_client_fixture
 
 from .main import app
 
-
-@pytest.fixture(scope="session")
-async def client():
-    async with AsyncTestClient(app) as c:
-        yield c
+client = async_client_fixture(app)
 
 
 @pytest.mark.anyio
