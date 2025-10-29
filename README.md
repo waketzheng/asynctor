@@ -96,23 +96,17 @@ async def get_value_from_redis_by_key(redis: AioRedisDep, key: str) -> str:
         return ''
     return value.decode()
 ```
-- AsyncTestClient
-*pip install "asynctor[fastapi]"*
+- Async Test Fixtures
+*pip install "asynctor[testing]"*
 ```py
 import pytest
-from asynctor import AsyncTestClient, AsyncClientGenerator
+from asynctor.testing import anyio_backend_fixture, async_client_fixture
 from httpx import AsyncClient
 
 from main import app
 
-@pytest.fixture(scope='session')
-async def client() -> AsyncClientGenerator:
-    async with AsyncTestClient(app) as c:
-        yield c
-
-@pytest.fixture(scope="session")
-def anyio_backend():
-    return "asyncio"
+anyio_backend = anyio_backend_fixture()
+client = async_client_fixture(app)
 
 @pytest.mark.anyio
 async def test_api(client: AsyncClient):
