@@ -4,6 +4,13 @@
 
 ### [0.10.1]*(Unrelease)*
 
+#### Added
+- Add `asynctor.testing` module
+
+#### Changed
+- refactor: use async func for ClientIpDep
+- refactor: export Timer to support `from asynctor import Timer`
+
 ### [0.10.0](../../releases/tag/v0.10.0) - 2025-10-16
 
 #### Changed
