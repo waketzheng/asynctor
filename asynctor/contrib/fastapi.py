@@ -75,7 +75,13 @@ def get_client_ip(request: Request) -> str:
     return request.client.host
 
 
-ClientIpDep = Annotated[str, Depends(get_client_ip)]
+async def get_client_host(request: Request) -> str:
+    # If the function is non-async and you use it as a dependency, it will run in a thread.
+    # https://github.com/kludex/fastapi-tips?tab=readme-ov-file#9-your-dependencies-may-be-running-on-threads
+    return get_client_ip(request)
+
+
+ClientIpDep = Annotated[str, Depends(get_client_host)]
 ClientIpDep.__doc__ = """Get real ip of request client.
 
 Usage::
