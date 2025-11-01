@@ -42,19 +42,8 @@ jobs:
         with:
           enable-cache: true
       - uses: astral-sh/ruff-action@v3
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v4
-        if: ${{ matrix.python-version != '3.14' }}
-      - name: Set up PDM by Pipx for Python3.14
-        run: |
-          pip install --user --upgrade pipx pip
-          pipx install pdm
-          pdm config use_uv true
-        if: ${{ matrix.python-version == '3.14' }}
       - name: Check code style and Type Hint then Test with pytest
-        run: |
-          pdm config use_uv true
-          make ci
+        run: make ci
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost
