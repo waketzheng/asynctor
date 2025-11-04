@@ -2,7 +2,16 @@
 
 ## 0.10
 
-### [0.10.2]*(Unrelease)*
+### [0.10.3]*(Unrelease)*
+
+### [0.10.2](../../releases/tag/v0.10.2) - 2025-11-04
+
+#### Added
+- Add `asynctor.jsons.FastJson`
+- Add some type alias for asynctor.jsons
+
+#### Changed
+- Remove 'ParamSpec' from asynctor.compat as it can be imported from typing
 
 ### [0.10.1](../../releases/tag/v0.10.1) - 2025-10-29
 
