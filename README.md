@@ -56,6 +56,15 @@ uv pip install "asynctor[redis] @git+ssh://git@github.com/waketzheng/asynctor.gi
 >>> asynctor.run(gather(foo(), foo()))
 (1, 1)
 ```
+- `run_async`: start a new thread to run async function and get result of it
+```py
+>>> from asynctor import run_async
+>>> async def foo(a=1):
+...     return a
+...
+>>> run_async(foo) == run_async(foo()) == run_async(foo, 1) == 1
+True
+```
 - timeit
 ```py
 >>> import time
@@ -74,6 +83,10 @@ sleep_test Cost: 3.0 seconds
 ...
 >>> sleep_test2()
 sleep_test2 Cost: 3.1 seconds
+>>> with timeit('Sleeping'):
+...     sleep()
+...
+Sleeping Cost: 3.0 seconds
 ```
 - AioRedis
 
