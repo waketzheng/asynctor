@@ -8,7 +8,7 @@ from io import StringIO
 import anyio
 import pytest
 
-from asynctor.timing import Timer, timeit
+from asynctor.timing import Timer, ZoneInfo, timeit
 
 
 @contextmanager
@@ -217,6 +217,10 @@ def test_nows():
     assert str(utc_now).endswith("+00:00")
     assert str(bj_now).endswith("+08:00")
     assert "Asia/Shanghai" in repr(bj_now)
+    tzinfo = bj_now.tzinfo
+    assert tzinfo
+    assert isinstance(tzinfo, ZoneInfo)
+    assert "Asia/Shanghai" == tzinfo.key == tzinfo.zone
     utc_ts = utc_now.timestamp()
     bj_ts = bj_now.timestamp()
     assert bj_ts - utc_ts < 1

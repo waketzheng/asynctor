@@ -8,7 +8,7 @@ from contextlib import AbstractAsyncContextManager, AbstractContextManager
 from datetime import datetime, timezone
 from types import TracebackType
 from typing import TYPE_CHECKING, Annotated, Any, TypeAlias, TypeVar, overload
-from zoneinfo import ZoneInfo
+from zoneinfo import ZoneInfo as _ZoneInfo
 
 try:
     from datetime import UTC  # type:ignore[attr-defined]
@@ -20,6 +20,20 @@ if TYPE_CHECKING:
 
 T_Retval = TypeVar("T_Retval", Awaitable[Any], Any)
 AwareDateTime: TypeAlias = Annotated[datetime, "datetime with tzinfo"]
+
+
+class ZoneInfo(_ZoneInfo):
+    @property
+    def zone(self) -> str:
+        """This property is for compatible with pytz::
+
+        >>> import pytz
+        >>> from zoneinfo import ZoneInfo
+        >>> pytz.timezone('UTC').zone == ZoneInfo('UTC').key == 'UTC'
+        True
+
+        """
+        return self.key
 
 
 class Timer(AbstractContextManager, AbstractAsyncContextManager):
