@@ -6,15 +6,48 @@ name: ci
 on:
   push:
     branches: [ "main", "dev" ]
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
   pull_request:
     branches: [ "main" ]
+    paths-ignore:
+      - "docs/**"
+      - "*.md"
 
 permissions:
   contents: read
 
+env:
+  UV_SYSTEM_PYTHON: 1
+
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", 3.14]
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Python
+        id: setup-python
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+      - uses: astral-sh/setup-uv@v7
+        with:
+          activate-environment: true
+          enable-cache: true
+      - uses: astral-sh/ruff-action@v3
+      - name: Install deps
+        run: uv sync --group lint --extra all
+      - name: Check code style and Type Hint
+        run: fast check
+
   test:
     runs-on: ubuntu-latest
+    needs: lint
     services:
       redis:
         image: redis
@@ -41,20 +74,8 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - uses: astral-sh/ruff-action@v3
-      - name: Set up PDM
-        uses: pdm-project/setup-pdm@v4
-        if: ${{ matrix.python-version != '3.14' }}
-      - name: Set up PDM by Pipx for Python3.14
-        run: |
-          pip install --user --upgrade pipx pip
-          pipx install pdm
-          pdm config use_uv true
-        if: ${{ matrix.python-version == '3.14' }}
-      - name: Check code style and Type Hint then Test with pytest
-        run: |
-          pdm config use_uv true
-          make ci
+      - name: Test with pytest
+        run: make test options='--no-group=lint'
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost

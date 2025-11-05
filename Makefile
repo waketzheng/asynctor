@@ -14,11 +14,11 @@ help:
 up:
 	uv lock --upgrade
 	uv sync --frozen --inexact
-	python scripts/uv_pypi.py --quiet
+	uv run --no-sync fast pypi --quiet
 
 lock:
 	uv lock --upgrade
-	python scripts/uv_pypi.py --quiet
+	uv run --no-sync fast pypi --quiet
 
 venv:
 	pdm venv create $(options) $(version)

@@ -87,6 +87,10 @@ fastapi = [
 redis = [
     { name = "redis" },
 ]
+testing = [
+    { name = "asgi-lifespan" },
+    { name = "httpx" },
+]
 toml = [
     { name = "tomli", marker = "python_full_version < '3.11'" },
 ]
@@ -104,45 +108,59 @@ xlsx = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "fastapi-cdn-host" },
+    { name = "fastdevcli-slim" },
+    { name = "pytest" },
+    { name = "uvicorn" },
+]
+lint = [
     { name = "bandit" },
     { name = "exceptiongroup", marker = "python_full_version < '3.11'" },
-    { name = "fast-dev-cli" },
-    { name = "fastapi-cdn-host" },
+    { name = "mypy" },
     { name = "pandas-stubs" },
-    { name = "pytest-mock" },
     { name = "types-redis" },
-    { name = "uvicorn" },
+]
+test = [
+    { name = "coverage" },
+    { name = "pytest-mock" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "anyio", specifier = ">=3.7.1" },
-    { name = "asgi-lifespan", marker = "extra == 'fastapi'", specifier = ">=2.1.0" },
-    { name = "asynctor", extras = ["fastapi", "redis", "toml", "xlsx"], marker = "extra == 'all'" },
-    { name = "asynctor", extras = ["redis"], marker = "extra == 'fastapi'" },
+    { name = "asgi-lifespan", marker = "extra == 'testing'", specifier = ">=2.1.0" },
+    { name = "asynctor", extras = ["fastapi", "redis", "testing", "toml", "xlsx"], marker = "extra == 'all'" },
+    { name = "asynctor", extras = ["redis", "testing"], marker = "extra == 'fastapi'" },
     { name = "asynctor", extras = ["toml"], marker = "extra == 'tomli'" },
     { name = "asynctor", extras = ["xlsx"], marker = "extra == 'xls'" },
     { name = "eval-type-backport", marker = "python_full_version < '3.10'", specifier = ">=0.2.2,<1.0.0" },
     { name = "fastapi", marker = "extra == 'fastapi'", specifier = ">=0.115.0" },
-    { name = "httpx", marker = "extra == 'fastapi'", specifier = ">=0.28.1" },
+    { name = "httpx", marker = "extra == 'testing'", specifier = ">=0.28.1" },
     { name = "openpyxl", marker = "extra == 'xlsx'", specifier = ">=3.1.0" },
     { name = "pandas", marker = "extra == 'xlsx'", specifier = ">=2.2.0" },
     { name = "redis", marker = "extra == 'redis'", specifier = ">=5.0.0" },
     { name = "tomli", marker = "python_full_version < '3.11' and extra == 'toml'", specifier = ">=2.2.1" },
 ]
-provides-extras = ["toml", "redis", "xlsx", "fastapi", "tomli", "xls", "all"]
+provides-extras = ["toml", "redis", "xlsx", "testing", "fastapi", "tomli", "xls", "all"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "fastapi-cdn-host", specifier = ">=0.9.1" },
+    { name = "fastdevcli-slim", specifier = ">=0.19.1" },
+    { name = "pytest", specifier = ">=8.4.2" },
+    { name = "uvicorn", specifier = ">=0.34.3" },
+]
+lint = [
     { name = "bandit", specifier = ">=1.8.6" },
     { name = "exceptiongroup", marker = "python_full_version < '3.11'", specifier = ">=1.3.0" },
-    { name = "fast-dev-cli", specifier = ">=0.18.0" },
-    { name = "fastapi-cdn-host", specifier = ">=0.9.1" },
+    { name = "mypy", specifier = ">=1.18.2" },
     { name = "pandas-stubs", specifier = ">=2.2.0" },
-    { name = "pytest-mock", specifier = ">=3.14.1" },
     { name = "types-redis", specifier = ">=4.6.0.20241004" },
     { name = "typing-extensions", marker = "python_full_version < '3.10'", specifier = ">=4.14.1" },
-    { name = "uvicorn", specifier = ">=0.34.3" },
+]
+test = [
+    { name = "coverage", specifier = ">=7.11.0" },
+    { name = "pytest-mock", specifier = ">=3.14.1" },
 ]
 
 [[package]]
@@ -158,15 +176,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fb/b5/7eb834e213d6f73aace21938e5e90425c92e5f42abafaf8a6d5d21beed51/bandit-1.8.6.tar.gz", hash = "sha256:dbfe9c25fc6961c2078593de55fd19f2559f9e45b99f1272341f5b95dea4e56b", size = 4240271, upload-time = "2025-07-06T03:10:50.9Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/48/ca/ba5f909b40ea12ec542d5d7bdd13ee31c4d65f3beed20211ef81c18fa1f3/bandit-1.8.6-py3-none-any.whl", hash = "sha256:3348e934d736fcdb68b6aa4030487097e23a501adf3e7827b63658df464dddd0", size = 133808, upload-time = "2025-07-06T03:10:49.134Z" },
-]
-
-[[package]]
-name = "bumpversion2"
-version = "1.4.4"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/77/c6/3b8ed95b4faaf45c1bc7bdeb76f16fd7b17cf58059ea8b9ad491e597f2f6/bumpversion2-1.4.4.tar.gz", hash = "sha256:e6a9cabb189525def6015d55e0aba92390bb4517495c257b7ec3e56621078238", size = 26439, upload-time = "2025-03-20T08:50:41.102Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/e4/f9aa695680e77c64aba0802cc7a44e2e3d4be1f09b073f023e4e6cec1fba/bumpversion2-1.4.4-py3-none-any.whl", hash = "sha256:6307aacc997568354dc3237b95b23adbdde9311aa8fdae1cc68465606dd7c17d", size = 23519, upload-time = "2025-03-20T08:50:39.428Z" },
 ]
 
 [[package]]
@@ -446,15 +455,6 @@ wheels = [
 ]
 
 [[package]]
-name = "emoji"
-version = "2.15.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/a2/78/0d2db9382c92a163d7095fc08efff7800880f830a152cfced40161e7638d/emoji-2.15.0.tar.gz", hash = "sha256:eae4ab7d86456a70a00a985125a03263a5eac54cd55e51d7e184b1ed3b6757e4", size = 615483, upload-time = "2025-09-21T12:13:02.755Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e1/5e/4b5aaaabddfacfe36ba7768817bd1f71a7a810a43705e531f3ae4c690767/emoji-2.15.0-py3-none-any.whl", hash = "sha256:205296793d66a89d88af4688fa57fd6496732eb48917a87175a023c8138995eb", size = 608433, upload-time = "2025-09-21T12:13:01.197Z" },
-]
-
-[[package]]
 name = "et-xmlfile"
 version = "2.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -476,27 +476,8 @@ wheels = [
 ]
 
 [[package]]
-name = "fast-dev-cli"
-version = "0.19.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "bumpversion2" },
-    { name = "coverage" },
-    { name = "emoji" },
-    { name = "mypy" },
-    { name = "packaging" },
-    { name = "pytest" },
-    { name = "tomli", marker = "python_full_version < '3.11'" },
-    { name = "typer-slim" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/78/de/2612a96fe3c90afda91547e0dd564aead6f6f25bed29701ba0b8a14811f1/fast_dev_cli-0.19.1.tar.gz", hash = "sha256:aaf5f1e2e8d2555c5f8bdb9388153446d1c96d58ec699437485a25257bf41814", size = 182664, upload-time = "2025-10-16T13:14:36.901Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/b3/0c/e9b1cab93847ccc4728159fb4196644b75800bc1048f0774dad0f6b9aa72/fast_dev_cli-0.19.1-py3-none-any.whl", hash = "sha256:6f5edff4c90693f6d96449ab4657de7c34790322f6e687cd1e1945dd20dd1204", size = 185418, upload-time = "2025-10-16T13:14:35.534Z" },
-]
-
-[[package]]
 name = "fastapi"
-version = "0.120.0"
+version = "0.121.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -504,9 +485,9 @@ dependencies = [
     { name = "starlette" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f7/0e/7f29e8f7219e4526747db182e1afb5a4b6abc3201768fb38d81fa2536241/fastapi-0.120.0.tar.gz", hash = "sha256:6ce2c1cfb7000ac14ffd8ddb2bc12e62d023a36c20ec3710d09d8e36fab177a0", size = 337603, upload-time = "2025-10-23T20:56:34.743Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8c/e3/77a2df0946703973b9905fd0cde6172c15e0781984320123b4f5079e7113/fastapi-0.121.0.tar.gz", hash = "sha256:06663356a0b1ee93e875bbf05a31fb22314f5bed455afaaad2b2dad7f26e98fa", size = 342412, upload-time = "2025-11-03T10:25:54.818Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/60/7a639ceaba54aec4e1d5676498c568abc654b95762d456095b6cb529b1ca/fastapi-0.120.0-py3-none-any.whl", hash = "sha256:84009182e530c47648da2f07eb380b44b69889a4acfd9e9035ee4605c5cfc469", size = 108243, upload-time = "2025-10-23T20:56:33.281Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/2c/42277afc1ba1a18f8358561eee40785d27becab8f80a1f945c0a3051c6eb/fastapi-0.121.0-py3-none-any.whl", hash = "sha256:8bdf1b15a55f4e4b0d6201033da9109ea15632cb76cf156e7b8b4019f2172106", size = 109183, upload-time = "2025-11-03T10:25:53.27Z" },
 ]
 
 [[package]]
@@ -520,6 +501,19 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fb/82/461d60f2f3dba4133009b2d67ed2400d8d10671aa6b86fe506b9b13e3ba9/fastapi_cdn_host-0.9.2.tar.gz", hash = "sha256:9ae4dc7296bc75412c63c48e152b2cfcaf209559075fda9d71f2bb65f5923de1", size = 16339, upload-time = "2025-06-27T09:33:42.393Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e0/e1/a268bdec3e477e041a9647e0562a58d271a259eee27a99d09bc37e77b1ea/fastapi_cdn_host-0.9.2-py3-none-any.whl", hash = "sha256:8fe2f57c1be6d3eb57c1c12d9d6d7cb085a3eb526456909edd9bd388c4434681", size = 15092, upload-time = "2025-06-27T09:33:41.025Z" },
+]
+
+[[package]]
+name = "fastdevcli-slim"
+version = "0.19.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "tomli", marker = "python_full_version < '3.11'" },
+    { name = "typer-slim" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/19/e8/795cf2e00330894d7f74ec39e58a2fc112471f5bc47cacc0a9f7a8128e21/fastdevcli_slim-0.19.1.tar.gz", hash = "sha256:aac27d3e7ce8bf9bb5cd17f3e32c0f426bc675fa6b27617bd3856fb059dc932e", size = 182722, upload-time = "2025-10-16T13:14:34.499Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0a/0f/61e7fa2868cab8ca33d3301992358a7b432aff77633fb541b93008d1334c/fastdevcli_slim-0.19.1-py3-none-any.whl", hash = "sha256:dbea45ca64a3860d858d0b993d3d9e0842587baf72d82b8f97db9f1a9b2ca1d5", size = 185486, upload-time = "2025-10-16T13:14:33.232Z" },
 ]
 
 [[package]]
@@ -1181,14 +1175,14 @@ wheels = [
 
 [[package]]
 name = "redis"
-version = "7.0.0"
+version = "7.0.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "async-timeout", marker = "python_full_version < '3.11.3'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d2/0e/80de0c7d9b04360331906b6b713a967e6523d155a92090983eba2e99302e/redis-7.0.0.tar.gz", hash = "sha256:6546ada54354248a53a47342d36abe6172bb156f23d24f018fda2e3c06b9c97a", size = 4754895, upload-time = "2025-10-22T15:38:36.128Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/57/8f/f125feec0b958e8d22c8f0b492b30b1991d9499a4315dfde466cf4289edc/redis-7.0.1.tar.gz", hash = "sha256:c949df947dca995dc68fdf5a7863950bf6df24f8d6022394585acc98e81624f1", size = 4755322, upload-time = "2025-10-27T14:34:00.33Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/aa/de/68c1add9d9a49588e6f75a149e079e44bab973e748a35e0582ccada09002/redis-7.0.0-py3-none-any.whl", hash = "sha256:1e66c8355b3443af78367c4937484cd875fdf9f5f14e1fed14aa95869e64f6d1", size = 339526, upload-time = "2025-10-22T15:38:34.901Z" },
+    { url = "https://files.pythonhosted.org/packages/e9/97/9f22a33c475cda519f20aba6babb340fb2f2254a02fb947816960d1e669a/redis-7.0.1-py3-none-any.whl", hash = "sha256:4977af3c7d67f8f0eb8b6fec0dafc9605db9343142f634041fb0235f67c0588a", size = 339938, upload-time = "2025-10-27T14:33:58.553Z" },
 ]
 
 [[package]]
@@ -1224,15 +1218,15 @@ wheels = [
 
 [[package]]
 name = "starlette"
-version = "0.48.0"
+version = "0.49.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a7/a5/d6f429d43394057b67a6b5bbe6eae2f77a6bf7459d961fdb224bf206eee6/starlette-0.48.0.tar.gz", hash = "sha256:7e8cee469a8ab2352911528110ce9088fdc6a37d9876926e73da7ce4aa4c7a46", size = 2652949, upload-time = "2025-09-13T08:41:05.699Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/de/1a/608df0b10b53b0beb96a37854ee05864d182ddd4b1156a22f1ad3860425a/starlette-0.49.3.tar.gz", hash = "sha256:1c14546f299b5901a1ea0e34410575bc33bbd741377a10484a54445588d00284", size = 2655031, upload-time = "2025-11-01T15:12:26.13Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/be/72/2db2f49247d0a18b4f1bb9a5a39a0162869acf235f3a96418363947b3d46/starlette-0.48.0-py3-none-any.whl", hash = "sha256:0764ca97b097582558ecb498132ed0c7d942f233f365b86ba37770e026510659", size = 73736, upload-time = "2025-09-13T08:41:03.869Z" },
+    { url = "https://files.pythonhosted.org/packages/a3/e0/021c772d6a662f43b63044ab481dc6ac7592447605b5b35a957785363122/starlette-0.49.3-py3-none-any.whl", hash = "sha256:b579b99715fdc2980cf88c8ec96d3bf1ce16f5a8051a7c2b84ef9b1cdecaea2f", size = 74340, upload-time = "2025-11-01T15:12:24.387Z" },
 ]
 
 [[package]]

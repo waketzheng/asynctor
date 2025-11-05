@@ -1,9 +1,9 @@
 from .aio import bulk_gather, gather, map_group, run, run_async, start_tasks, wait_for
 from .client import AsyncRedis
-from .timing import timeit
+from .timing import Timer, timeit
 from .utils import AsyncClientGenerator, AsyncTestClient, AttrDict, Shell, cache_attr
 
-__version__ = "0.10.0"
+__version__ = "0.10.2"
 __all__ = (
     "__version__",
     "AsyncClientGenerator",
@@ -11,6 +11,7 @@ __all__ = (
     "AsyncTestClient",
     "AttrDict",
     "Shell",
+    "Timer",
     "bulk_gather",
     "cache_attr",
     "gather",

@@ -6,9 +6,10 @@ from collections.abc import Callable
 from contextlib import AbstractContextManager
 from functools import cached_property
 from threading import Thread
-from typing import Annotated, Any, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Annotated, Any, ParamSpec, TypeAlias, TypeVar
 
-from .compat import ParamSpec, Self
+if TYPE_CHECKING:
+    from .compat import Self
 
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")

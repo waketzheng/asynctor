@@ -228,3 +228,11 @@ def test_nows():
         datetime.strptime(str(Timer.to_beijing(utc_now)).split(".")[0], fmt)
         - datetime.strptime(str(utc_now).split(".")[0], fmt)
     ) == timedelta(hours=8)
+
+
+def test_export():
+    from asynctor import Timer as _Timer
+    from asynctor import timeit as _timeit
+
+    assert _Timer is Timer
+    assert _timeit is timeit

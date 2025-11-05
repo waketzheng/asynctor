@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 
 T = TypeVar("T")
-AsyncClientGenerator: TypeAlias = AsyncGenerator["AsyncClient", None]
+AsyncClientGenerator: TypeAlias = AsyncGenerator["AsyncClient"]
 
 
 @asynccontextmanager

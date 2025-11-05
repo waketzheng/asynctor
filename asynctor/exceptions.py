@@ -4,3 +4,7 @@ class AsynctorError(Exception):
 
 class ParamsError(AsynctorError):
     pass
+
+
+class UnsupportedError(AsynctorError, ValueError):
+    pass

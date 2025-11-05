@@ -6,7 +6,7 @@ import sys
 import warnings
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Literal, TypeAlias, TypeVar, cast, overload
+from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeVar, cast, overload
 
 import anyio
 import sniffio
@@ -17,10 +17,10 @@ from anyio.lowlevel import checkpoint
 from .exceptions import ParamsError
 
 if sys.version_info >= (3, 11):  # pragma: no cover
-    from typing import ParamSpec, Self, TypeVarTuple, Unpack
+    from typing import TypeVarTuple, Unpack
 else:
     from exceptiongroup import ExceptionGroup  # pragma: no cover
-    from typing_extensions import ParamSpec, Self, TypeVarTuple, Unpack  # pragma: no cover
+    from typing_extensions import TypeVarTuple, Unpack  # pragma: no cover
 
 if TYPE_CHECKING:
     from anyio.abc._tasks import TaskGroup
@@ -89,7 +89,7 @@ def run(
 
 
 class LengthFixedList(list[T]):
-    def append(self: Self, _: T) -> None:
+    def append(self, _: T) -> None:
         raise TypeError(f"{self.__class__.__name__} is fixed-size")
 
 
