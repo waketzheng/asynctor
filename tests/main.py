@@ -2,17 +2,24 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 
+import uvicorn
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
 from asynctor import AsyncRedis
-from asynctor.contrib.fastapi import AioRedis, AioRedisDep, ClientIpDep, register_aioredis
+from asynctor.contrib.fastapi import (
+    AioRedis,
+    AioRedisDep,
+    ClientIpDep,
+    config_access_log_to_show_time,
+    register_aioredis,
+)
 from asynctor.utils import get_machine_ip
 
 
 @asynccontextmanager
-async def lifespan(app):
-    async with AsyncRedis(app):
+async def lifespan(fastapi_app: FastAPI):
+    async with AsyncRedis(fastapi_app):
         yield
 
 
@@ -20,6 +27,7 @@ app = FastAPI()
 app_for_utils_test = FastAPI(lifespan=lifespan)
 app_default_to_mount_lifespan = FastAPI(lifespan=lifespan)
 register_aioredis(app)
+config_access_log_to_show_time()
 
 
 @app.get("/")
@@ -53,3 +61,7 @@ async def set_redis_key_value(redis: AioRedisDep, item: Item) -> dict[str, str |
 @app.get("/ip")
 def get_your_ip(client_ip: ClientIpDep) -> dict[str, str]:
     return {"client ip": client_ip, "server ip": get_machine_ip()}
+
+
+if __name__ == "__main__":
+    uvicorn.run(app)

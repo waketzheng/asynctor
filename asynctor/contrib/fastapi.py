@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Annotated, Any
@@ -83,3 +84,17 @@ Usage::
     >>> def index(client_ip: ClientIpDep):
     ...     assert isinstance(client_ip, str)
 """
+
+
+def config_access_log_to_show_time() -> None:
+    """Config access logging format for uvicorn
+
+    Usage::
+        >>> from asynctor.contrib.fastapi import config_access_log_to_show_time
+        >>> app = FastAPI()
+        >>> config_access_log_to_show_time()
+    """
+    fmt = "%(asctime)s - %(levelname)s - %(message)s"
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(fmt))
+    logging.getLogger("uvicorn.access").addHandler(handler)
