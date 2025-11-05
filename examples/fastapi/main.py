@@ -9,30 +9,39 @@ import uvicorn
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
-from asynctor.contrib.fastapi import AioRedisDep, register_aioredis
+from asynctor.contrib.fastapi import AioRedisDep, config_access_log_to_show_time, register_aioredis
 
 fake_db = {"users": [{"id": 1, "name": "John"}]}
 
 
-async def init_db(app: FastAPI) -> None:
+async def init_db(fastapp: FastAPI) -> None:
     db = copy.deepcopy(fake_db)
-    app.state.db = db
+    fastapp.state.db = db
 
 
-async def teardown(app: FastAPI) -> None:
+async def teardown(fastapp: FastAPI) -> None:
     app.state.db.clear()
 
 
 @asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+async def register_db(fastapp: FastAPI) -> AsyncGenerator[None]:
     await init_db(app)
-    yield
-    await teardown(app)
+    try:
+        yield
+    finally:
+        await teardown(app)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
+    async with register_db(app):
+        yield
 
 
 app = FastAPI(lifespan=lifespan)
 register_aioredis(app, host="127.0.0.1")
 fastapi_cdn_host.patch_docs(app)
+config_access_log_to_show_time()
 
 
 @app.get("/users")

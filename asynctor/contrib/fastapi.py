@@ -92,7 +92,7 @@ Usage::
 """
 
 
-def config_access_log_to_show_time() -> None:
+def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
     """Config access logging format for uvicorn
 
     Usage::
@@ -103,4 +103,4 @@ def config_access_log_to_show_time() -> None:
     fmt = "%(asctime)s - %(levelname)s - %(message)s"
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(fmt))
-    logging.getLogger("uvicorn.access").addHandler(handler)
+    logging.getLogger(log).addHandler(handler)
