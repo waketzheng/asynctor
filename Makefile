@@ -13,8 +13,7 @@ help:
 
 up:
 	uv lock --upgrade
-	uv sync --frozen --inexact
-	uv run --no-sync fast pypi --quiet
+	$(MAKE) deps options=--frozen
 
 lock:
 	uv lock --upgrade

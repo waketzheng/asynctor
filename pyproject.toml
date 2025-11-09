@@ -133,7 +133,7 @@ exclude_also = [
 
 [tool.pdm.scripts]
 start = {composite = ["pre-commit install", "deps"]}
-pypi = 'pdm run python scripts/uv_pypi.py {args}'
+pypi = 'pdm run fast pypi {args}'
 up = {composite = ['uv lock --upgrade', 'uv sync --frozen --active --inexact --all-extras', 'pypi']}
 tree = 'pdm list --tree {args}'
 deps = 'pdm run fast deps --uv {args}'

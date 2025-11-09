@@ -2,7 +2,13 @@
 
 ## 0.10
 
-### [0.10.3]*(Unrelease)*
+### [0.10.4]*(Unrelease)*
+
+### [0.10.3](../../releases/tag/v0.10.3) - 2025-11-09
+
+#### Added
+- Add `config_access_log_to_show_time` for fastapi
+- refactor: add property `zone` to ZoneInfo for pytz-compatible
 
 ### [0.10.2](../../releases/tag/v0.10.2) - 2025-11-04
 
