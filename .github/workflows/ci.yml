@@ -40,10 +40,11 @@ jobs:
           activate-environment: true
           enable-cache: true
       - uses: astral-sh/ruff-action@v3
+      - uses: extractions/setup-just@v3  # Or: uv tool install rust-just
       - name: Install deps
-        run: uv sync --group lint --extra all
+        run: just deps --without test
       - name: Check code style and Type Hint
-        run: fast check
+        run: just _check
 
   test:
     runs-on: ubuntu-latest
@@ -74,8 +75,10 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
+      - name: Install deps
+        run: uvx --from rust-just just deps --without lint
       - name: Test with pytest
-        run: make test options='--no-group=lint'
+        run: uvx --from rust-just just _test
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost
