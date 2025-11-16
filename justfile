@@ -2,6 +2,10 @@
 # ^ A shebang isn't required, but allows a justfile to be executed
 #   like a script, with `./justfile lint`, for example.
 
+# NOTE: You can install `just` by:
+# pipx install rust-just
+# Or: uv tool install rust-just
+
 system-info:
     @echo "This is an {{arch()}} machine running on {{os_family()}}"
     just --list
