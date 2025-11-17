@@ -2,6 +2,9 @@
 # ^ A shebang isn't required, but allows a justfile to be executed
 #   like a script, with `./justfile lint`, for example.
 
+# NOTE: You can run the following command to install `just`:
+#   uv tool install rust-just
+
 system-info:
     @echo "This is an {{arch()}} machine running on {{os_family()}}"
     just --list
@@ -119,5 +122,5 @@ tag *args:
     pdm run fast tag {{args}}
 
 release: venv install_me bump tag
-    git log
-    @echo "You may need to run `git push` to release this new version"
+    git log -1
+    @echo 'You may need to run `git push` to release this new version'

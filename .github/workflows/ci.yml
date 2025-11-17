@@ -76,7 +76,8 @@ jobs:
         with:
           enable-cache: true
       - name: Install deps
-        run: uvx --from rust-just just deps --without lint
+        run: |
+          uvx --from rust-just just deps --without lint
       - name: Test with pytest
         run: uvx --from rust-just just _test
         env:
