@@ -104,3 +104,7 @@ def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(fmt))
     logging.getLogger(log).addHandler(handler)
+
+
+def runserver(main: str | int | None = None, port: int | None = None, reload: bool = False) -> None:
+    pass
