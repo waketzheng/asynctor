@@ -39,6 +39,7 @@ venv313:
 
 deps *args: venv
     {{ INSTALL_DEPS }} {{args}}
+    uv run --no-sync fast pypi --quiet
 
 [unix]
 lock *args:
@@ -50,7 +51,6 @@ lock *args:
 
 up:
     @just lock --upgrade
-    uv run --no-sync fast pypi --quiet
 
 [unix]
 clear *args:
