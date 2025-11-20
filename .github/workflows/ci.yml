@@ -46,7 +46,7 @@ jobs:
         run: |
           pdm config check_update false
       - name: Install deps
-        run: just deps --without test
+        run: just deps --no-group test
       - name: Check code style and Type Hint
         run: just _check
 
@@ -83,7 +83,7 @@ jobs:
       - name: Install deps
         run: |
           pdm config check_update false
-          uvx --from rust-just just deps --without lint
+          uvx --from rust-just just deps --no-group lint
       - name: Test with pytest
         run: uvx --from rust-just just _test
         env:
