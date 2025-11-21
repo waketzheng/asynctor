@@ -115,6 +115,8 @@ def runserver(
     host: str = "0.0.0.0",
     reload: bool = False,
 ) -> None:
+    from typing import Union
+
     if not (args := sys.argv[1:]):
         return uvicorn.run("__main__:app" if reload else app)
 
@@ -135,8 +137,11 @@ def runserver(
         return host, port
 
     def cli(
-        addrport: Annotated[str | int | None, "Optional port number, or ipaddr:port"] = None,
-        port: int | None = None,
+        addrport: Annotated[
+            Union[str, int, None],  # NOQA:UP007
+            "Optional port number, or ipaddr:port",
+        ] = None,
+        port: Union[int, None] = None,  # NOQA:UP007
         host: str = "0.0.0.0",
         reload: bool = False,
     ) -> None:
