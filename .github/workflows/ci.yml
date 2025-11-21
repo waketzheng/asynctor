@@ -41,10 +41,11 @@ jobs:
           enable-cache: true
       - uses: astral-sh/ruff-action@v3
       - uses: extractions/setup-just@v3  # Or: uv tool install rust-just
-      - uses: pdm-project/setup-pdm@v4
-      - name: Config pdm
+      - name: Setup PDM by uv
         run: |
+          uv tool install pdm --with msgpack
           pdm config check_update false
+          pdm config use_uv true
       - name: Install deps
         run: just deps --no-group test
       - name: Check code style and Type Hint
@@ -79,11 +80,13 @@ jobs:
       - uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
-      - uses: pdm-project/setup-pdm@v4
-      - name: Install deps
+      - name: Setup PDM by uv
         run: |
+          uv tool install pdm --with msgpack
           pdm config check_update false
-          uvx --from rust-just just deps --no-group lint
+          pdm config use_uv true
+      - name: Install deps
+        run: uvx --from rust-just just deps --no-group lint
       - name: Test with pytest
         run: uvx --from rust-just just _test
         env:

@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import logging
+import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Annotated, Any
 
+import uvicorn
 from fastapi import Depends, FastAPI, Request
 from fastapi.routing import _merge_lifespan_context
 
@@ -106,5 +108,54 @@ def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
     logging.getLogger(log).addHandler(handler)
 
 
-def runserver(main: str | int | None = None, port: int | None = None, reload: bool = False) -> None:
-    pass
+def runserver(
+    app: FastAPI,
+    addrport: str | int | None = None,
+    port: int | None = None,
+    host: str = "0.0.0.0",
+    reload: bool = False,
+) -> None:
+    if not (args := sys.argv[1:]):
+        return uvicorn.run("__main__:app" if reload else app)
+
+    def parse_host_port(addrport: str | int, verbose=True) -> tuple[str | None, int | None]:
+        host, port = None, None
+        if isinstance(addrport, int) or addrport.isdigit():
+            port = int(addrport)
+        elif ":" in addrport:
+            h, p = addrport.split(":", 1)
+            if not h:
+                host = "127.0.0.1"
+            elif h != "0":
+                host = h
+            if p.isdigit():
+                port = int(p)
+        elif verbose:
+            print(f"Ignore argument {addrport = }")
+        return host, port
+
+    def cli(
+        addrport: Annotated[str | int | None, "Optional port number, or ipaddr:port"] = None,
+        port: int | None = None,
+        host: str = "0.0.0.0",
+        reload: bool = False,
+    ) -> None:
+        if addrport:
+            h, p = parse_host_port(addrport)
+            if h:
+                host = h
+            if p:
+                port = p
+        asgi = "__main__:app" if reload else app
+        if port:
+            uvicorn.run(asgi, host=host, port=port)
+        else:
+            uvicorn.run(asgi, host=host)
+
+    try:
+        import typer
+    except ImportError:
+        noreload = "--noreload" in args or "--no-reload" in args
+        cli(addrport, port, host, reload=not noreload)
+    else:
+        typer.run(cli)
