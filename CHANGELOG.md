@@ -4,6 +4,12 @@
 
 ### [0.10.4]*(Unrelease)*
 
+#### Added
+- feat: runserver function for fastapi project
+
+#### Changed
+- Migrate from Makefile to justfile
+
 ### [0.10.3](../../releases/tag/v0.10.3) - 2025-11-09
 
 #### Added
