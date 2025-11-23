@@ -29,7 +29,6 @@ WARN_OS := "echo 'WARNING: This command only support Linux!'"
 [unix]
 venv *args:
     @if test ! -e .venv; then {{ VENV_CREATE }} --with uv {{ args }}; fi
-
 [windows]
 venv *args:
     @if (-Not (Test-Path '.venv')) { {{ VENV_CREATE }} --with-pip {{ args }} }
@@ -39,7 +38,7 @@ venv313:
 
 deps *args: venv
     {{ INSTALL_DEPS }} {{args}}
-    uv run --no-sync fast pypi --quiet
+    @uv run --no-sync fast pypi --quiet
 
 [unix]
 lock *args:
@@ -57,7 +56,7 @@ clear *args:
     uv sync --all-extras --all-groups {{args}}
 [windows]
 clear *args:
-    @echo "WARNING: It may cost too much time! You can enter Crtl-C to exit."
+    @echo "WARNING: It may cost 10 minutes! You can enter Crtl-C to exit."
     @if (-Not (Test-Path 'pdm.lock')) { pdm lock -G :all }
     pdm sync -G :all --clean {{args}}
 
@@ -122,6 +121,5 @@ bump *args:
 tag *args:
     pdm run fast tag {{args}}
 
-release: venv install_me bump tag
+release: venv bump tag
     git log -1
-    @echo 'You may need to run `git push` to release this new version'
