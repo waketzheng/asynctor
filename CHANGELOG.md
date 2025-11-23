@@ -4,6 +4,9 @@
 
 ### [0.10.4]*(Unrelease)*
 
+#### Changed
+- Migrate from Makefile to justfile
+
 ### [0.10.3](../../releases/tag/v0.10.3) - 2025-11-09
 
 #### Added
