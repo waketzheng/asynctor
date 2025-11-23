@@ -5,11 +5,15 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import fastapi_cdn_host
-import uvicorn
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
-from asynctor.contrib.fastapi import AioRedisDep, config_access_log_to_show_time, register_aioredis
+from asynctor.contrib.fastapi import (
+    AioRedisDep,
+    config_access_log_to_show_time,
+    register_aioredis,
+    runserver,
+)
 
 fake_db = {"users": [{"id": 1, "name": "John"}]}
 
@@ -84,4 +88,4 @@ async def get_cached_string_from_redis(redis: AioRedisDep, key: str) -> dict[str
 
 
 if __name__ == "__main__":
-    uvicorn.run(app)
+    runserver(app)

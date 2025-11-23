@@ -115,8 +115,6 @@ def runserver(
     host: str = "0.0.0.0",
     reload: bool = False,
 ) -> None:
-    from typing import Union
-
     if not (args := sys.argv[1:]):
         return uvicorn.run("__main__:app" if reload else app)
 
@@ -136,12 +134,19 @@ def runserver(
             print(f"Ignore argument {addrport = }")
         return host, port
 
+    try:
+        import typer
+    except ImportError:
+        raise ImportError(
+            "You must install typer or typer-slim to support arguments"
+            ", e.g.: pip install typer-slim"
+        ) from None
+
     def cli(
-        addrport: Annotated[
-            Union[str, int, None],  # NOQA:UP007
-            "Optional port number, or ipaddr:port",
-        ] = None,
-        port: Union[int, None] = None,  # NOQA:UP007
+        addrport: Annotated[str | None, "Optional port number, or ipaddr:port"] = typer.Argument(
+            default=None
+        ),
+        port: int | None = None,
         host: str = "0.0.0.0",
         reload: bool = False,
     ) -> None:
@@ -157,10 +162,7 @@ def runserver(
         else:
             uvicorn.run(asgi, host=host)
 
-    try:
-        import typer
-    except ImportError:
-        noreload = "--noreload" in args or "--no-reload" in args
-        cli(addrport, port, host, reload=not noreload)
-    else:
-        typer.run(cli)
+    if (django_style_noreload := "--noreload") in args:
+        sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"
+
+    typer.run(cli)
