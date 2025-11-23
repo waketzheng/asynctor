@@ -220,8 +220,8 @@ def test_shell_run_kw(tmp_work_dir):
 def test_shell_run_verbose(capsys):
     Shell("ls pyproject.toml").run(verbose=True)
     assert "--> ls pyproject.toml" in capsys.readouterr().out
-    rc = Shell("ls Makefile").call(verbose=True)
-    assert "--> ls Makefile" in capsys.readouterr().out
+    rc = Shell("ls justfile").call(verbose=True)
+    assert "--> ls justfile" in capsys.readouterr().out
     assert rc == 0
     Shell("ls README.md").capture_output(verbose=True)
     assert "--> ls README.md" in capsys.readouterr().out
