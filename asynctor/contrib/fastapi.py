@@ -4,6 +4,7 @@ import logging
 import sys
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated, Any
 
 import uvicorn
@@ -114,11 +115,28 @@ def runserver(
     port: int | None = None,
     host: str = "0.0.0.0",
     reload: bool = False,
+    verbose: bool = False,
+    **kw,
 ) -> None:
-    if not (args := sys.argv[1:]):
-        return uvicorn.run("__main__:app" if reload else app)
+    def uvicorn_run(app: FastAPI, host: str, port: int | None, reload: bool) -> None:
+        asgi = "__main__:app" if reload else app
+        if port:
+            uvicorn.run(asgi, host=host, port=port, **kw)
+        else:
+            uvicorn.run(asgi, host=host, **kw)
 
-    def parse_host_port(addrport: str | int, verbose=True) -> tuple[str | None, int | None]:
+    if not (args := sys.argv[1:]):
+        return uvicorn_run(app, host, port, reload)
+
+    try:
+        import typer
+    except ImportError:
+        raise ImportError(
+            "You must install typer or typer-slim to support arguments"
+            ", e.g.: pip install typer-slim"
+        ) from None
+
+    def parse_host_port(addrport: str | int, verbose: bool) -> tuple[str | None, int | None]:
         host, port = None, None
         if isinstance(addrport, int) or addrport.isdigit():
             port = int(addrport)
@@ -131,16 +149,8 @@ def runserver(
             if p.isdigit():
                 port = int(p)
         elif verbose:
-            print(f"Ignore argument {addrport = }")
+            typer.echo(f"Ignore argument {addrport = }")
         return host, port
-
-    try:
-        import typer
-    except ImportError:
-        raise ImportError(
-            "You must install typer or typer-slim to support arguments"
-            ", e.g.: pip install typer-slim"
-        ) from None
 
     def cli(
         addrport: Annotated[str | None, "Optional port number, or ipaddr:port"] = typer.Argument(
@@ -149,18 +159,49 @@ def runserver(
         port: int | None = None,
         host: str = "0.0.0.0",
         reload: bool = False,
+        prod: bool = False,
+        verbose: bool = False,
     ) -> None:
         if addrport:
-            h, p = parse_host_port(addrport)
+            h, p = parse_host_port(addrport, verbose)
             if h:
                 host = h
             if p:
                 port = p
-        asgi = "__main__:app" if reload else app
-        if port:
-            uvicorn.run(asgi, host=host, port=port)
-        else:
-            uvicorn.run(asgi, host=host)
+        elif prod:
+
+            def load_prod_port(config_file: Path) -> int:
+                import importlib.util
+
+                spec = importlib.util.spec_from_file_location(config_file.stem, config_file)
+                if spec is not None and spec.loader is not None:
+                    gunicorn_config = importlib.util.module_from_spec(spec)
+                    spec.loader.exec_module(gunicorn_config)
+                    if p := getattr(gunicorn_config, "PORT", 0):
+                        if verbose:
+                            typer.echo(f"Load `PORT = {p}` from {config_file}")
+                        return int(p)
+                    elif verbose:
+                        typer.echo(f"{config_file} does not have 'PORT' attribute")
+                elif verbose:
+                    typer.echo(f"Failed to load module from {config_file}")
+                return 0
+
+            deployment_dir = Path("deployment")
+            for level in range(5):
+                if deployment_dir.exists():
+                    if (gc := deployment_dir / "gunicorn_config.py").exists():
+                        if _port := load_prod_port(gc):
+                            port = _port
+                    elif verbose:
+                        typer.echo(f"{gc.name} not found in {deployment_dir}")
+                    break
+                parent = Path.cwd().parent if level == 0 else deployment_dir.parent.parent
+                deployment_dir = parent / deployment_dir.name
+            else:
+                if verbose:
+                    typer.echo(f"Deployment dir: {deployment_dir.name!r} not found")
+        uvicorn_run(app, host, port, reload)
 
     if (django_style_noreload := "--noreload") in args:
         sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"
