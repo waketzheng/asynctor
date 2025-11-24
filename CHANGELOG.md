@@ -4,6 +4,9 @@
 
 ### [0.10.4]*(Unrelease)*
 
+#### Added
+- feat: runserver function for fastapi project
+
 #### Changed
 - Migrate from Makefile to justfile
 

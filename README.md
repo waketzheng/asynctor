@@ -109,7 +109,9 @@ async def get_value_from_redis_by_key(redis: AioRedisDep, key: str) -> str:
         return ''
     return value.decode()
 ```
+
 - Async Test Fixtures
+
 *pip install "asynctor[testing]"*
 ```py
 import pytest
@@ -127,7 +129,21 @@ async def test_api(client: AsyncClient):
     assert response.status_code == 200
 ```
 
+- runserver for fastapi projects
+
+*pip install asynctor fastapi uvicorn*
+```py
+from asynctor.contrib.fastapi import runserver
+from fastapi import FastAPI
+
+app = FastAPI()
+
+if __name__ == '__main__':
+    runserver(app)
+```
+
 - Read Excel File
+
 *pandas/openpyxl is required, can be installed with xlsx extra: `pip install "asynctor[xlsx]"`*
 ```py
 >>> from asynctor.xlsx import load_xlsx

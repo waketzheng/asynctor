@@ -1,10 +1,14 @@
 from __future__ import annotations
 
+import functools
 import logging
-from collections.abc import AsyncGenerator
+import sys
+from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated, Any
 
+import uvicorn
 from fastapi import Depends, FastAPI, Request
 from fastapi.routing import _merge_lifespan_context
 
@@ -104,3 +108,125 @@ def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(fmt))
     logging.getLogger(log).addHandler(handler)
+
+
+class RunServer:
+    @staticmethod
+    def uvicorn_run(app: FastAPI, host: str, port: int | None, reload: bool, **kw) -> None:
+        asgi = "__main__:app" if reload else app
+        run = functools.partial(uvicorn.run, asgi, host=host, reload=reload, **kw)
+        if port:
+            run(port=port)
+        else:
+            run()
+
+    @staticmethod
+    def parse_host_port(
+        addrport: str | int, verbose: bool, echo: Callable
+    ) -> tuple[str | None, int | None]:
+        host, port = None, None
+        if isinstance(addrport, int) or addrport.isdigit():
+            port = int(addrport)
+        elif ":" in addrport:
+            h, p = addrport.split(":", 1)
+            if not h:
+                host = "127.0.0.1"
+            elif h != "0":
+                host = h
+            if p.isdigit():
+                port = int(p)
+        elif verbose:
+            echo(f"Ignore argument {addrport = }")
+        return host, port
+
+    @staticmethod
+    def load_prod_port(config_file: Path, verbose: bool, echo: Callable) -> int:
+        import importlib.util
+
+        spec = importlib.util.spec_from_file_location(config_file.stem, config_file)
+        if spec is not None and spec.loader is not None:
+            gunicorn_config = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(gunicorn_config)
+            if p := getattr(gunicorn_config, "PORT", 0):
+                if verbose:
+                    echo(f"Load `PORT = {p}` from {config_file}")
+                return int(p)
+            elif verbose:
+                echo(f"{config_file} does not have 'PORT' attribute")
+        elif verbose:
+            echo(f"Failed to load module from {config_file}")
+        return 0
+
+    @classmethod
+    def run(
+        cls,
+        app: FastAPI,
+        addrport: str | None,
+        port: int | None,
+        host: str,
+        reload: bool,
+        prod: bool,
+        verbose: bool,
+        echo: Callable,
+        **kw,
+    ) -> None:
+        if addrport:
+            h, p = cls.parse_host_port(addrport, verbose, echo)
+            if h:
+                host = h
+            if p:
+                port = p
+        elif prod:
+            deployment_dir = Path("deployment")
+            for level in range(5):
+                if deployment_dir.exists():
+                    if (gc := deployment_dir / "gunicorn_config.py").exists():
+                        if _port := cls.load_prod_port(gc, verbose, echo):
+                            port = _port
+                    elif verbose:
+                        echo(f"{gc.name} not found in {deployment_dir}")
+                    break
+                parent = Path.cwd().parent if level == 0 else deployment_dir.parent.parent
+                deployment_dir = parent / deployment_dir.name
+            else:
+                if verbose:
+                    echo(f"Deployment dir: {deployment_dir.name!r} not found")
+        cls.uvicorn_run(app, host, port, reload, **kw)
+
+
+def runserver(
+    app: FastAPI,
+    addrport: str | int | None = None,
+    port: int | None = None,
+    host: str = "0.0.0.0",
+    reload: bool = False,
+    verbose: bool = False,
+    **kw,
+) -> None:
+    if not (args := sys.argv[1:]):
+        return RunServer.uvicorn_run(app, host, port, reload, **kw)
+
+    try:
+        import typer
+    except ImportError:
+        raise ImportError(
+            "You must install typer or typer-slim to support arguments"
+            ", e.g.: pip install typer-slim"
+        ) from None
+
+    def cli(
+        addrport: Annotated[str | None, "Optional port number, or ipaddr:port"] = typer.Argument(
+            default=None
+        ),
+        port: int | None = None,
+        host: str = "0.0.0.0",
+        reload: bool = False,
+        prod: bool = False,
+        verbose: bool = False,
+    ) -> None:
+        RunServer.run(app, addrport, port, host, reload, prod, verbose, echo=typer.echo, **kw)
+
+    if (django_style_noreload := "--noreload") in args:
+        sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"
+
+    typer.run(cli)
