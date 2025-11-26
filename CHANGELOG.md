@@ -2,7 +2,12 @@
 
 ## 0.11
 
-### [0.11.1]*(Unrelease)*
+### [0.11.2]*(Unrelease)*
+
+### [0.11.1](../../releases/tag/v0.11.1) - 2025-11-26
+
+#### Added
+- feat: echo docs url when runserver
 
 ### [0.11.0](../../releases/tag/v0.11.0) - 2025-11-24
 
