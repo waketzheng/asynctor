@@ -24,5 +24,5 @@ repos:
       - id: pypi
         name: ensure pypi for uv lock
         files: 'uv.lock'
-        entry: pdm pypi
+        entry: pdm run fast pypi
         language: system

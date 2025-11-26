@@ -195,7 +195,7 @@ class TestTimer:
     @pytest.mark.anyio
     async def test_get_cost(self):
         places = 3
-        timer = Timer('Testing get cost', decimal_places=places, verbose=False)
+        timer = Timer("Testing get cost", decimal_places=places, verbose=False)
         delay = 0.2
         await anyio.sleep(delay)
         assert timer.get_cost() == delay
@@ -204,7 +204,6 @@ class TestTimer:
         await anyio.sleep(delay)
         assert timer.get_cost(start) == delay
         assert round(timer.get_cost(), 1) == delay * 2
-
 
 
 @pytest.mark.anyio

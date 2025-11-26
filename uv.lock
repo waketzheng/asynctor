@@ -119,6 +119,7 @@ lint = [
     { name = "mypy" },
     { name = "pandas-stubs" },
     { name = "types-redis" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
 test = [
     { name = "coverage" },
@@ -156,7 +157,7 @@ lint = [
     { name = "mypy", specifier = ">=1.18.2" },
     { name = "pandas-stubs", specifier = ">=2.2.0" },
     { name = "types-redis", specifier = ">=4.6.0.20241004" },
-    { name = "typing-extensions", marker = "python_full_version < '3.10'", specifier = ">=4.14.1" },
+    { name = "typing-extensions", marker = "python_full_version < '3.11'", specifier = ">=4.14.1" },
 ]
 test = [
     { name = "coverage", specifier = ">=7.11.0" },
@@ -468,7 +469,7 @@ name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/79/66800aadf48771f6b62f7eb014e352e5d06856655206165d775e675a02c9/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219" }
 wheels = [
@@ -477,7 +478,7 @@ wheels = [
 
 [[package]]
 name = "fastapi"
-version = "0.121.3"
+version = "0.122.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -485,9 +486,9 @@ dependencies = [
     { name = "starlette" },
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/80/f0/086c442c6516195786131b8ca70488c6ef11d2f2e33c9a893576b2b0d3f7/fastapi-0.121.3.tar.gz", hash = "sha256:0055bc24fe53e56a40e9e0ad1ae2baa81622c406e548e501e717634e2dfbc40b" }
+sdist = { url = "https://files.pythonhosted.org/packages/b2/de/3ee97a4f6ffef1fb70bf20561e4f88531633bb5045dc6cebc0f8471f764d/fastapi-0.122.0.tar.gz", hash = "sha256:cd9b5352031f93773228af8b4c443eedc2ac2aa74b27780387b853c3726fb94b" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/98/b6/4f620d7720fc0a754c8c1b7501d73777f6ba43b57c8ab99671f4d7441eb8/fastapi-0.121.3-py3-none-any.whl", hash = "sha256:0c78fc87587fcd910ca1bbf5bc8ba37b80e119b388a7206b39f0ecc95ebf53e9" },
+    { url = "https://files.pythonhosted.org/packages/7a/93/aa8072af4ff37b795f6bbf43dcaf61115f40f49935c7dbb180c9afc3f421/fastapi-0.122.0-py3-none-any.whl", hash = "sha256:a456e8915dfc6c8914a50d9651133bd47ec96d331c5b44600baa635538a30d67" },
 ]
 
 [[package]]
@@ -505,15 +506,15 @@ wheels = [
 
 [[package]]
 name = "fastdevcli-slim"
-version = "0.19.4"
+version = "0.19.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "typer-slim" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9b/13/0f20feaf15b272cc0ba38b9206408651a82fd954197ce1d49a49923b278a/fastdevcli_slim-0.19.4.tar.gz", hash = "sha256:3890bc288c11acf2acd74270e0d1ea00d700aa5bc0d0093105f9ce5e41059dc8" }
+sdist = { url = "https://files.pythonhosted.org/packages/35/de/ac22ca7b2a06521f3b9471ccd41f3a4d416302d5ecc984895d25939f0430/fastdevcli_slim-0.19.5.tar.gz", hash = "sha256:23ae25aa1c1f1dcea7b27958a0b2a5d1a2234513841f30e53d43454823c71f6f" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8d/c5/227c626a2ae66a7f41130fc6ff85cb93630936776016ea86de646625b592/fastdevcli_slim-0.19.4-py3-none-any.whl", hash = "sha256:19fa70c06af7329dc283b131750a87282e9042f74c8ffc0fb0e7734b6fdb3e2c" },
+    { url = "https://files.pythonhosted.org/packages/82/59/336d501a65beb966c81ea51d4dbe68993373042b93c249f358d932b99539/fastdevcli_slim-0.19.5-py3-none-any.whl", hash = "sha256:4f47c6d0594536aa1eb9bf5b32404c142fc3b785de1fbca3262b80a83c362e5d" },
 ]
 
 [[package]]
