@@ -157,6 +157,28 @@ class RunServer:
             echo(f"Failed to load module from {config_file}")
         return 0
 
+    @staticmethod
+    def echo_docs_url(
+        app: FastAPI,
+        host: str,
+        port: int | None,
+        docs_params: dict | None = None,
+        echo: Callable | None = None,
+    ) -> None:
+        from asynctor.utils import get_machine_ip
+
+        if host == "0.0.0.0":
+            host = get_machine_ip()
+        url = f"http://{host}:{port or 8000}{app.docs_url}"
+        if docs_params:
+            url += "?" + "&".join(f"{k}={v}" for k, v in docs_params.items())
+        tip = "You can view docs at:"
+        if echo is None:
+            print(f"{tip}\n{url}")
+        else:
+            echo(tip)
+            echo(url, bold=True)
+
     @classmethod
     def run(
         cls,
@@ -168,6 +190,7 @@ class RunServer:
         prod: bool,
         verbose: bool,
         echo: Callable,
+        docs_params: dict[str, str] | None = None,
         **kw,
     ) -> None:
         if addrport:
@@ -191,6 +214,7 @@ class RunServer:
             else:
                 if verbose:
                     echo(f"Deployment dir: {deployment_dir.name!r} not found")
+        cls.echo_docs_url(app, host, port, docs_params, echo)
         cls.uvicorn_run(app, host, port, reload, **kw)
 
 
@@ -201,9 +225,11 @@ def runserver(
     host: str = "0.0.0.0",
     reload: bool = False,
     verbose: bool = False,
+    docs_params: dict[str, str] | None = None,
     **kw,
 ) -> None:
     if not (args := sys.argv[1:]):
+        RunServer.echo_docs_url(app, host, port, docs_params)
         return RunServer.uvicorn_run(app, host, port, reload, **kw)
 
     try:
@@ -224,7 +250,7 @@ def runserver(
         prod: bool = False,
         verbose: bool = False,
     ) -> None:
-        RunServer.run(app, addrport, port, host, reload, prod, verbose, echo=typer.echo, **kw)
+        RunServer.run(app, addrport, port, host, reload, prod, verbose, echo=typer.secho, **kw)
 
     if (django_style_noreload := "--noreload") in args:
         sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"
