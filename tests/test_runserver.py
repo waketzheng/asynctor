@@ -42,7 +42,7 @@ def test_no_args(mock_uvicorn_run, mocker):
 
 def test_reload(mock_uvicorn_run):
     opts = CliOpts(reload=True)
-    RunServer.run(FastAPI(), echo=typer.echo, **opts.as_dict())
+    RunServer.run(FastAPI(), echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with("__main__:app", host="0.0.0.0", reload=True)
 
 
@@ -54,7 +54,7 @@ def test_host(mock_uvicorn_run):
 def _test_host(mock_uvicorn_run, host):
     app = FastAPI()
     opts = CliOpts(host=host)
-    RunServer.run(app, echo=typer.echo, **opts.as_dict())
+    RunServer.run(app, echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with(app, host=host, reload=False)
 
 
@@ -71,7 +71,7 @@ def test_host_domain(mock_uvicorn_run):
 def test_prod(mock_uvicorn_run):
     opts = CliOpts(prod=True)
     app = FastAPI()
-    RunServer.run(app, echo=typer.echo, **opts.as_dict())
+    RunServer.run(app, echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with(app, host=opts.host, reload=False)
 
 
@@ -79,35 +79,35 @@ def test_prod_hint(mock_uvicorn_run):
     opts = CliOpts(prod=True)
     app = FastAPI()
     with chdir(Path(__file__).parent):
-        RunServer.run(app, echo=typer.echo, **opts.as_dict())
+        RunServer.run(app, echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with(app, host=opts.host, port=9001, reload=False)
 
 
 def test_port(mock_uvicorn_run):
     opts = CliOpts(port=9001)
     app = FastAPI()
-    RunServer.run(app, echo=typer.echo, **opts.as_dict())
+    RunServer.run(app, echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with(app, host=opts.host, port=9001, reload=False)
 
 
 def test_addrport(mock_uvicorn_run):
     opts = CliOpts(addrport="9001")
     app = FastAPI()
-    RunServer.run(app, echo=typer.echo, **opts.as_dict())
+    RunServer.run(app, echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with(app, host=opts.host, port=9001, reload=False)
 
 
 def test_addrport_localhost(mock_uvicorn_run):
     opts = CliOpts(addrport=":9001")
     app = FastAPI()
-    RunServer.run(app, echo=typer.echo, **opts.as_dict())
+    RunServer.run(app, echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with(app, host="127.0.0.1", port=9001, reload=False)
 
 
 def test_addrport_zero_host(mock_uvicorn_run):
     opts = CliOpts(addrport="0:9001")
     app = FastAPI()
-    RunServer.run(app, echo=typer.echo, **opts.as_dict())
+    RunServer.run(app, echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", port=9001, reload=False)
 
 
@@ -115,7 +115,7 @@ def test_addrport_ip_host(mock_uvicorn_run):
     host = get_machine_ip()
     opts = CliOpts(addrport=f"{host}:9001")
     app = FastAPI()
-    RunServer.run(app, echo=typer.echo, **opts.as_dict())
+    RunServer.run(app, echo=typer.secho, **opts.as_dict())
     mock_uvicorn_run.assert_called_once_with(app, host=host, port=9001, reload=False)
 
 

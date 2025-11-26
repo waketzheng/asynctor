@@ -177,7 +177,10 @@ class RunServer:
             print(f"{tip}\n{url}")
         else:
             echo(tip)
-            echo(url, bold=True)
+            try:
+                echo(url, bold=True)
+            except TypeError:
+                echo(url)
 
     @classmethod
     def run(
