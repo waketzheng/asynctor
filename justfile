@@ -38,6 +38,7 @@ venv313:
 
 deps *args: venv
     {{ INSTALL_DEPS }} {{args}}
+    @just install_me
     @uv run --no-sync fast pypi --quiet
 
 [unix]

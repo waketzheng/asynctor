@@ -192,6 +192,20 @@ class TestTimer:
     def test_invalid_use_case(self):
         assert Timer("")() is None
 
+    @pytest.mark.anyio
+    async def test_get_cost(self):
+        places = 3
+        timer = Timer('Testing get cost', decimal_places=places, verbose=False)
+        delay = 0.2
+        await anyio.sleep(delay)
+        assert timer.get_cost() == delay
+        timer.capture()
+        start = timer._end
+        await anyio.sleep(delay)
+        assert timer.get_cost(start) == delay
+        assert round(timer.get_cost(), 1) == delay * 2
+
+
 
 @pytest.mark.anyio
 async def test_with_timeit():

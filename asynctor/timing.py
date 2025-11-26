@@ -98,7 +98,18 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
 
     @property
     def cost(self) -> float:
-        return round(self._end - self._start, self._decimal_places)
+        return self.get_cost(end=self._end)
+
+    def get_cost(
+        self,
+        start: Annotated[float | None, "Use self._start if None"] = None,
+        end: Annotated[float, "Use time.time() if zero"] = 0,
+    ) -> float:
+        if start is None:
+            start = self._start
+        if not end:
+            end = time.time()
+        return round(end - start, self._decimal_places)
 
     def __str__(self) -> str:
         return f"{self.message} Cost: {self.cost} seconds"
