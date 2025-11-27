@@ -4,6 +4,10 @@
 
 ### [0.11.2]*(Unrelease)*
 
+#### Added
+- feat: add `Timer.get_cost` function
+- feat: add `Shell.run_and_echo`
+
 ### [0.11.1](../../releases/tag/v0.11.1) - 2025-11-26
 
 #### Added
