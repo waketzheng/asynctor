@@ -225,3 +225,23 @@ def test_shell_run_verbose(capsys):
     assert rc == 0
     Shell("ls README.md").capture_output(verbose=True)
     assert "--> ls README.md" in capsys.readouterr().out
+
+
+def test_shell_run_and_echo(capsys, tmp_path):
+    rc = Shell.run_and_echo("not-exist-command-1", dry=True)
+    assert rc == 0
+    assert "--> not-exist-command-1" in capsys.readouterr().out
+    with pytest.raises(FileNotFoundError):
+        Shell.run_and_echo("not-exist-command-1", verbose=False)
+    assert "--> not-exist-command-1" not in capsys.readouterr().out
+    rc = Shell.run_and_echo("python -V")
+    assert rc == 0
+    assert "--> python -V" in capsys.readouterr().out
+    rc = Shell.run_and_echo('python -c "import sys;sys.exit(1)"')
+    assert rc == 1
+    assert '--> python -c "import sys;sys.exit(1)"' in capsys.readouterr().out
+    cmd = f'python -c "import sys;from pathlib import Path;sys.exit(str(Path.cwd())=={str(tmp_path)!r})"'
+    rc = Shell.run_and_echo(cmd)
+    assert rc == 0
+    rc = Shell.run_and_echo(cmd, cwd=tmp_path)
+    assert rc == 1

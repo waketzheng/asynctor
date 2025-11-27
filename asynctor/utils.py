@@ -288,6 +288,16 @@ class Shell:
         command = cmd if shell else shlex.split(cmd)
         return subprocess.run(command, **kw)  # nosec
 
+    @classmethod
+    def run_and_echo(
+        cls, cmd: str | list[str], *, dry: bool = False, verbose: bool = True, **kw: Any
+    ) -> int:
+        self = cls(cmd, **kw)
+        if dry:
+            print("-->", self.command)
+            return 0
+        return self.call(verbose=verbose)
+
     def __init__(self, command: list[str] | str, **kwargs) -> None:
         self._command = command
         self._kwargs = kwargs
