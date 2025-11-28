@@ -2,7 +2,9 @@
 
 ## 0.11
 
-### [0.11.2]*(Unrelease)*
+### [0.11.3]*(Unrelease)*
+
+### [0.11.2](../../releases/tag/v0.11.2) - 2025-11-28
 
 #### Added
 - feat: add `Timer.get_cost` function
