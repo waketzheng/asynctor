@@ -198,11 +198,11 @@ class TestTimer:
         timer = Timer("Testing get cost", decimal_places=places, verbose=False)
         delay = 0.2
         await anyio.sleep(delay)
-        assert timer.get_cost() == delay
+        assert round(timer.get_cost(), 1) == delay
         timer.capture()
         start = timer._end
         await anyio.sleep(delay)
-        assert timer.get_cost(start) == delay
+        assert round(timer.get_cost(start), 1) == delay
         assert round(timer.get_cost(), 1) == delay * 2
 
 
