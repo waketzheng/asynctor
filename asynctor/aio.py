@@ -21,6 +21,19 @@ if sys.version_info >= (3, 11):  # pragma: no cover
 else:
     from exceptiongroup import ExceptionGroup  # pragma: no cover
     from typing_extensions import TypeVarTuple, Unpack  # pragma: no cover
+try:
+    # anyio>=4.12.0 no longer depends on sniffio, and has it's own current_async_library
+    from anyio._core._eventloop import current_async_library
+except ImportError:
+    import sniffio
+
+    def current_async_library() -> str | None:
+        try:
+            asynclib_name = sniffio.current_async_library()
+        except sniffio.AsyncLibraryNotFoundError:
+            return None
+        return asynclib_name
+
 
 if TYPE_CHECKING:
     from anyio.abc._tasks import TaskGroup
@@ -353,25 +366,16 @@ def async_to_sync(
 
     @functools.wraps(func)
     def runner(*args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs) -> T_Retval:
-        try:
-            asynclib_name = sniffio.current_async_library()
-        except sniffio.AsyncLibraryNotFoundError:
-            pass
-        else:
-            if asynclib_name == "asyncio":
-                try:
-                    loop = get_running_loop()
-                except RuntimeError:
-                    pass
+        if current_async_library() == "asyncio":
+            coro = func(*args, **kwargs)
+            try:
+                loop = get_running_loop()
+                return loop.run_until_complete(coro)
+            except RuntimeError as e:
+                if "This event loop is already running" in str(e):
+                    return run_async(ensure_afunc(coro))
                 else:
-                    coro = func(*args, **kwargs)
-                    try:
-                        return loop.run_until_complete(coro)
-                    except RuntimeError as e:
-                        if "This event loop is already running" in str(e):
-                            return run_async(ensure_afunc(coro))
-                        else:
-                            raise e
+                    raise e
         return run_async(functools.partial(func, **kwargs), *args)
 
     return runner
