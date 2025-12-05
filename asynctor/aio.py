@@ -103,7 +103,7 @@ class LengthFixedList(list[T]):
 
 
 async def map_group(
-    func: AsyncFunc, todos: Iterable[Any], results: list[Any] | None = None
+    func: AsyncFunc, todos: Iterable[Any], *, results: list[Any] | None = None
 ) -> None:
     """
     The `map_group` function asynchronously executes a given function for each set of arguments in a
@@ -127,6 +127,68 @@ async def map_group(
             if should_append:
                 cast(list[Any], results).append(None)
             tg.start_soon(func, *args)
+
+
+class BulkGather:
+    def __init__(self, results) -> None:
+        self._results = results
+
+    async def runner(self, index: int, coro: Awaitable[T_Retval]) -> None:
+        self._results[index] = await coro
+
+    async def limited_runner(
+        self, index: int, coro: Awaitable[T_Retval], limiter: anyio.CapacityLimiter
+    ) -> None:
+        async with limiter:
+            self._results[index] = await coro
+
+    async def run(self, coros, batch_size, wait_last, total) -> None:
+        is_generator = total == 0
+        if not batch_size:
+            await self.unlimit_gather(coros, is_generator)
+        elif not wait_last:
+            await self.run_in_capacity_limiter(batch_size, coros, is_generator)
+        else:
+            await self.only_start_new_one_after_last_batch_finish(
+                batch_size, coros, is_generator, total
+            )
+
+    async def unlimit_gather(self, coros, is_generator) -> None:
+        func = functools.partial(map_group, self.runner, enumerate(coros))
+        if is_generator:
+            func = functools.partial(func, results=self._results)
+        await func()
+
+    async def run_in_capacity_limiter(self, batch_size, coros, is_generator) -> None:
+        limiter = anyio.CapacityLimiter(batch_size)
+        todo_args = ((*item, limiter) for item in enumerate(coros))
+        func = functools.partial(map_group, self.limited_runner, todo_args)
+        if is_generator:
+            func = functools.partial(func, results=self._results)
+        await func()
+
+    async def only_start_new_one_after_last_batch_finish(
+        self, batch_size, coros, is_generator, total
+    ) -> None:
+        if is_generator:
+            todos: list[tuple[int, Awaitable]] = []
+            for count, args in zip(itertools.count(), enumerate(coros)):
+                todos.append(args)
+                self._results.append(None)
+                if count % batch_size == 0:
+                    await map_group(self.runner, todos)
+                    todos.clear()
+            if todos:
+                await map_group(self.runner, todos)
+        else:
+            for start in range(0, total, batch_size):
+                coros_slice = itertools.islice(coros, start, start + batch_size)
+                args_items = ((start + i, coro) for i, coro in enumerate(coros_slice))
+                await map_group(self.runner, args_items)
+
+    @property
+    def results(self):
+        return tuple(self._results)
 
 
 @overload
@@ -181,62 +243,24 @@ async def bulk_gather(
             await checkpoint()
             return ()
         results = LengthFixedList([None] * total)
-
-    async def runner(_i: int, _coro: Awaitable[T_Retval]) -> None:
-        results[_i] = await _coro
-
-    async def limited_runner(
-        _i: int, _coro: Awaitable[T_Retval], _limiter: anyio.CapacityLimiter
-    ) -> None:
-        async with _limiter:
-            results[_i] = await _coro
-
-    try:
-        if limit is not None:
-            if batch_size:
-                if batch_size != limit:
-                    raise ParamsError(f"Conflict value with {limit=} & {batch_size=}")
-                warnings.warn(
-                    "`limit` is deprecated, use `batch_size` only.",
-                    DeprecationWarning,
-                    stacklevel=2,
-                )
-            else:
-                batch_size = limit
+    if limit is not None:
         if batch_size:
-            if wait_last:
-                if total == 0:
-                    todos: list[tuple[int, Awaitable[T_Retval]]] = []
-                    for count, args in zip(itertools.count(), enumerate(coros)):
-                        todos.append(args)
-                        results.append(None)
-                        if count % batch_size == 0:
-                            await map_group(runner, todos)
-                            todos.clear()
-                    if todos:
-                        await map_group(runner, todos)
-                else:
-                    for start in range(0, total, batch_size):
-                        coros_slice = itertools.islice(coros, start, start + batch_size)
-                        args_items = ((start + i, coro) for i, coro in enumerate(coros_slice))
-                        await map_group(runner, args_items)
-            else:
-                limiter = anyio.CapacityLimiter(batch_size)
-                todo_args = ((*item, limiter) for item in enumerate(coros))
-                if total == 0:
-                    await map_group(limited_runner, todo_args, results)
-                else:
-                    await map_group(limited_runner, todo_args)
+            if batch_size != limit:
+                raise ParamsError(f"Conflict value with {limit=} & {batch_size=}")
+            warnings.warn(
+                "`limit` is deprecated, use `batch_size` only.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
         else:
-            if total == 0:
-                await map_group(runner, enumerate(coros), results)
-            else:
-                await map_group(runner, enumerate(coros))
+            batch_size = limit
+    bg = BulkGather(results)
+    try:
+        await bg.run(coros, batch_size, wait_last, total)
     except ExceptionGroup as e:
         if raises:
             raise e.exceptions[0] from e
-
-    return tuple(results)
+    return bg.results
 
 
 async def gather(*coros: Awaitable[T_Retval], limit: int | None = None) -> tuple[T_Retval, ...]:
