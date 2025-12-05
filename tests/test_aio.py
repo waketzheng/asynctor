@@ -15,6 +15,7 @@ from asynctor.aio import (
     async_to_sync,
     bulk_gather,
     create_task,
+    current_async_library,
     gather,
     run,
     run_async,
@@ -126,14 +127,18 @@ class TestGather:
     async def test_gather_raise(self):
         err_asyncio = err_anyio = None
         try:
-            await asyncio.gather(*self.create_coros_for_raise())
-        except Exception as e:
-            err_asyncio = e
-        try:
             await gather(*self.create_coros_for_raise())
         except Exception as e:
             err_anyio = e
-        assert self.is_the_same_error(err_asyncio, err_anyio)
+        if (backend := current_async_library()) == "asyncio":
+            try:
+                await asyncio.gather(*self.create_coros_for_raise())
+            except Exception as e:
+                err_asyncio = e
+            assert self.is_the_same_error(err_asyncio, err_anyio)
+        else:
+            print(f"{backend = }")
+            assert err_anyio is not None
 
     @pytest.mark.anyio
     async def test_gather_without_raise(self):
