@@ -55,10 +55,13 @@ def anyio_backend_fixture() -> FixtureFunctionDefinition:
     return anyio_backend
 
 
-def chdir_tmp_fixture() -> FixtureFunctionDefinition:
+def tmp_workdir_fixture() -> FixtureFunctionDefinition:
     @pytest.fixture
     def tmp_work_dir(tmp_path: Path) -> Generator[Path]:
         with chdir(tmp_path):
             yield tmp_path
 
     return tmp_work_dir
+
+
+chdir_tmp_fixture = tmp_workdir_fixture  # For backward compatible

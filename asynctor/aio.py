@@ -9,7 +9,6 @@ from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeVar, cast, overload
 
 import anyio
-import sniffio
 from anyio import from_thread
 from anyio._backends._asyncio import get_running_loop
 from anyio.lowlevel import checkpoint
