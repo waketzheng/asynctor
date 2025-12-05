@@ -2,7 +2,18 @@
 
 ## 0.11
 
-### [0.11.3]*(Unrelease)*
+### [0.11.5]*(Unrelease)*
+
+### [0.11.4](../../releases/tag/v0.11.4) - 2025-12-05
+
+#### Changed
+- refactor: no longer depends on sniffio
+- Rename `chdir_tmp_fixture` to `tmp_workdir_fixture`
+
+### [0.11.3](../../releases/tag/v0.11.3) - 2025-12-04
+
+#### Changed
+- refactor: import `current_async_library` from anyio instead of sniffio
 
 ### [0.11.2](../../releases/tag/v0.11.2) - 2025-11-28
 

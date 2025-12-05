@@ -133,13 +133,19 @@ async def test_api(client: AsyncClient):
 
 *pip install asynctor fastapi uvicorn*
 ```py
-from asynctor.contrib.fastapi import runserver
 from fastapi import FastAPI
 
 app = FastAPI()
 
-if __name__ == '__main__':
+
+def main() -> None:
+    from asynctor.contrib.fastapi import runserver
+
     runserver(app)
+
+
+if __name__ == '__main__':
+    main()
 ```
 
 - Read Excel File
