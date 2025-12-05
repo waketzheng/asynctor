@@ -42,24 +42,21 @@ T = TypeVar("T")
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 PosArgsT = TypeVarTuple("PosArgsT")
+AwaitT = Awaitable[T_Retval]
+CallableT = Callable[T_ParamSpec, AwaitT]
 AsyncFunc: TypeAlias = Callable[..., Awaitable[Any]]
+CoroFunc: TypeAlias = Awaitable[Any] | AsyncFunc
 
 
 @overload
-def ensure_afunc(
-    coro: Awaitable[T_Retval],
-) -> Callable[[], Awaitable[T_Retval]]: ...
+def ensure_afunc(coro: AwaitT) -> Callable[[], AwaitT]: ...
 
 
 @overload
-def ensure_afunc(
-    coro: Callable[T_ParamSpec, Awaitable[T_Retval]],
-) -> Callable[T_ParamSpec, Awaitable[T_Retval]]: ...
+def ensure_afunc(coro: CallableT) -> CallableT: ...
 
 
-def ensure_afunc(
-    coro: Awaitable[T_Retval] | Callable[T_ParamSpec, Awaitable[T_Retval]],
-) -> Callable[[], Awaitable[T_Retval]] | Callable[T_ParamSpec, Awaitable[T_Retval]]:
+def ensure_afunc(coro: AwaitT | CallableT) -> Callable[[], AwaitT] | CallableT:
     """Wrap coroutine to be async function"""
     if callable(coro):
         return coro
@@ -71,7 +68,7 @@ def ensure_afunc(
 
 
 def run(
-    func: (Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]]),
+    func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
     *args: Unpack[PosArgsT],
     backend: str = "asyncio",
     backend_options: dict[str, Any] | None = None,
@@ -266,10 +263,7 @@ def create_task(coro: Awaitable[Any], task_group: TaskGroup, *, name: object = N
 
 
 @asynccontextmanager
-async def start_tasks(
-    coro: Awaitable[Any] | Callable[..., Awaitable[Any]],
-    *more: Awaitable[Any] | Callable[..., Awaitable[Any]],
-) -> AsyncGenerator[None]:
+async def start_tasks(coro: CoroFunc, *more: CoroFunc) -> AsyncGenerator[None]:
     """Make it easy to convert asyncio.create_task
 
     Usage:
@@ -303,8 +297,8 @@ async def wait_for(coro: Awaitable[T_Retval], timeout: int | float) -> T_Retval:
 
 
 def be_awaitable(
-    async_func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
-) -> Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]]:
+    async_func: AwaitT | Callable[[Unpack[PosArgsT]], AwaitT],
+) -> Callable[[Unpack[PosArgsT]], AwaitT]:
     @functools.wraps(async_func)  # type:ignore[arg-type]
     async def do_await(*gs: Unpack[PosArgsT]) -> T_Retval:
         if callable(async_func):
