@@ -1,15 +1,6 @@
-import pytest
 from main import app
 
-from asynctor import AsyncClientGenerator, AsyncTestClient
+from asynctor.testing import anyio_backend_fixture, async_client_fixture
 
-
-@pytest.fixture(scope="session")
-def anyio_backend():
-    return "asyncio"
-
-
-@pytest.fixture(scope="session")
-async def client() -> AsyncClientGenerator:
-    async with AsyncTestClient(app) as c:
-        yield c
+anyio_backend = anyio_backend_fixture()
+client = async_client_fixture(app)

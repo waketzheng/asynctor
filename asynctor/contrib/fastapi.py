@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 import logging
+import os
 import sys
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
@@ -151,6 +152,10 @@ class RunServer:
                 if verbose:
                     echo(f"Load `PORT = {p}` from {config_file}")
                 return int(p)
+            elif (p := getattr(gunicorn_config, "bind", "").split(":")[-1]).isdigit():
+                if verbose:
+                    echo(f"Load `bind = xxx:{p}` from {config_file}")
+                return int(p)
             elif verbose:
                 echo(f"{config_file} does not have 'PORT' attribute")
         elif verbose:
@@ -165,10 +170,13 @@ class RunServer:
         docs_params: dict | None = None,
         echo: Callable | None = None,
     ) -> None:
-        from asynctor.utils import get_machine_ip
-
         if host == "0.0.0.0":
-            host = get_machine_ip()
+            if declared_host := os.getenv("ASYNCTOR_HOST"):
+                host = declared_host
+            else:
+                from asynctor.utils import get_machine_ip
+
+                host = get_machine_ip()
         url = f"http://{host}:{port or 8000}{app.docs_url}"
         if docs_params:
             url += "?" + "&".join(f"{k}={v}" for k, v in docs_params.items())
