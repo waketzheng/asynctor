@@ -211,6 +211,7 @@ class RunServer:
         verbose: bool,
         echo: Callable,
         docs_params: dict[str, str] | None = None,
+        pre_start: Callable[[], Any] | None = None,
         **kw,
     ) -> None:
         if addrport:
@@ -234,13 +235,15 @@ class RunServer:
             else:
                 if verbose:
                     echo(f"Deployment dir: {deployment_dir.name!r} not found")
-        cls.echo_and_run(app, host, port, reload, docs_params, echo, **kw)
+        cls.echo_and_run(app, host, port, reload, docs_params, pre_start, echo, **kw)
 
     @classmethod
-    def echo_and_run(cls, app, host, port, reload, docs_params, echo=None, **kw) -> None:
+    def echo_and_run(cls, app, host, port, reload, docs_params, pre_start, echo=None, **kw) -> None:
         if not port:
             port = cls.load_port_from_env()
         cls.echo_docs_url(app, host, port, docs_params, echo)
+        if pre_start is not None:
+            pre_start()
         cls.uvicorn_run(app, host, port, reload, **kw)
 
 
@@ -252,10 +255,11 @@ def runserver(
     reload: bool = False,
     verbose: bool = False,
     docs_params: dict[str, str] | None = None,
+    pre_start: Callable[[], Any] | None = None,
     **kw,
 ) -> None:
     if not (args := sys.argv[1:]):
-        return RunServer.echo_and_run(app, host, port, reload, docs_params, **kw)
+        return RunServer.echo_and_run(app, host, port, reload, docs_params, pre_start, **kw)
     try:
         import typer
     except ImportError:
@@ -274,7 +278,7 @@ def runserver(
         prod: bool = False,
         verbose: bool = False,
     ) -> None:
-        kw.update(echo=typer.secho, docs_params=docs_params)
+        kw.update(echo=typer.secho, docs_params=docs_params, pre_start=pre_start)
         RunServer.run(app, addrport, port, host, reload, prod, verbose, **kw)
 
     if (django_style_noreload := "--noreload") in args:
