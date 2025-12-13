@@ -20,6 +20,12 @@ def mock_uvicorn_run(mocker):
     yield mock_object
 
 
+@pytest.fixture
+def mock_no_args(mocker):
+    mocker.patch.object(sys, "argv", sys.argv[:1])
+    yield
+
+
 @dataclass
 class CliOpts:
     addrport: Annotated[str | None, "Optional port number, or ipaddr:port"] = None
@@ -33,11 +39,34 @@ class CliOpts:
         return asdict(self)
 
 
-def test_no_args(mock_uvicorn_run, mocker):
-    mocker.patch.object(sys, "argv", sys.argv[:1])
+def test_no_args(mock_uvicorn_run, mock_no_args):
     app = FastAPI()
     runserver(app)
     mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", reload=False)
+
+
+class TestAsynctorPort:
+    @pytest.fixture
+    def mock_port(self, monkeypatch):
+        monkeypatch.setenv("ASYNCTOR_PORT", "9000")
+        yield
+
+    def test_no_args_env_asynctor_port(self, mock_uvicorn_run, mock_no_args, mock_port):
+        app = FastAPI()
+        runserver(app)
+        mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", port=9000, reload=False)
+
+    def test_no_args_but_port_passed(self, mock_uvicorn_run, mock_no_args, mock_port):
+        app = FastAPI()
+        runserver(app, port=8888)
+        mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", port=8888, reload=False)
+
+    def test_with_args(self, mock_uvicorn_run, mock_port):
+        opts = CliOpts(reload=True)
+        RunServer.run(FastAPI(), echo=typer.secho, **opts.as_dict())
+        mock_uvicorn_run.assert_called_once_with(
+            "__main__:app", host="0.0.0.0", port=9000, reload=True
+        )
 
 
 def test_reload(mock_uvicorn_run):

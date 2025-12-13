@@ -190,6 +190,15 @@ class RunServer:
             except TypeError:
                 echo(url)
 
+    @staticmethod
+    def load_port_from_env() -> int | None:
+        if p := os.getenv("ASYNCTOR_PORT"):
+            try:
+                return int(p)
+            except ValueError:
+                ...
+        return None
+
     @classmethod
     def run(
         cls,
@@ -225,6 +234,12 @@ class RunServer:
             else:
                 if verbose:
                     echo(f"Deployment dir: {deployment_dir.name!r} not found")
+        cls.echo_and_run(app, host, port, reload, docs_params, echo, **kw)
+
+    @classmethod
+    def echo_and_run(cls, app, host, port, reload, docs_params, echo=None, **kw) -> None:
+        if not port:
+            port = cls.load_port_from_env()
         cls.echo_docs_url(app, host, port, docs_params, echo)
         cls.uvicorn_run(app, host, port, reload, **kw)
 
@@ -240,9 +255,7 @@ def runserver(
     **kw,
 ) -> None:
     if not (args := sys.argv[1:]):
-        RunServer.echo_docs_url(app, host, port, docs_params)
-        return RunServer.uvicorn_run(app, host, port, reload, **kw)
-
+        return RunServer.echo_and_run(app, host, port, reload, docs_params, **kw)
     try:
         import typer
     except ImportError:
@@ -261,7 +274,8 @@ def runserver(
         prod: bool = False,
         verbose: bool = False,
     ) -> None:
-        RunServer.run(app, addrport, port, host, reload, prod, verbose, echo=typer.secho, **kw)
+        kw.update(echo=typer.secho, docs_params=docs_params)
+        RunServer.run(app, addrport, port, host, reload, prod, verbose, **kw)
 
     if (django_style_noreload := "--noreload") in args:
         sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"
