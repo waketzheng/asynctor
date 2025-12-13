@@ -2,7 +2,18 @@
 
 ## 0.11
 
-### [0.11.5]*(Unrelease)*
+### [0.11.7]*(Unrelease)*
+
+### [0.11.6](../../releases/tag/v0.11.6) - 2025-12-13
+
+#### Added
+- feat: support `ASYNCTOR_PORT` for runserver
+- feat: support `pre_start` for runserver
+
+### [0.11.5](../../releases/tag/v0.11.5) - 2025-12-11
+
+#### Added
+- feat: support `ASYNCTOR_HOST` for runserver
 
 ### [0.11.4](../../releases/tag/v0.11.4) - 2025-12-05
 
