@@ -3,17 +3,20 @@ from __future__ import annotations
 import functools
 import logging
 import os
+import platform
+import re
 import sys
 from collections.abc import AsyncGenerator, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated, Any
+from typing import Annotated, Any, TypeAlias
 
 import uvicorn
 from fastapi import Depends, FastAPI, Request
 from fastapi.routing import _merge_lifespan_context
 
 from ..client import AsyncRedis
+from ..utils import Shell, load_bool
 
 
 def register_aioredis(
@@ -111,6 +114,17 @@ def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
     logging.getLogger(log).addHandler(handler)
 
 
+PreStartFunc: TypeAlias = Callable[
+    [
+        Annotated[str, "host"],
+        Annotated[int | None, "port"],
+        Annotated[bool, "reload"],
+        Annotated[dict[str, str] | None, "docs_params"],
+    ],
+    Any,
+]
+
+
 class RunServer:
     @staticmethod
     def uvicorn_run(app: FastAPI, host: str, port: int | None, reload: bool, **kw) -> None:
@@ -169,7 +183,7 @@ class RunServer:
         port: int | None,
         docs_params: dict | None = None,
         echo: Callable | None = None,
-    ) -> None:
+    ) -> str:
         if host == "0.0.0.0":
             if declared_host := os.getenv("ASYNCTOR_HOST"):
                 host = declared_host
@@ -189,6 +203,7 @@ class RunServer:
                 echo(url, bold=True)
             except TypeError:
                 echo(url)
+        return url
 
     @staticmethod
     def load_port_from_env() -> int | None:
@@ -211,7 +226,8 @@ class RunServer:
         verbose: bool,
         echo: Callable,
         docs_params: dict[str, str] | None = None,
-        pre_start: Callable[[], Any] | None = None,
+        pre_start: PreStartFunc | None = None,
+        open_browser: bool | None = None,
         **kw,
     ) -> None:
         if addrport:
@@ -241,9 +257,17 @@ class RunServer:
     def echo_and_run(cls, app, host, port, reload, docs_params, pre_start, echo=None, **kw) -> None:
         if not port:
             port = cls.load_port_from_env()
-        cls.echo_docs_url(app, host, port, docs_params, echo)
+        url = cls.echo_docs_url(app, host, port, docs_params, echo)
         if pre_start is not None:
-            pre_start()
+            try:
+                pre_start(host=host, port=port, reload=reload, docs_params=docs_params)
+            except TypeError:
+                pre_start()
+        if kw.pop("open_browser", False) or load_bool("ASYNCTOR_BROWSER"):
+            command = "explorer" if platform.system() == "Windows" else "open"
+            if host == "0.0.0.0" and (m := re.search(r"://(.*?)[:/]", url)):
+                url = url.replace(m.group(1), "127.0.0.1")
+            Shell([command, url]).run(verbose=True)
         cls.uvicorn_run(app, host, port, reload, **kw)
 
 
@@ -255,11 +279,13 @@ def runserver(
     reload: bool = False,
     verbose: bool = False,
     docs_params: dict[str, str] | None = None,
-    pre_start: Callable[[], Any] | None = None,
+    pre_start: PreStartFunc | None = None,
+    open_browser: bool | None = None,
     **kw,
 ) -> None:
+    kw.update(docs_params=docs_params, pre_start=pre_start, open_browser=open_browser)
     if not (args := sys.argv[1:]):
-        return RunServer.echo_and_run(app, host, port, reload, docs_params, pre_start, **kw)
+        return RunServer.echo_and_run(app, host, port, reload, **kw)
     try:
         import typer
     except ImportError:
@@ -278,8 +304,7 @@ def runserver(
         prod: bool = False,
         verbose: bool = False,
     ) -> None:
-        kw.update(echo=typer.secho, docs_params=docs_params, pre_start=pre_start)
-        RunServer.run(app, addrport, port, host, reload, prod, verbose, **kw)
+        RunServer.run(app, addrport, port, host, reload, prod, verbose, echo=typer.secho, **kw)
 
     if (django_style_noreload := "--noreload") in args:
         sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"

@@ -9,7 +9,14 @@ from pathlib import Path
 import pytest
 
 from asynctor import AttrDict
-from asynctor.utils import AsyncTestClient, Shell, cache_attr, client_manager, get_machine_ip
+from asynctor.utils import (
+    AsyncTestClient,
+    Shell,
+    cache_attr,
+    client_manager,
+    get_machine_ip,
+    load_bool,
+)
 
 from .main import app_default_to_mount_lifespan, app_for_utils_test
 
@@ -245,3 +252,42 @@ def test_shell_run_and_echo(capsys, tmp_path):
     assert rc == 0
     rc = Shell.run_and_echo(cmd, cwd=tmp_path)
     assert rc == 1
+
+
+def test_load_bool(monkeypatch):
+    assert load_bool("NOT-EXIST-OS-ENV") is False
+    env = "ASYNCTOR_BROWSER"
+    # false
+    monkeypatch.setenv(env, "")
+    assert load_bool(env) is False
+    monkeypatch.setenv(env, "0")
+    assert load_bool(env) is False
+    monkeypatch.setenv(env, "false")
+    assert load_bool(env) is False
+    monkeypatch.setenv(env, "False")
+    assert load_bool(env) is False
+    monkeypatch.setenv(env, "no")
+    assert load_bool(env) is False
+    monkeypatch.setenv(env, "n")
+    assert load_bool(env) is False
+    monkeypatch.setenv(env, "off")
+    assert load_bool(env) is False
+    # true
+    monkeypatch.setenv(env, "1")
+    assert load_bool(env) is True
+    monkeypatch.setenv(env, "true")
+    assert load_bool(env) is True
+    monkeypatch.setenv(env, "True")
+    assert load_bool(env) is True
+    monkeypatch.setenv(env, "yes")
+    assert load_bool(env) is True
+    monkeypatch.setenv(env, "y")
+    assert load_bool(env) is True
+    monkeypatch.setenv(env, "on")
+    assert load_bool(env) is True
+    # invalid
+    monkeypatch.setenv(env, "invalid")
+    assert load_bool(env) is False
+    msg = f"Value of env '{env}' must be a bool (Got 'invalid')"
+    with pytest.raises(ValueError, match=re.escape(msg)):
+        assert load_bool(env, strict=True)

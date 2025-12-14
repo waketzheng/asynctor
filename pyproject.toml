@@ -111,6 +111,10 @@ module = [
 ]
 ignore_missing_imports = true
 
+[[tool.mypy.overrides]]
+module = "anyio._core._eventloop.current_async_library"
+disable_error_code = ["attr-defined"]
+
 [tool.coverage.run]
 source = ["asynctor"]
 omit = [

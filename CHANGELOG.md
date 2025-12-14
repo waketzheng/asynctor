@@ -2,7 +2,12 @@
 
 ## 0.11
 
-### [0.11.7]*(Unrelease)*
+### Unrelease
+
+### [0.11.7](../../releases/tag/v0.11.7) - 2025-12-14
+
+- feat: support `open_browser` for runserver
+- feat: add `load_bool` to utils
 
 ### [0.11.6](../../releases/tag/v0.11.6) - 2025-12-13
 
