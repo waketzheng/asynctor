@@ -4,6 +4,9 @@
 
 ### Unrelease
 
+#### Added
+- feat: add IntegerChoices/TextChoices from source code of Django
+
 ### [0.11.7](../../releases/tag/v0.11.7) - 2025-12-14
 
 - feat: support `open_browser` for runserver
@@ -19,9 +22,6 @@
 
 #### Added
 - feat: support `ASYNCTOR_HOST` for runserver
-
-#### Added
-- feat: add IntegerChoices/TextChoices from source code of Django
 
 ### [0.11.4](../../releases/tag/v0.11.4) - 2025-12-05
 
