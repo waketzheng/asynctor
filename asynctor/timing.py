@@ -2,17 +2,20 @@ from __future__ import annotations
 
 import functools
 import inspect
+import sys
 import time
 from collections.abc import Awaitable, Callable
 from contextlib import AbstractAsyncContextManager, AbstractContextManager
-from datetime import datetime, timezone
+from datetime import datetime
 from types import TracebackType
 from typing import TYPE_CHECKING, Annotated, Any, TypeAlias, TypeVar, overload
 from zoneinfo import ZoneInfo as _ZoneInfo
 
-try:
-    from datetime import UTC  # type:ignore[attr-defined]
-except ImportError:
+if sys.version_info >= (3, 12):
+    from datetime import UTC
+else:
+    from datetime import timezone
+
     UTC = timezone.utc
 
 if TYPE_CHECKING:

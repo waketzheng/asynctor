@@ -45,8 +45,12 @@ jobs:
           pdm config use_uv true
       - name: Install deps
         run: just deps --no-group test
-      - name: Check code style and Type Hint
+      - name: Check code style and Type Hints
         run: just _check
+      - name: Check Type Hints for asynctor.enums
+        if: matrix.python-version == '3.14'
+        run: |
+          just run mypy --config-file .mypy_py3.11.ini .
 
   test:
     runs-on: ubuntu-latest

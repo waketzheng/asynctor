@@ -64,6 +64,7 @@ lint = [
     "pandas-stubs>=2.2.0",
     "bandit>=1.8.6",
     "mypy>=1.18.2",
+    "orjson>=3.11.5",
 ]
 test = [
     "pytest-mock>=3.14.1",
@@ -96,9 +97,10 @@ extend-select = [
 
 [tool.mypy]
 pretty = true
-python_version = "3.10"
 check_untyped_defs = true
 warn_unused_ignores = true
+# TODO: remove exclude section when drop support for Python3.10
+exclude = ["asynctor/enums.py", "test_enums.py"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -110,6 +112,10 @@ module = [
     'orjson',
 ]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = ['tests.test_compat']
+warn_unused_ignores = false
 
 [tool.coverage.run]
 source = ["asynctor"]

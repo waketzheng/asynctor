@@ -37,7 +37,7 @@ def test_strenum():
     assert repr(PeopleEnum.man) == "<PeopleEnum.man: '男'>"
     assert [i.value for i in AutoEnum] == ["first", "second", "third", "four", "five_", "_six"]
     with pytest.raises(AttributeError):
-        AutoEnum.__seven
+        AutoEnum.__seven  # type:ignore
     with pytest.raises(TypeError, match="1 is not a string"):
 
         class A(StrEnum):
