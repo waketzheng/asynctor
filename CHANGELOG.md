@@ -4,6 +4,9 @@
 
 ### [0.11.5]*(Unrelease)*
 
+#### Added
+- feat: add IntegerChoices/TextChoices from source code of Django
+
 ### [0.11.4](../../releases/tag/v0.11.4) - 2025-12-05
 
 #### Changed
