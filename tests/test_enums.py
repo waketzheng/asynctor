@@ -1,6 +1,13 @@
+import sys
 from enum import auto
 
-from asynctor.enums import IntegerChoices, TextChoices
+import pytest
+
+if sys.version_info >= (3, 11):
+    from asynctor.enums import IntegerChoices, TextChoices
+else:
+    from enum import Enum as IntegerChoices
+    from enum import Enum as TextChoices
 
 
 class DirectionChoices(IntegerChoices):
@@ -22,6 +29,9 @@ def label_to_value(label: str, enum_type=DirectionChoices) -> int:
     return {v: k for k, v in enum_type.choices}[label]
 
 
+@pytest.mark.skipif(
+    sys.version_info < (3, 11), reason="IntegerChoices requires python3.11 or higher"
+)
 def test_int():
     assert DirectionChoices.dong == 0
     assert DirectionChoices.dong is not 0  # NOQA
@@ -51,17 +61,6 @@ class BoolEnum(TextChoices):
     no = "false", "False"
 
 
-def test_str():
-    assert BoolEnum.no == "false"
-    assert str(BoolEnum.no) == "false"
-    assert BoolEnum.no.label == "False"
-    assert list(BoolEnum) == ["true", "false"]
-    assert name_to_label("yes", BoolEnum) == "True"
-    assert value_to_label("true", BoolEnum) == "True"  # type:ignore
-    assert label_to_value("True", BoolEnum) == "true"
-    assert BoolEnum.choices == [("true", "True"), ("false", "False")]
-
-
 class AutoName(TextChoices):
     aBc = auto()
     a_1 = auto()
@@ -72,7 +71,17 @@ class AutoName(TextChoices):
     good_luck = auto()
 
 
-def test_auto():
+@pytest.mark.skipif(sys.version_info < (3, 11), reason="TextChoices requires python3.11 or higher")
+def test_str():
+    assert BoolEnum.no == "false"
+    assert str(BoolEnum.no) == "false"
+    assert BoolEnum.no.label == "False"
+    assert list(BoolEnum) == ["true", "false"]
+    assert name_to_label("yes", BoolEnum) == "True"
+    assert value_to_label("true", BoolEnum) == "True"  # type:ignore
+    assert label_to_value("True", BoolEnum) == "true"
+    assert BoolEnum.choices == [("true", "True"), ("false", "False")]
+    # test auto
     assert AutoName.choices == [
         ("aBc", "Abc"),
         ("a_1", "A 1"),
