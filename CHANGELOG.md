@@ -2,7 +2,23 @@
 
 ## 0.11
 
-### [0.11.5]*(Unrelease)*
+### Unrelease
+
+### [0.11.7](../../releases/tag/v0.11.7) - 2025-12-14
+
+- feat: support `open_browser` for runserver
+- feat: add `load_bool` to utils
+
+### [0.11.6](../../releases/tag/v0.11.6) - 2025-12-13
+
+#### Added
+- feat: support `ASYNCTOR_PORT` for runserver
+- feat: support `pre_start` for runserver
+
+### [0.11.5](../../releases/tag/v0.11.5) - 2025-12-11
+
+#### Added
+- feat: support `ASYNCTOR_HOST` for runserver
 
 #### Added
 - feat: add IntegerChoices/TextChoices from source code of Django

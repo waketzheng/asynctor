@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import functools
+import os
 import shlex
 import socket
 import subprocess  # nosec
@@ -329,6 +330,22 @@ class Shell:
     def capture_output(self, *, verbose: bool = False) -> str:
         kw = dict(self._kwargs, text=True, encoding="utf-8", capture_output=True)
         return self.run(kw, verbose=verbose).stdout
+
+
+def load_bool(env: str, *, strict: bool = False) -> bool:
+    match os.getenv(env):
+        case None:
+            return False
+        case "1":
+            return True
+        case "0":
+            return False
+        case x if x.lower() in ("true", "yes", "on", "y"):
+            return True
+        case _ as x:
+            if strict and x.lower() not in ("false", "no", "off", "n"):
+                raise ValueError(f"Value of env {env!r} must be a bool (Got {x!r})")
+            return False
 
 
 def _test() -> None:  # pragma: no cover

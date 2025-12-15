@@ -97,6 +97,11 @@ jobs:
         run: |
           uv pip uninstall sniffio
           uv run --no-sync pytest tests/test_aio.py
+      - name: Test anyio < 4.12
+        run: |
+          uv pip install sniffio
+          uv pip install "anyio<4.12"
+          uv run --no-sync pytest tests/test_aio.py
       - name: Test trio suppport for aio
         run: |
           uv pip install pytest-trio

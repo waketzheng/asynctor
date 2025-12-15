@@ -123,4 +123,4 @@ tag *args:
     pdm run fast tag {{args}}
 
 release: venv bump tag
-    git log -1
+    git --no-pager log -1
