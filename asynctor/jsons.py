@@ -21,9 +21,11 @@ except ImportError:
     def json_dumps(
         obj: Any, default: Callable[[Any], Any] | None = None, *, pretty: bool = False
     ) -> str:
-        dumps = functools.partial(json.dumps, default=default, separators=(",", ":"))
+        dumps = functools.partial(json.dumps, default=default)
         if pretty:
             dumps = functools.partial(dumps, indent=2, ensure_ascii=False)
+        else:
+            dumps = functools.partial(dumps, separators=(",", ":"))
         try:
             return dumps(obj)
         except TypeError as e:
