@@ -296,13 +296,13 @@ def runserver(
 
     def cli(
         addrport: Annotated[str | None, "Optional port number, or ipaddr:port"] = typer.Argument(
-            default=None
+            default=addrport
         ),
-        port: int | None = None,
-        host: str = "0.0.0.0",
-        reload: bool = False,
+        port: int | None = port,
+        host: str = host,
+        reload: bool = reload,
         prod: bool = False,
-        verbose: bool = False,
+        verbose: bool = verbose,
     ) -> None:
         RunServer.run(app, addrport, port, host, reload, prod, verbose, echo=typer.secho, **kw)
 
