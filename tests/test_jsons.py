@@ -1,4 +1,6 @@
+import re
 from datetime import datetime
+from decimal import Decimal
 from pathlib import Path
 
 import pytest
@@ -8,17 +10,20 @@ from asynctor.jsons import FastJson, json_dump_bytes, json_dumps, json_loads
 
 
 def default(obj):
-    if isinstance(obj, datetime):
-        return str(obj)
+    if isinstance(obj, Decimal):
+        return float(obj)
+    raise TypeError
 
 
 def test_dumps():
     assert json_dumps({1: 1}) == '{"1":1}'
     assert json_dumps({1: 1}, pretty=True) == '{\n  "1": 1\n}'
     dt = datetime(2025, 11, 13)
+    assert json_dumps({1: dt}) == '{"1":"2025-11-13T00:00:00"}'
+    dc = Decimal(0)
     with pytest.raises(TypeError):
-        json_dumps({1: dt})
-    assert json_dumps({1: dt}, default=default) == '{"1":"2025-11-13 00:00:00"}'
+        json_dumps({1: dc})
+    assert json_dumps({1: dc}, default=default) == '{"1":0.0}'
 
 
 def test_dump_bytes():
@@ -46,11 +51,15 @@ def test_fast_json():
     assert FastJson.dumps({1: 1}, pretty=True) == b'{\n  "1": 1\n}'
     assert FastJson.dumps({1: 1}, "str") == '{"1":1}'
     dt = datetime(2025, 11, 13)
+    assert FastJson.dumps({1: dt}) == b'{"1":"2025-11-13T00:00:00"}'
+    dc = Decimal(0)
     with pytest.raises(TypeError):
-        FastJson.dumps({1: dt})
+        FastJson.dumps({1: dc})
     # For `default` case, use `json_dumps` or `json_dump_bytes` instead
-    with pytest.raises(TypeError):
-        FastJson.dumps({1: dt}, default=default)  # type:ignore
+    with pytest.raises(
+        TypeError, match=re.escape("FastJson.dumps() got an unexpected keyword argument 'default'")
+    ):
+        FastJson.dumps({1: dc}, default=default)  # type:ignore
 
 
 def test_fast_json_unsupported_output():

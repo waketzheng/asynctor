@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import functools
 from collections.abc import Callable
+from datetime import date, datetime, time
 from pathlib import Path
 from typing import Any, Literal, TypeAlias, overload
 
@@ -20,8 +21,49 @@ except ImportError:
     def json_dumps(
         obj: Any, default: Callable[[Any], Any] | None = None, *, pretty: bool = False
     ) -> str:
-        dumps = functools.partial(json.dumps, obj, default=default)
-        return dumps(indent=2, ensure_ascii=False) if pretty else dumps(separators=(",", ":"))
+        dumps = functools.partial(json.dumps, default=default, separators=(",", ":"))
+        if pretty:
+            dumps = functools.partial(dumps, indent=2, ensure_ascii=False)
+        try:
+            return dumps(obj)
+        except TypeError as e:
+            if str(e) not in (
+                "keys must be str, int, float, bool or None, not datetime.datetime",
+                "keys must be str, int, float, bool or None, not datetime.date",
+                "keys must be str, int, float, bool or None, not datetime.time",
+                "Object of type datetime is not JSON serializable",
+                "Object of type date is not JSON serializable",
+                "Object of type time is not JSON serializable",
+            ):
+                raise
+
+            class DateTimeDecoder(json.JSONEncoder):
+                @staticmethod
+                def time_serializer(obj: Any) -> Any:
+                    if isinstance(obj, (datetime, date, time)):
+                        return str(obj).replace(" ", "T")
+                    return obj
+
+                def default(self, obj) -> Any:
+                    obj = self.time_serializer(obj)
+                    return super().default(obj)
+
+                def encode(self, obj):
+                    # Convert datetime keys to strings
+                    def convert_keys(item):
+                        if isinstance(item, dict):
+                            return {
+                                self.time_serializer(k): convert_keys(v) for k, v in item.items()
+                            }
+                        elif isinstance(item, list | tuple):
+                            return [convert_keys(i) for i in item]
+                        else:
+                            return self.time_serializer(item)
+
+                    converted = convert_keys(obj)
+                    return super().encode(converted)
+
+            return dumps(obj, cls=DateTimeDecoder)
 
     def json_dump_bytes(
         obj: Any, default: Callable[[Any], Any] | None = None, *, pretty: bool = False
@@ -35,7 +77,9 @@ else:
     def json_dump_bytes(
         obj: Any, default: Callable[[Any], Any] | None = None, *, pretty: bool = False
     ) -> bytes:
-        option = orjson.OPT_INDENT_2 if pretty else None
+        option = orjson.OPT_NON_STR_KEYS
+        if pretty:
+            option |= orjson.OPT_INDENT_2
         return orjson.dumps(obj, option=option, default=default)
 
     def json_dumps(
