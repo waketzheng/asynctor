@@ -1,11 +1,15 @@
 # ChangeLog
 
-## 0.11
+## 0.12
 
 ### Unrelease
 
+### [0.12.0](../../releases/tag/v0.12.0) - 2026-01-06
+
 #### Added
 - feat: default to show request time for access log when runserver
+
+## 0.11
 
 ### [0.11.9](../../releases/tag/v0.11.9) - 2025-12-28
 
