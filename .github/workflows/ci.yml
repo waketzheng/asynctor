@@ -43,6 +43,9 @@ jobs:
           uv tool install pdm
           pdm config check_update false
           pdm config use_uv true
+      - name: Setup ty
+        run: |
+          uv tool install ty
       - name: Install deps
         run: just deps --no-group test
       - name: Check code style and Type Hints

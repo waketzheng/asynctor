@@ -82,7 +82,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
     def __init__(self, message: str | Callable, decimal_places=1, verbose=True) -> None:
         if callable(message):  # Use as decorator
             func = message
-            self.__name__ = message = func.__name__
+            self.__name__ = message = getattr(func, "__name__", str(func))
             self.func: Callable = func
         self.message = message
         self._decimal_places = decimal_places

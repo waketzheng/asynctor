@@ -31,7 +31,7 @@ def ensure_redis_is_installed() -> None:
         ) from None
 
 
-class RedisClient(Redis):
+class RedisClient(Redis):  # ty: ignore[unsupported-base]
     def __init__(self, **kw: Annotated[Any, "Same as redis.asyncio.Redis"]) -> None:
         """Expand `redis.asyncio.Redis` to auto load REDIS_HOST from os environ,
         if host parameter not explicitly set.

@@ -52,7 +52,7 @@ repository = "https://github.com/waketzheng/asynctor.git"
 
 [dependency-groups]
 dev = [
-    "fastdevcli-slim>=0.19.1",
+    "fastdevcli-slim>=0.19.8",
     "fastapi-cdn-host>=0.9.1",
     "uvicorn>=0.34.3",
     "pytest>=8.4.2",
@@ -63,7 +63,6 @@ lint = [
     "types-redis>=4.6.0.20241004",
     "pandas-stubs>=2.2.0",
     "bandit>=1.8.6",
-    "mypy>=1.18.2",
     "orjson>=3.11.5",
 ]
 test = [

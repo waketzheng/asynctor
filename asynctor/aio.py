@@ -49,17 +49,17 @@ CoroFunc: TypeAlias = Awaitable[Any] | AsyncFunc
 
 
 @overload
-def ensure_afunc(coro: AwaitT) -> Callable[[], AwaitT]: ...
-
-
-@overload
 def ensure_afunc(coro: CallableT) -> CallableT: ...
 
 
-def ensure_afunc(coro: AwaitT | CallableT) -> Callable[[], AwaitT] | CallableT:
+@overload
+def ensure_afunc(coro: AwaitT) -> Callable[[], AwaitT]: ...
+
+
+def ensure_afunc(coro: CallableT | AwaitT) -> CallableT | Callable[[], AwaitT]:
     """Wrap coroutine to be async function"""
     if callable(coro):
-        return coro
+        return coro  # ty: ignore[invalid-return-type]
 
     async def do_await() -> T_Retval:
         return await coro
@@ -98,7 +98,7 @@ def run(
 
 
 class LengthFixedList(list[T]):
-    def append(self, _: T) -> None:
+    def append(self, value: T) -> None:
         raise TypeError(f"{self.__class__.__name__} is fixed-size")
 
 

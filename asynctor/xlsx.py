@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Any, TypeAlias
 
 import anyio
 import pandas as pd
+from anyio.lowlevel import checkpoint
 
 if TYPE_CHECKING:
     from fastapi import UploadFile
@@ -23,7 +24,7 @@ async def read_excel(
     :param kw: other kwargs that will pass to the `pd.read_excel` function
     """
     if isinstance(file, (str, Path, BytesIO, bytes)):
-        await anyio.lowlevel.checkpoint()
+        await checkpoint()
         return pd_read_excel(file, as_str, **kw)
     if isinstance(file, anyio.Path):
         content = await file.read_bytes()

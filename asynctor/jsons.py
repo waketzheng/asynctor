@@ -46,11 +46,11 @@ except ImportError:
                         return str(obj).replace(" ", "T")
                     return obj
 
-                def default(self, obj) -> Any:
-                    obj = self.time_serializer(obj)
-                    return super().default(obj)
+                def default(self, o: Any) -> Any:
+                    o = self.time_serializer(o)
+                    return super().default(o)
 
-                def encode(self, obj):
+                def encode(self, o: Any) -> str:
                     # Convert datetime keys to strings
                     def convert_keys(item):
                         if isinstance(item, dict):
@@ -62,7 +62,7 @@ except ImportError:
                         else:
                             return self.time_serializer(item)
 
-                    converted = convert_keys(obj)
+                    converted = convert_keys(o)
                     return super().encode(converted)
 
             return dumps(obj, cls=DateTimeDecoder)
