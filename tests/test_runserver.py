@@ -7,11 +7,23 @@ from typing import Annotated
 
 import pytest
 import typer
+import uvicorn
 from fastapi import FastAPI
 
 from asynctor.compat import chdir
-from asynctor.contrib.fastapi import RunServer, runserver
+from asynctor.contrib.fastapi import ACCESS_LOG_FMT, RunServer, runserver
 from asynctor.utils import get_machine_ip
+
+
+def get_log_config() -> dict:
+    log_config = dict(uvicorn.config.LOGGING_CONFIG)
+    log_config["formatters"] = dict(log_config["formatters"])
+    log_config["formatters"]["access"] = dict(log_config["formatters"]["access"])
+    log_config["formatters"]["access"]["fmt"] = ACCESS_LOG_FMT
+    return log_config
+
+
+EXPECTED_LOG_CONFIG = get_log_config()
 
 
 @pytest.fixture
@@ -42,6 +54,14 @@ class CliOpts:
 def test_no_args(mock_uvicorn_run, mock_no_args):
     app = FastAPI()
     runserver(app)
+    mock_uvicorn_run.assert_called_once_with(
+        app, host="0.0.0.0", reload=False, log_config=EXPECTED_LOG_CONFIG
+    )
+
+
+def test_no_args_no_log_time(mock_uvicorn_run, mock_no_args):
+    app = FastAPI()
+    runserver(app, log_access_time=False)
     mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", reload=False)
 
 
@@ -54,11 +74,22 @@ class TestAsynctorPort:
     def test_no_args_env_asynctor_port(self, mock_uvicorn_run, mock_no_args, mock_port):
         app = FastAPI()
         runserver(app)
-        mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", port=9000, reload=False)
+        mock_uvicorn_run.assert_called_once_with(
+            app, host="0.0.0.0", port=9000, reload=False, log_config=EXPECTED_LOG_CONFIG
+        )
 
     def test_no_args_but_port_passed(self, mock_uvicorn_run, mock_no_args, mock_port):
         app = FastAPI()
         runserver(app, port=8888)
+        mock_uvicorn_run.assert_called_once_with(
+            app, host="0.0.0.0", port=8888, reload=False, log_config=EXPECTED_LOG_CONFIG
+        )
+
+    def test_no_args_but_port_passed_and_log_time_false(
+        self, mock_uvicorn_run, mock_no_args, mock_port
+    ):
+        app = FastAPI()
+        runserver(app, port=8888, log_access_time=False)
         mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", port=8888, reload=False)
 
     def test_with_args(self, mock_uvicorn_run, mock_port):
@@ -82,7 +113,9 @@ class TestOpenBrowser:
             mock_subprocess.assert_called_once_with(["explorer", "http://127.0.0.1:8000/docs"])
         else:
             mock_subprocess.assert_called_once_with(["open", "http://127.0.0.1:8000/docs"])
-        mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", reload=False)
+        mock_uvicorn_run.assert_called_once_with(
+            app, host="0.0.0.0", reload=False, log_config=EXPECTED_LOG_CONFIG
+        )
 
     def test_no_args_with_env(self, mock_uvicorn_run, mock_subprocess, mock_no_args, monkeypatch):
         monkeypatch.setenv("ASYNCTOR_BROWSER", "1")
@@ -92,14 +125,18 @@ class TestOpenBrowser:
             mock_subprocess.assert_called_once_with(["explorer", "http://127.0.0.1:8000/docs"])
         else:
             mock_subprocess.assert_called_once_with(["open", "http://127.0.0.1:8000/docs"])
-        mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", reload=False)
+        mock_uvicorn_run.assert_called_once_with(
+            app, host="0.0.0.0", reload=False, log_config=EXPECTED_LOG_CONFIG
+        )
 
     def test_no_args_with_env_0(self, mock_uvicorn_run, mock_subprocess, mock_no_args, monkeypatch):
         monkeypatch.setenv("ASYNCTOR_BROWSER", "0")
         app = FastAPI()
         runserver(app)
         mock_subprocess.assert_not_called()
-        mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", reload=False)
+        mock_uvicorn_run.assert_called_once_with(
+            app, host="0.0.0.0", reload=False, log_config=EXPECTED_LOG_CONFIG
+        )
 
     def test_no_args_but_port_defined(self, mock_uvicorn_run, mock_subprocess, mock_no_args):
         app = FastAPI()
@@ -108,7 +145,9 @@ class TestOpenBrowser:
             mock_subprocess.assert_called_once_with(["explorer", "http://127.0.0.1:9000/docs"])
         else:
             mock_subprocess.assert_called_once_with(["open", "http://127.0.0.1:9000/docs"])
-        mock_uvicorn_run.assert_called_once_with(app, host="0.0.0.0", port=9000, reload=False)
+        mock_uvicorn_run.assert_called_once_with(
+            app, host="0.0.0.0", port=9000, reload=False, log_config=EXPECTED_LOG_CONFIG
+        )
 
     def test_no_args_but_host_defined(self, mock_uvicorn_run, mock_subprocess, mock_no_args):
         app = FastAPI()
@@ -117,7 +156,9 @@ class TestOpenBrowser:
             mock_subprocess.assert_called_once_with(["explorer", "http://192.168.0.3:8000/docs"])
         else:
             mock_subprocess.assert_called_once_with(["open", "http://192.168.0.3:8000/docs"])
-        mock_uvicorn_run.assert_called_once_with(app, host="192.168.0.3", reload=False)
+        mock_uvicorn_run.assert_called_once_with(
+            app, host="192.168.0.3", reload=False, log_config=EXPECTED_LOG_CONFIG
+        )
 
     def test_with_args(self, mock_uvicorn_run, mock_subprocess, monkeypatch):
         monkeypatch.setenv("ASYNCTOR_BROWSER", "True")

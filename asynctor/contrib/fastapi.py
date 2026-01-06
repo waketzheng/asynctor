@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import functools
 import logging
 import os
@@ -16,6 +17,7 @@ from fastapi import Depends, FastAPI, Request
 from fastapi.routing import _merge_lifespan_context
 
 from ..client import AsyncRedis
+from ..exceptions import UnsupportedError
 from ..utils import Shell, load_bool
 
 
@@ -99,6 +101,21 @@ Usage::
     ...     assert isinstance(client_ip, str)
 """
 
+ACCESS_LOG_FMT = "%(asctime)s - %(levelname)s - %(message)s"
+
+
+def config_access_log(fmt=ACCESS_LOG_FMT, log: str = "uvicorn.access") -> None:
+    """Config access logging format for uvicorn show request time
+
+    Usage::
+        >>> from asynctor.contrib.fastapi import config_access_log
+        >>> app = FastAPI()
+        >>> config_access_log()
+    """
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter(fmt))
+    logging.getLogger(log).addHandler(handler)
+
 
 def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
     """Config access logging format for uvicorn
@@ -108,10 +125,7 @@ def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
         >>> app = FastAPI()
         >>> config_access_log_to_show_time()
     """
-    fmt = "%(asctime)s - %(levelname)s - %(message)s"
-    handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter(fmt))
-    logging.getLogger(log).addHandler(handler)
+    config_access_log(log=log)
 
 
 PreStartFunc: TypeAlias = Callable[
@@ -271,6 +285,13 @@ class RunServer:
         cls.uvicorn_run(app, host, port, reload, **kw)
 
 
+@functools.cache
+def get_log_config(fmt: str) -> dict[str, Any]:
+    log_config = copy.deepcopy(uvicorn.config.LOGGING_CONFIG)
+    log_config["formatters"]["access"]["fmt"] = fmt
+    return log_config
+
+
 def runserver(
     app: FastAPI,
     addrport: str | int | None = None,
@@ -281,9 +302,15 @@ def runserver(
     docs_params: dict[str, str] | None = None,
     pre_start: PreStartFunc | None = None,
     open_browser: bool | None = None,
+    log_access_time: bool = True,
     **kw,
 ) -> None:
     kw.update(docs_params=docs_params, pre_start=pre_start, open_browser=open_browser)
+    if log_access_time:
+        if (log_config := kw.get("log_config")) is not None:
+            raise UnsupportedError(f"Argument value conflict: {log_access_time=} vs {log_config=}")
+        log_config = get_log_config(ACCESS_LOG_FMT)
+        kw.update(log_config=log_config)
     if not (args := sys.argv[1:]):
         return RunServer.echo_and_run(app, host, port, reload, **kw)
     try:

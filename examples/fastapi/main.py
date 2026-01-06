@@ -8,12 +8,7 @@ import fastapi_cdn_host
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 
-from asynctor.contrib.fastapi import (
-    AioRedisDep,
-    config_access_log_to_show_time,
-    register_aioredis,
-    runserver,
-)
+from asynctor.contrib.fastapi import AioRedisDep, config_access_log, register_aioredis
 
 fake_db = {"users": [{"id": 1, "name": "John"}]}
 
@@ -45,7 +40,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
 app = FastAPI(lifespan=lifespan)
 register_aioredis(app, host="127.0.0.1")
 fastapi_cdn_host.patch_docs(app)
-config_access_log_to_show_time()
+config_access_log()
 
 
 @app.get("/users")
@@ -87,5 +82,11 @@ async def get_cached_string_from_redis(redis: AioRedisDep, key: str) -> dict[str
     return {key: value}
 
 
-if __name__ == "__main__":
+def main() -> None:
+    from asynctor.contrib.fastapi import runserver
+
     runserver(app)
+
+
+if __name__ == "__main__":
+    main()
