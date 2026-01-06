@@ -121,6 +121,10 @@ warn_unused_ignores = false
 module = "anyio._core._eventloop.current_async_library"
 disable_error_code = ["attr-defined"]
 
+[tool.ty.src]
+exclude = ["asynctor/enums.py", "tests/test_enums.py"]
+
+
 [tool.coverage.run]
 source = ["asynctor"]
 omit = [

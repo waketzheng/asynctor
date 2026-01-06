@@ -8,19 +8,9 @@ from typing import Any
 import anyio
 import pandas as pd
 import pytest
+from fastapi import UploadFile
 
 from asynctor.xls import Excel, df_to_datas, load_xls, read_excel
-
-try:
-    from fastapi import UploadFile
-except ImportError:
-
-    class UploadFile:  # type:ignore[no-redef]
-        def __init__(self, file):
-            self.file = file
-
-        async def read(self) -> bytes:
-            return self.file.read()
 
 
 @pytest.mark.anyio

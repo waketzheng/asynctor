@@ -40,7 +40,7 @@ jobs:
       - uses: extractions/setup-just@v3  # Or: uv tool install rust-just
       - name: Setup PDM by uv
         run: |
-          uv tool install pdm --with msgpack
+          uv tool install pdm
           pdm config check_update false
           pdm config use_uv true
       - name: Install deps
@@ -83,7 +83,7 @@ jobs:
           enable-cache: true
       - name: Setup PDM by uv
         run: |
-          uv tool install pdm --with msgpack
+          uv tool install pdm
           pdm config check_update false
           pdm config use_uv true
       - name: Install deps

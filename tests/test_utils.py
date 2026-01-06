@@ -68,32 +68,32 @@ class TestAttrDict:
         origin_dict = {"a": 1, "b": {"c": 2, "d": {"e": 3}}}
         d = AttrDict(origin_dict)
         assert d == origin_dict
-        assert d.a == d["a"] == 1
-        assert d.b == d["b"] == {"c": 2, "d": {"e": 3}}
-        assert d.b.c == d["b"]["c"] == 2
-        assert d.b.d == d["b"]["d"] == {"e": 3}
-        assert d.b.d.e == d["b"]["d"]["e"] == 3
+        assert d.a == d["a"] == 1  # ty: ignore[unresolved-attribute]
+        assert d.b == d["b"] == {"c": 2, "d": {"e": 3}}  # ty: ignore[unresolved-attribute]
+        assert d.b.c == d["b"]["c"] == 2  # ty: ignore[unresolved-attribute]
+        assert d.b.d == d["b"]["d"] == {"e": 3}  # ty: ignore[unresolved-attribute]
+        assert d.b.d.e == d["b"]["d"]["e"] == 3  # ty: ignore[unresolved-attribute]
         assert str(d) == str(origin_dict)
         assert repr(d) == "AttrDict(" + repr(origin_dict) + ")"
 
     def test_raises(self):
         with pytest.raises(AttributeError):
-            assert AttrDict().a
+            assert AttrDict().a  # ty: ignore[unresolved-attribute]
         with pytest.raises(KeyError):
             assert AttrDict()["a"]
 
     def test_key_startswith_underline(self):
         d = AttrDict({"_a": 1, "__b": 2, "___c": 3, "____d": 4})
-        assert d._a == d["_a"] == 1
+        assert d._a == d["_a"] == 1  # ty: ignore[unresolved-attribute]
         assert d["__b"] == 2
         assert d["___c"] == 3
         assert d["____d"] == 4
         with pytest.raises(AttributeError):
-            assert d.__b
+            assert d.__b  # ty: ignore[unresolved-attribute]
         with pytest.raises(AttributeError):
-            assert d.___c
+            assert d.___c  # ty: ignore[unresolved-attribute]
         with pytest.raises(AttributeError):
-            assert d.____d
+            assert d.____d  # ty: ignore[unresolved-attribute]
 
     def test_initial(self):
         assert AttrDict() == {} == {}
@@ -118,15 +118,15 @@ class TestAttrDict:
         assert d["a-b"] == 1
         assert d[("a", "b")] == 2
         with pytest.raises(AttributeError):
-            assert d.a_b
+            assert d.a_b  # ty: ignore[unresolved-attribute]
         with pytest.raises(AttributeError):
-            assert d.ab
-        assert d["c_d"] == d.c_d == 4
+            assert d.ab  # ty: ignore[unresolved-attribute]
+        assert d["c_d"] == d.c_d == 4  # ty: ignore[unresolved-attribute]
         assert d["e f"] == 5
         with pytest.raises(AttributeError):
-            assert d.e_f
+            assert d.e_f  # ty: ignore[unresolved-attribute]
         with pytest.raises(AttributeError):
-            assert d.ef
+            assert d.ef  # ty: ignore[unresolved-attribute]
 
     def test_exclude(self):
         d = AttrDict({"keys": {"a": 1}})
