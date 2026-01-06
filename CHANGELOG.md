@@ -4,6 +4,9 @@
 
 ### Unrelease
 
+#### Added
+- feat: default to show request time for access log when runserver
+
 ### [0.11.9](../../releases/tag/v0.11.9) - 2025-12-28
 
 #### Fixes
