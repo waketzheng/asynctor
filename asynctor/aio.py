@@ -18,7 +18,7 @@ from .exceptions import ParamsError
 if sys.version_info >= (3, 11):  # pragma: no cover
     from typing import TypeVarTuple, Unpack
 else:
-    from exceptiongroup import ExceptionGroup  # pragma: no cover
+    from exceptiongroup import ExceptionGroup  # pragma: no cover # ty: ignore[unresolved-import]
     from typing_extensions import TypeVarTuple, Unpack  # pragma: no cover
 try:
     # anyio>=4.12.0 no longer depends on sniffio, and has it's own current_async_library

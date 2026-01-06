@@ -91,7 +91,7 @@ style *args: deps
     @just fmt {{args}}
 
 _check *args:
-    pdm run fast check {{args}}
+    pdm run fast check --ty {{args}}
 
 check *args: deps
     @just _check {{args}}

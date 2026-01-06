@@ -25,7 +25,7 @@ else:
 
     def load_toml(content: str) -> dict[str, Any]:
         try:
-            import tomli
+            import tomli  # ty: ignore[unresolved-import]
         except ImportError:
             tip = (
                 "tomli is required for Python<3.11, you can install it by:"

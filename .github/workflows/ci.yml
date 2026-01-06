@@ -53,7 +53,7 @@ jobs:
       - name: Check Type Hints for asynctor.enums
         if: matrix.python-version == '3.14'
         run: |
-          just run mypy --config-file .mypy_py3.11.ini .
+          ty check --config-file .ty_py311.toml
 
   test:
     runs-on: ubuntu-latest

@@ -77,7 +77,7 @@ def load_toml_context(toml: Path) -> dict[str, dict]:
         import tomllib
     else:
         try:
-            import tomli as tomllib
+            import tomli as tomllib  # ty: ignore[unresolved-import]
         except ImportError:
             return {}
     return tomllib.loads(toml.read_text("utf8"))
