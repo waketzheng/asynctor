@@ -52,8 +52,8 @@ repository = "https://github.com/waketzheng/asynctor.git"
 
 [dependency-groups]
 dev = [
-    "fastdevcli-slim>=0.19.8",
-    "fastapi-cdn-host>=0.9.1",
+    "fastdevcli-slim>=0.20.0",
+    "fastapi-cdn-host>=0.10.0",
     "uvicorn>=0.34.3",
     "pytest>=8.4.2",
 ]
@@ -123,6 +123,8 @@ disable_error_code = ["attr-defined"]
 [tool.ty.src]
 exclude = ["asynctor/enums.py", "tests/test_enums.py"]
 
+[tool.ty.rules]
+unused-ignore-comment = "ignore"
 
 [tool.coverage.run]
 source = ["asynctor"]

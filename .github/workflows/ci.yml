@@ -54,6 +54,10 @@ jobs:
         if: matrix.python-version == '3.14'
         run: |
           ty check --config-file .ty_py311.toml
+      - name: Check by mypy
+        run:
+          uv pip install mypy
+          mypy asynctor
 
   test:
     runs-on: ubuntu-latest

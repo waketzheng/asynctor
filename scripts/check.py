@@ -40,7 +40,7 @@ cmd = PREFIX + CMD
 if os.system(cmd) != 0:
     print("\033[1m Please run './scripts/format.py' to auto-fix style issues \033[0m")
     sys.exit(1)
-cmd = PREFIX + "mypy ."
+cmd = PREFIX + "ty check ."
 if os.system(cmd) != 0:
     sys.exit(1)
 

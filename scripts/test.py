@@ -79,7 +79,7 @@ def combine_result_files(shell=COMBINE):
 
 started_at = time.time()
 run_command(CMD)
-run_command(APPEND, env={"PYTHONPATH": "examples/fastapi"})  # type:ignore
+run_command(APPEND, env={"PYTHONPATH": "examples/fastapi"})
 remove_outdate_files(started_at)
 combine_result_files()
 run_command(REPORT)

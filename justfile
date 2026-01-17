@@ -37,6 +37,7 @@ venv313:
     {{ VENV_CREATE }} 3.13
 
 uv_deps *args:
+    @uv run --no-sync fast pypi --reverse --quiet
     {{ UV_DEPS }} {{args}}
     @just install_me
     @uv run --no-sync fast pypi --quiet
@@ -49,6 +50,7 @@ deps *args: venv
     if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; {{ PDM_DEPS }} {{ args }} } else { echo 'uv sync...'; just uv_deps {{ args }} }
 
 uv_lock *args:
+    @uv run --no-sync fast pypi --reverse --quiet
     uv lock {{args}}
     @just deps --frozen
 
