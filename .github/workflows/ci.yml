@@ -96,6 +96,9 @@ jobs:
           uv tool install pdm
           pdm config check_update false
           pdm config use_uv true
+      - name: Setup fast by uv
+        run: |
+          uv tool install fastdevcli-slim
       - name: Install deps
         run: uvx --from rust-just just deps --no-group lint
       - name: Test with pytest
