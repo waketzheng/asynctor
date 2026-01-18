@@ -40,9 +40,12 @@ jobs:
       - uses: extractions/setup-just@v3  # Or: uv tool install rust-just
       - name: Setup PDM by uv
         run: |
-          uv tool install pdm
+          uv tool install pdm --with pdm-plugin-i
           pdm config check_update false
           pdm config use_uv true
+      - name: Setup fast by uv
+        run: |
+          uv tool install fastdevcli-slim
       - name: Setup ty
         run: |
           uv tool install ty
@@ -57,7 +60,7 @@ jobs:
       - name: Check by mypy
         run:
           uv pip install mypy
-          mypy asynctor
+          pdm run mypy asynctor
 
   test:
     runs-on: ubuntu-latest
