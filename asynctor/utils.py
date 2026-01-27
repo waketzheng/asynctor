@@ -353,8 +353,23 @@ def load_bool(env: str, *, strict: bool = False) -> bool:
 
 
 class ExtendSyspath(AbstractContextManager):
-    def __init__(self, path: Path | None = None, rollback: bool = False) -> None:
-        self.path = path or Path()
+    """Extend sys.path
+
+    Example::
+
+        from asynctor.utils import ExtendSyspath
+
+        with ExtendSyspath(__file__):
+            from app import __version__
+
+    """
+
+    def __init__(self, path: Path | str | None = None, rollback: bool = False) -> None:
+        if path is None:
+            path = Path()
+        elif isinstance(path, str):
+            path = Path(path)
+        self.path: Path = path
         self._path = ""
         self.rollback = rollback
 

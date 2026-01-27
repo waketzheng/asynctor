@@ -305,7 +305,7 @@ class TestExtendSyspath:
         shutil.copy(f, f.with_stem(f.stem + "2"))
         with pytest.raises(ImportError):
             import foo  # ty:ignore[unresolved-import]
-        with ExtendSyspath(f):
+        with ExtendSyspath(str(f)):
             import foo  # ty:ignore[unresolved-import]
 
             assert foo.a == 1
