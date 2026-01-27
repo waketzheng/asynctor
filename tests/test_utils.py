@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import re
 import shlex
+import shutil
+import sys
 from datetime import datetime
 from pathlib import Path
 
@@ -11,6 +13,7 @@ import pytest
 from asynctor import AttrDict
 from asynctor.utils import (
     AsyncTestClient,
+    ExtendSyspath,
     Shell,
     cache_attr,
     client_manager,
@@ -291,3 +294,65 @@ def test_load_bool(monkeypatch):
     msg = f"Value of env '{env}' must be a bool (Got 'invalid')"
     with pytest.raises(ValueError, match=re.escape(msg)):
         assert load_bool(env, strict=True)
+
+
+class TestExtendSyspath:
+    def test_file(self, tmp_work_dir):
+        d = Path("subdir")
+        d.mkdir()
+        f = d / "foo.py"
+        f.write_text("a = 1")
+        shutil.copy(f, f.with_stem(f.stem + "2"))
+        with pytest.raises(ImportError):
+            import foo  # ty:ignore[unresolved-import]
+        with ExtendSyspath(f):
+            import foo  # ty:ignore[unresolved-import]
+
+            assert foo.a == 1
+        import foo2  # ty:ignore[unresolved-import]
+
+        assert foo2.a == foo.a
+        path = d.as_posix()
+        assert path in sys.path
+        index = sys.path.index(path)
+        sys.path.pop(index)
+
+    def test_dir(self, tmp_work_dir):
+        d = Path("sub")
+        d.mkdir()
+        f = d / "sth.py"
+        f.write_text("ss = 2")
+        shutil.copy(f, f.with_stem(f.stem + "2"))
+        with pytest.raises(ImportError):
+            import sth  # ty:ignore[unresolved-import]
+        with ExtendSyspath(d):
+            import sth  # ty:ignore[unresolved-import]
+
+            assert sth.ss == 2
+        import sth2  # ty:ignore[unresolved-import]
+
+        assert sth2.ss == sth.ss
+        path = d.as_posix()
+        assert path in sys.path
+        index = sys.path.index(path)
+        sys.path.pop(index)
+
+    def test_rollback(self, tmp_work_dir):
+        d = Path("subpath")
+        d.mkdir()
+        f = d / "ccc.py"
+        f.write_text("num = 3")
+        shutil.copy(f, f.with_stem(f.stem + "2"))
+        with pytest.raises(ImportError):
+            import ccc  # ty:ignore[unresolved-import]
+        path = d.as_posix()
+        with ExtendSyspath(d, rollback=True):
+            import ccc  # ty:ignore[unresolved-import]
+
+            assert ccc.num == 3
+            assert path in sys.path
+        assert path not in sys.path
+        with pytest.raises(ImportError):
+            import ccc2  # ty:ignore[unresolved-import]
+
+            assert ccc2.num == 3

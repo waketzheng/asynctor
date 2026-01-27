@@ -5,8 +5,10 @@ import os
 import shlex
 import socket
 import subprocess  # nosec
+import sys
 from collections.abc import AsyncGenerator, Callable
-from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from contextlib import AbstractAsyncContextManager, AbstractContextManager, asynccontextmanager
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
@@ -14,6 +16,8 @@ if TYPE_CHECKING:
     from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
     from httpx import AsyncClient
+
+    from asynctor.compat import Self
 
 
 T = TypeVar("T")
@@ -346,6 +350,30 @@ def load_bool(env: str, *, strict: bool = False) -> bool:
             if strict and x.lower() not in ("false", "no", "off", "n"):
                 raise ValueError(f"Value of env {env!r} must be a bool (Got {x!r})")
             return False
+
+
+class ExtendSyspath(AbstractContextManager):
+    def __init__(self, path: Path | None = None, rollback: bool = False) -> None:
+        self.path = path or Path()
+        self._path = ""
+        self.rollback = rollback
+
+    def __enter__(self) -> Self:
+        if (path := self.path).is_file():
+            path = path.parent
+        if (p := path.as_posix()) not in sys.path:
+            self._path = p
+            sys.path.append(p)
+        return self
+
+    def __exit__(self, *args, **kw) -> None:
+        if self.rollback and self._path:
+            try:
+                index = sys.path.index(self._path)
+            except IndexError:
+                ...
+            else:
+                sys.path.pop(index)
 
 
 def _test() -> None:  # pragma: no cover
