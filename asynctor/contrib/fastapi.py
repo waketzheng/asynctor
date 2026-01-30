@@ -18,6 +18,7 @@ from fastapi.routing import _merge_lifespan_context
 
 from ..client import AsyncRedis
 from ..exceptions import UnsupportedError
+from ..timing import Timer
 from ..utils import Shell, load_bool
 
 
@@ -112,6 +113,8 @@ def config_access_log(fmt=ACCESS_LOG_FMT, log: str = "uvicorn.access") -> None:
         >>> app = FastAPI()
         >>> config_access_log()
     """
+    if isinstance(fmt, FastAPI):
+        fmt = ACCESS_LOG_FMT
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(fmt))
     logging.getLogger(log).addHandler(handler)
@@ -337,3 +340,12 @@ def runserver(
         sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"
 
     typer.run(cli)
+
+
+def add_timing_middleware(app: FastAPI, header: str = "X-Process-Time") -> None:
+    @app.middleware("http")
+    async def add_process_time_header(request: Request, call_next):
+        with Timer(request.url.path, decimal_places=3, verbose=False) as t:
+            response = await call_next(request)
+        response.headers[header] = f"{int(t.cost * 1000)} ms"
+        return response
