@@ -256,3 +256,9 @@ def test_noreload(mocker):
     runserver(FastAPI())
     assert sys.argv[1] == "--no-reload"
     mock_object.assert_called_once()
+
+
+def test_parse_host_port(mocker):
+    mock_object = mocker.patch("typer.echo")
+    RunServer.parse_host_port("help", verbose=True, echo=typer.echo)
+    mock_object.assert_called_once_with("Ignore argument addrport = 'help'")

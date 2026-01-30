@@ -7,6 +7,9 @@ async def test_users(client):
     response = await client.get("/users")
     assert response.status_code == 200
     assert response.json() == [{"id": 1, "name": "John"}]
+    process_time = response.headers.get("X-Process-Time")
+    assert process_time.endswith(" ms")
+    assert process_time.replace(" ms", "").isdigit()
 
 
 @pytest.mark.anyio
