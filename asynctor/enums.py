@@ -46,7 +46,7 @@ class ChoicesType(EnumType):
             # assignment in enum's classdict.
             dict.__setitem__(classdict, key, value)
         cls = super().__new__(metacls, classname, bases, classdict, **kwds)
-        member_values: ValuesView[Choices] = cls.__members__.values()
+        member_values: ValuesView[Choices] = cls.__members__.values()  # ty:ignore[invalid-assignment]
         for member, label in zip(member_values, labels, strict=False):
             member._label_ = label
         return enum.unique(cls)  # type:ignore[type-var]

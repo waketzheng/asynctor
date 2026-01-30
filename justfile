@@ -81,8 +81,12 @@ run *args: venv
 _lint *args:
     pdm run fast lint --ty {{args}}
 
+[unix]
 mypy:
     uvx mypy --python-executable=.venv/bin/python asynctor
+[windows]
+mypy:
+    uvx mypy --python-executable=.venv/Scripts/python asynctor
 
 lint *args: deps
     @just _lint {{args}}
@@ -100,6 +104,9 @@ _check *args:
 
 check *args: deps
     @just _check {{args}}
+
+check314:
+    ty check --config-file .ty_py311.toml
 
 _build *args:
     pdm build {{args}}
