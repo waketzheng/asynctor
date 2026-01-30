@@ -59,8 +59,7 @@ jobs:
           ty check --config-file .ty_py311.toml
       - name: Check by mypy
         run:
-          uv pip install mypy
-          pdm run mypy asynctor
+          just mypy
 
   test:
     runs-on: ubuntu-latest
