@@ -4,6 +4,16 @@
 
 ### Unrelease
 
+### [0.12.2](../../releases/tag/v0.12.2) - 2026-01-30
+
+#### Added
+- feat: a middleware to show process time in headers for fastapi
+
+### [0.12.1](../../releases/tag/v0.12.1) - 2026-01-27
+
+#### Added
+- feat: add `asynctor.utils.ExtendSyspath`
+
 ### [0.12.0](../../releases/tag/v0.12.0) - 2026-01-06
 
 #### Added
