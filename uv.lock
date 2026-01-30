@@ -140,7 +140,6 @@ requires-dist = [
     { name = "asynctor", extras = ["redis", "testing"], marker = "extra == 'fastapi'" },
     { name = "asynctor", extras = ["toml"], marker = "extra == 'tomli'" },
     { name = "asynctor", extras = ["xlsx"], marker = "extra == 'xls'" },
-    { name = "eval-type-backport", marker = "python_full_version < '3.10'", specifier = ">=0.2.2,<1.0.0" },
     { name = "fastapi", marker = "extra == 'fastapi'", specifier = ">=0.115.0" },
     { name = "httpx", marker = "extra == 'testing'", specifier = ">=0.28.1" },
     { name = "openpyxl", marker = "extra == 'xlsx'", specifier = ">=3.1.0" },

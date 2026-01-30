@@ -15,7 +15,6 @@ requires-python = ">=3.10"
 dynamic = [ "version" ]
 dependencies = [
     "anyio>=3.7.1",
-    "eval-type-backport (>=0.2.2,<1.0.0); python_version < '3.10'",
 ]
 # requires by anyio:
 #    "exceptiongroup >= 1.0.2; python_version < '3.11'",
