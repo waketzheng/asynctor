@@ -96,6 +96,13 @@ mypy *args:
 mypy *args:
     uvx mypy --python-executable=.venv/Scripts/python asynctor {{args}}
 
+[unix]
+mypy310 *args:
+    uvx --python=3.10 mypy --python-executable=.venv/bin/python asynctor {{args}}
+[windows]
+mypy310 *args:
+    uvx --python=3.10 mypy --python-executable=.venv/Scripts/python asynctor {{args}}
+
 lint *args: deps
     @just _lint {{args}}
 
