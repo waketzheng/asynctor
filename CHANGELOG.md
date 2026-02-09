@@ -4,6 +4,11 @@
 
 ### Unrelease
 
+### [0.12.3](../../releases/tag/v0.12.3) - 2026-02-09
+
+#### Added
+- feat: `asynctor.aio.is_async_callable`
+
 ### [0.12.2](../../releases/tag/v0.12.2) - 2026-01-30
 
 #### Added

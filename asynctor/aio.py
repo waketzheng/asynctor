@@ -75,9 +75,12 @@ def ensure_afunc(coro: CallableT | AwaitT) -> CallableT | Callable[[], AwaitT]:
     return do_await
 
 
+# Copied from starlette/_utils.py (0.52.1)
 def is_async_callable(obj: Any) -> TypeIs[Callable[..., Awaitable[Any]]]:
+    # This function may be removed if starlette expose it public
     while isinstance(obj, functools.partial):
         obj = obj.func
+
     return iscoroutinefunction(obj) or (callable(obj) and iscoroutinefunction(obj.__call__))
 
 

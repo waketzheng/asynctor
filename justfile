@@ -81,9 +81,12 @@ clear *args:
 run *args: venv
     .venv/{{BIN_DIR}}/{{args}}
 
+ty311:
+    ty check --config-file .ty_py311.toml
+
 _lint *args:
     pdm run fast lint --ty {{args}}
-    ty check --config-file .ty_py311.toml
+    @just ty311
     @just mypy
 
 [unix]

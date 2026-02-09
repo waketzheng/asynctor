@@ -44,22 +44,18 @@ jobs:
           pdm config check_update false
           pdm config use_uv true
       - name: Setup fast by uv
-        run: |
-          uv tool install fastdevcli-slim
+        run: uv tool install fastdevcli-slim
       - name: Setup ty
-        run: |
-          uv tool install ty
+        run: uv tool install ty
       - name: Install deps
         run: just deps --no-group test
       - name: Check code style and Type Hints
         run: just _check
       - name: Check Type Hints for asynctor.enums
         if: matrix.python-version == '3.14'
-        run: |
-          ty check --config-file .ty_py311.toml
+        run: just ty311
       - name: Check by mypy
-        run:
-          just mypy
+        run: just mypy
 
   test:
     runs-on: ubuntu-latest
