@@ -83,6 +83,8 @@ run *args: venv
 
 _lint *args:
     pdm run fast lint --ty {{args}}
+    ty check --config-file .ty_py311.toml
+    @just mypy
 
 [unix]
 mypy *args:
@@ -93,7 +95,6 @@ mypy *args:
 
 lint *args: deps
     @just _lint {{args}}
-    ty check --config-file .ty_py311.toml
 
 fmt *args:
     @just _lint --skip-mypy {{args}}
