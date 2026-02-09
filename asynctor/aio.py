@@ -23,7 +23,7 @@ else:  # pragma: no cover
     try:
         from exceptiongroup import ExceptionGroup  # ty:ignore[unresolved-import]
     except ImportError:
-        ExceptionGroup = Exception  # ty:ignore[invalid-assignment]
+        ExceptionGroup = Exception  # type:ignore  # ty:ignore[invalid-assignment]
 try:
     # anyio>=4.12.0 no longer depends on sniffio, and has it's own current_async_library
     from anyio._core._eventloop import current_async_library
