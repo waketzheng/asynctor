@@ -93,6 +93,7 @@ mypy *args:
 
 lint *args: deps
     @just _lint {{args}}
+    ty check --config-file .ty_py311.toml
 
 fmt *args:
     @just _lint --skip-mypy {{args}}

@@ -123,7 +123,7 @@ disable_error_code = ["attr-defined"]
 exclude = ["asynctor/enums.py", "tests/test_enums.py"]
 
 [tool.ty.rules]
-unused-ignore-comment = "ignore"
+unused-type-ignore-comment = "ignore"
 
 [tool.coverage.run]
 source = ["asynctor"]

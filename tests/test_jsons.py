@@ -37,7 +37,7 @@ def test_loads():
 
 
 def test_fast_json():
-    assert FastJson.loads(b'{"1":1}') == {"1": 1}
+    assert FastJson.loads(b'{"1":1}') == {"1": 1}  # ty:ignore[missing-argument]
     assert FastJson.loads.__doc__ == json_loads.__doc__
     assert FastJson.dumps({1: 1}, "str") == '{"1":1}'
     assert FastJson.dumps({1: 1}, "string") == '{"1":1}'  # type:ignore
