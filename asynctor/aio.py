@@ -6,20 +6,24 @@ import sys
 import warnings
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
+from inspect import iscoroutinefunction
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeVar, cast, overload
 
 import anyio
 from anyio import from_thread
-from anyio._backends._asyncio import get_running_loop
 from anyio.lowlevel import checkpoint
 
 from .exceptions import ParamsError
 
 if sys.version_info >= (3, 11):  # pragma: no cover
     from typing import TypeVarTuple, Unpack
-else:
-    from exceptiongroup import ExceptionGroup  # pragma: no cover # ty: ignore[unresolved-import]
-    from typing_extensions import TypeVarTuple, Unpack  # pragma: no cover
+else:  # pragma: no cover
+    from typing_extensions import TypeVarTuple, Unpack
+
+    try:
+        from exceptiongroup import ExceptionGroup  # ty:ignore[unresolved-import]
+    except ImportError:
+        ExceptionGroup = Exception
 try:
     # anyio>=4.12.0 no longer depends on sniffio, and has it's own current_async_library
     from anyio._core._eventloop import current_async_library
@@ -35,6 +39,10 @@ except ImportError:
 
 
 if TYPE_CHECKING:
+    if sys.version_info >= (3, 13):  # pragma: no cover
+        from typing import TypeIs
+    else:
+        from typing_extensions import TypeIs
     from anyio.abc._tasks import TaskGroup
 
 
@@ -65,6 +73,12 @@ def ensure_afunc(coro: CallableT | AwaitT) -> CallableT | Callable[[], AwaitT]:
         return await coro
 
     return do_await
+
+
+def is_async_callable(obj: Any) -> TypeIs[Callable[..., Awaitable[Any]]]:
+    while isinstance(obj, functools.partial):
+        obj = obj.func
+    return iscoroutinefunction(obj) or (callable(obj) and iscoroutinefunction(obj.__call__))
 
 
 def run(
@@ -259,7 +273,10 @@ async def bulk_gather(
         await bg.run(coros, batch_size, wait_last, total)
     except ExceptionGroup as e:
         if raises:
-            raise e.exceptions[0] from e
+            if es := getattr(e, "exceptions", []):
+                raise es[0] from e
+            else:  # pragma: no cover
+                raise e
     return bg.results
 
 
@@ -326,21 +343,11 @@ def be_awaitable(
     @functools.wraps(async_func)  # type:ignore[arg-type]
     async def do_await(*gs: Unpack[PosArgsT]) -> T_Retval:
         if callable(async_func):
-            coro = async_func(*gs)
-            try:
-                res = await coro
-            except TypeError as e:
-                msg = (
-                    "object can't be awaited"
-                    if sys.version_info >= (3, 14)
-                    else "can't be used in 'await' expression"
-                )
-                if msg in str(e):
-                    # In case of async_func is a sync function
-                    res = cast(T_Retval, coro)
-                    await checkpoint()
-                else:
-                    raise
+            if is_async_callable(async_func):
+                res = await async_func(*gs)
+            else:
+                await checkpoint()
+                res = async_func(*gs)
             return res
         else:
             if gs:
@@ -384,10 +391,11 @@ def async_to_sync(
     @functools.wraps(func)
     def runner(*args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs) -> T_Retval:
         if current_async_library() == "asyncio":
+            from anyio._backends._asyncio import get_running_loop
+
             coro = func(*args, **kwargs)
             try:
-                loop = get_running_loop()
-                return loop.run_until_complete(coro)
+                return get_running_loop().run_until_complete(coro)
             except RuntimeError as e:
                 if "This event loop is already running" in str(e):
                     return run_async(ensure_afunc(coro))

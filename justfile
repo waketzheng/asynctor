@@ -85,11 +85,11 @@ _lint *args:
     pdm run fast lint --ty {{args}}
 
 [unix]
-mypy:
-    uvx mypy --python-executable=.venv/bin/python asynctor
+mypy *args:
+    uvx mypy --python-executable=.venv/bin/python asynctor {{args}}
 [windows]
-mypy:
-    uvx mypy --python-executable=.venv/Scripts/python asynctor
+mypy *args:
+    uvx mypy --python-executable=.venv/Scripts/python asynctor {{args}}
 
 lint *args: deps
     @just _lint {{args}}
