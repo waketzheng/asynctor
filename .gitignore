@@ -164,3 +164,4 @@ cython_debug/
 .idea
 .pdm-python
 .DS_Store
+dev_requirements.txt
