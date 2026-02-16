@@ -1,4 +1,4 @@
-from main import app
+from main import app  # ty:ignore[unresolved-import]
 
 from asynctor.testing import anyio_backend_fixture, async_client_fixture
 
