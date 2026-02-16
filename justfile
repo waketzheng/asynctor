@@ -77,20 +77,20 @@ ty311:
 _lint *args:
     pdm run fast lint --ty {{args}}
     @just ty311
-    @just mypy
+    @just mypy asynctor
 
 uvx_py *args:
     uvx --python={{PY_EXEC}} {{args}}
 
 mypy *args:
-    @just uvx_py mypy --python-executable={{PY_EXEC}} asynctor {{args}}
+    @just uvx_py mypy --python-executable={{PY_EXEC}} {{args}}
 
 mypy310 *args:
     uv export --python=3.10 --no-hashes --all-extras --all-groups --no-group test --frozen -o dev_requirements.txt
     uvx --python=3.10 --with-requirements=dev_requirements.txt mypy --cache-dir=.mypy310_cache asynctor {{args}}
 
 right *args:
-    @just uvx_py pyright --pythonpath={{PY_EXEC}} asynctor {{args}}
+    @just uvx_py pyright --pythonpath={{PY_EXEC}} {{args}}
 
 lint *args: deps
     @just _lint {{args}}

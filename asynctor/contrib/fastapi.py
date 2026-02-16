@@ -290,7 +290,9 @@ class RunServer:
 
 @functools.cache
 def get_log_config(fmt: str) -> dict[str, Any]:
-    log_config = copy.deepcopy(uvicorn.config.LOGGING_CONFIG)
+    from uvicorn.config import LOGGING_CONFIG
+
+    log_config = copy.deepcopy(LOGGING_CONFIG)
     log_config["formatters"]["access"]["fmt"] = fmt
     return log_config
 

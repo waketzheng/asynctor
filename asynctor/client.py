@@ -3,13 +3,18 @@ from __future__ import annotations
 import os
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
-try:
+if TYPE_CHECKING:
     from redis.asyncio import Redis
-except ImportError:  # pragma: no cover
-    from contextlib import AbstractAsyncContextManager
+else:
+    try:
+        from redis.asyncio import Redis
+    except ImportError:  # pragma: no cover
+        from contextlib import AbstractAsyncContextManager
 
-    class Redis(AbstractAsyncContextManager):  # type:ignore[no-redef]
-        def __aexit__(self, *args, **kw): ...
+        class Redis(AbstractAsyncContextManager):  # type:ignore[no-redef]
+            async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool | None: ...
+            async def ping(self) -> bool:
+                return False
 
 
 if TYPE_CHECKING:

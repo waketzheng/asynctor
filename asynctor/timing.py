@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 import functools
-import inspect
 import sys
 import time
 from collections.abc import Awaitable, Callable
 from contextlib import AbstractAsyncContextManager, AbstractContextManager
 from datetime import datetime
+from inspect import iscoroutinefunction
 from types import TracebackType
-from typing import TYPE_CHECKING, Annotated, Any, TypeAlias, TypeVar, overload
+from typing import TYPE_CHECKING, Annotated, Any, TypeAlias, TypeVar, cast, overload
 from zoneinfo import ZoneInfo as _ZoneInfo
 
 if sys.version_info >= (3, 12):
@@ -19,6 +19,10 @@ else:
     UTC = timezone.utc
 
 if TYPE_CHECKING:
+    if sys.version_info >= (3, 13):  # pragma: no cover
+        from typing import TypeIs
+    else:
+        from typing_extensions import TypeIs
     from .compat import Self
 
 T_Retval = TypeVar("T_Retval", Awaitable[Any], Any)
@@ -37,6 +41,15 @@ class ZoneInfo(_ZoneInfo):
 
         """
         return self.key
+
+
+# Copied from starlette/_utils.py (0.52.1)
+def is_async_callable(obj: Any) -> TypeIs[Callable[..., Awaitable[Any]]]:
+    # This function may be removed if starlette expose it public
+    while isinstance(obj, functools.partial):
+        obj = obj.func
+
+    return iscoroutinefunction(obj) or (callable(obj) and iscoroutinefunction(obj.__call__))
 
 
 class Timer(AbstractContextManager, AbstractAsyncContextManager):
@@ -149,7 +162,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
     def __call__(self, *args, **kwargs) -> Any:
         if (func := getattr(self, "func", None)) is None:
             return None
-        if inspect.iscoroutinefunction(func):
+        if is_async_callable(func):
 
             @functools.wraps(func)
             async def inner(*gs, **kw):
@@ -195,11 +208,19 @@ def timeit(func: str) -> Timer: ...  # pragma: no cover
 
 @overload
 def timeit(
+    func: Callable[..., Awaitable[T_Retval]],
+) -> Callable[..., Awaitable[T_Retval]]: ...  # pragma: no cover
+
+
+@overload
+def timeit(
     func: Callable[..., T_Retval],
 ) -> Callable[..., T_Retval]: ...  # pragma: no cover
 
 
-def timeit(func: str | Callable[..., T_Retval]) -> Timer | Callable[..., T_Retval]:
+def timeit(
+    func: str | Callable[..., Awaitable[T_Retval]] | Callable[..., T_Retval],
+) -> Timer | Callable[..., Awaitable[T_Retval]] | Callable[..., T_Retval]:
     """Print time cost of the function.
 
     Usage::
@@ -243,18 +264,22 @@ def timeit(func: str | Callable[..., T_Retval]) -> Timer | Callable[..., T_Retva
     if isinstance(func, str):
         return Timer(func)
     func_name = getattr(func, "__name__", str(func))
-    if inspect.iscoroutinefunction(func):
+    if is_async_callable(func):
+        if TYPE_CHECKING:
+            func = cast(Callable[..., Awaitable[T_Retval]], func)
 
         @functools.wraps(func)
-        async def deco(*args, **kwargs) -> T_Retval:
+        async def awaitable_runner(*args, **kwargs) -> T_Retval:
             async with Timer(func_name):
                 return await func(*args, **kwargs)
+
+        return awaitable_runner
 
     else:
 
         @functools.wraps(func)
-        def deco(*args, **kwargs) -> T_Retval:
+        def runner(*args, **kwargs) -> T_Retval:
             with Timer(func_name):
                 return func(*args, **kwargs)
 
-    return deco
+        return runner

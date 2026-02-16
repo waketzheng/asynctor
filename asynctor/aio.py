@@ -6,7 +6,6 @@ import sys
 import warnings
 from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
-from inspect import iscoroutinefunction
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeVar, cast, overload
 
 import anyio
@@ -14,6 +13,7 @@ from anyio import from_thread
 from anyio.lowlevel import checkpoint
 
 from .exceptions import ParamsError
+from .timing import is_async_callable
 
 if sys.version_info >= (3, 11):  # pragma: no cover
     from typing import TypeVarTuple, Unpack
@@ -39,10 +39,6 @@ except ImportError:
 
 
 if TYPE_CHECKING:
-    if sys.version_info >= (3, 13):  # pragma: no cover
-        from typing import TypeIs
-    else:
-        from typing_extensions import TypeIs
     from anyio.abc._tasks import TaskGroup
 
 
@@ -61,10 +57,12 @@ def ensure_afunc(coro: CallableT) -> CallableT: ...
 
 
 @overload
-def ensure_afunc(coro: AwaitT) -> Callable[[], AwaitT]: ...
+def ensure_afunc(coro: Awaitable[T_Retval]) -> Callable[[], Awaitable[T_Retval]]: ...
 
 
-def ensure_afunc(coro: CallableT | AwaitT) -> CallableT | Callable[[], AwaitT]:
+def ensure_afunc(
+    coro: CallableT | Awaitable[T_Retval],
+) -> CallableT | Callable[[], Awaitable[T_Retval]]:
     """Wrap coroutine to be async function"""
     if callable(coro):
         return coro  # ty: ignore[invalid-return-type]
@@ -73,15 +71,6 @@ def ensure_afunc(coro: CallableT | AwaitT) -> CallableT | Callable[[], AwaitT]:
         return await coro
 
     return do_await
-
-
-# Copied from starlette/_utils.py (0.52.1)
-def is_async_callable(obj: Any) -> TypeIs[Callable[..., Awaitable[Any]]]:
-    # This function may be removed if starlette expose it public
-    while isinstance(obj, functools.partial):
-        obj = obj.func
-
-    return iscoroutinefunction(obj) or (callable(obj) and iscoroutinefunction(obj.__call__))
 
 
 def run(
@@ -341,7 +330,7 @@ async def wait_for(coro: Awaitable[T_Retval], timeout: int | float) -> T_Retval:
 
 
 def be_awaitable(
-    async_func: AwaitT | Callable[[Unpack[PosArgsT]], AwaitT],
+    async_func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
 ) -> Callable[[Unpack[PosArgsT]], AwaitT]:
     @functools.wraps(async_func)  # type:ignore[arg-type]
     async def do_await(*gs: Unpack[PosArgsT]) -> T_Retval:
@@ -394,7 +383,7 @@ def async_to_sync(
     @functools.wraps(func)
     def runner(*args: T_ParamSpec.args, **kwargs: T_ParamSpec.kwargs) -> T_Retval:
         if current_async_library() == "asyncio":
-            from anyio._backends._asyncio import get_running_loop
+            from asyncio import get_running_loop
 
             coro = func(*args, **kwargs)
             try:
@@ -404,7 +393,7 @@ def async_to_sync(
                     return run_async(ensure_afunc(coro))
                 else:
                     raise e
-        return run_async(functools.partial(func, **kwargs), *args)
+        return run_async(functools.partial(func, *args, **kwargs))
 
     return runner
 

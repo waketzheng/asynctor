@@ -46,7 +46,7 @@ class ChoicesType(EnumType):
             # assignment in enum's classdict.
             dict.__setitem__(classdict, key, value)
         cls = super().__new__(metacls, classname, bases, classdict, **kwds)
-        member_values: ValuesView[Choices] = cls.__members__.values()  # ty:ignore[invalid-assignment]
+        member_values: ValuesView[Choices] = cls.__members__.values()  # type: ignore[assignment]
         for member, label in zip(member_values, labels, strict=False):
             member._label_ = label
         return enum.unique(cls)  # type:ignore[type-var]
@@ -62,7 +62,7 @@ class ChoicesType(EnumType):
 
     @property
     def choices(cls) -> list[tuple[Any, str]]:
-        empty = [(None, cls.__empty__)] if hasattr(cls, "__empty__") else []
+        empty = [(None, cls.__empty__)] if hasattr(cls, "__empty__") else []  # type:ignore[attr-defined]
         return empty + [(member.value, member.label) for member in cls]
 
     @property
