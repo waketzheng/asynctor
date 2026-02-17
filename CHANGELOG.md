@@ -4,6 +4,11 @@
 
 ### Unrelease
 
+### [0.12.4](../../releases/tag/v0.12.4) - 2026-02-17
+
+#### Changed
+- refactor: move `is_async_callable` from aio module to timing
+
 ### [0.12.3](../../releases/tag/v0.12.3) - 2026-02-09
 
 #### Added
