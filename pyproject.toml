@@ -126,6 +126,10 @@ exclude = ["asynctor/enums.py", "tests/test_enums.py"]
 unused-ignore-comment = "ignore"
 unused-type-ignore-comment = "ignore"
 
+[tool.pyright]
+# TODO: remove this exclude when dropping support for Python3.10
+exclude = ["asynctor/enums.py"]
+
 [tool.coverage.run]
 source = ["asynctor"]
 omit = [
