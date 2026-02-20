@@ -1,10 +1,3 @@
-[build-system]
-requires = ["pdm-backend"]
-build-backend = "pdm.backend"
-
-[tool.pdm]
-version = {source="file", path="asynctor/__init__.py"}
-
 [project]
 name = "asynctor"
 description = "Async functions to compare with anyio and asyncio, and toolkit to read excel with async/await."
@@ -149,3 +142,13 @@ exclude_also = [
     'if __name__ == "__main__":',
     "if TYPE_CHECKING:",
 ]
+
+[tool.pdm]
+version = {source="file", path="asynctor/__init__.py"}
+
+[tool.pdm.build]
+excludes = ["./**/.git", "./**/.*_cache", "examples", "tests"]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
