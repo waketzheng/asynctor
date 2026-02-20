@@ -12,6 +12,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 
 if TYPE_CHECKING:
+    from types import TracebackType
+
     from asgi_lifespan import LifespanManager
     from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
@@ -26,7 +28,11 @@ AsyncClientGenerator: TypeAlias = AsyncGenerator["AsyncClient"]
 
 @asynccontextmanager
 async def client_manager(
-    app: FastAPI, base_url="http://test", mount_lifespan=True, timeout=30, **kwargs
+    app: FastAPI,
+    base_url: str = "http://test",
+    mount_lifespan: bool = True,
+    timeout: int | float = 30,
+    **kwargs,
 ) -> AsyncClientGenerator:
     """Async test client
 
@@ -114,9 +120,9 @@ class AsyncTestClient(AbstractAsyncContextManager):
     def __init__(
         self,
         app: FastAPI,
-        mount_lifespan=True,
-        base_url="http://test",
-        timeout=30,
+        mount_lifespan: bool = True,
+        base_url: str = "http://test",
+        timeout: int | float = 30,
         **kwargs,
     ) -> None:
         self._app = app
@@ -144,11 +150,16 @@ class AsyncTestClient(AbstractAsyncContextManager):
         ).__aenter__()
         return client
 
-    async def __aexit__(self, *args, **kw) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         if self._client:
-            await self._client.__aexit__(*args, **kw)
+            await self._client.__aexit__(exc_type, exc_value, traceback)
         if self._manager:
-            await self._manager.__aexit__(*args, **kw)
+            await self._manager.__aexit__(exc_type, exc_value, traceback)
 
 
 class AttrDict(dict):
@@ -362,6 +373,12 @@ class ExtendSyspath(AbstractContextManager):
         with ExtendSyspath(__file__):
             from app import __version__
 
+    Or:
+        from pathlib import Path
+
+        with ExtendSyspath(BASE_DIR := Path(__file__).parent.parent):
+            from app import __version__
+
     """
 
     def __init__(self, path: Path | str | None = None, rollback: bool = False) -> None:
@@ -381,7 +398,12 @@ class ExtendSyspath(AbstractContextManager):
             sys.path.append(p)
         return self
 
-    def __exit__(self, *args, **kw) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         if self.rollback and self._path:
             try:
                 index = sys.path.index(self._path)
