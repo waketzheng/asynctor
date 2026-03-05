@@ -4,6 +4,11 @@
 
 ### Unrelease
 
+### [0.12.5](../../releases/tag/v0.12.5) - 2026-03-05
+
+#### Changed
+- refactor: improve type hints of `asynctor.enums.IntegerChoices`
+
 ### [0.12.4](../../releases/tag/v0.12.4) - 2026-02-17
 
 #### Changed
