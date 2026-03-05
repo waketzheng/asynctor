@@ -93,6 +93,7 @@ class IntegerChoices(Choices, IntEnum):
     """Class for creating enumerated integer choices."""
 
     if TYPE_CHECKING:
+        _value_: int | tuple[int, str]
 
         def __iter__(self) -> list[int]: ...
 
@@ -108,4 +109,7 @@ class TextChoices(Choices, StrEnum):
 
     @staticmethod
     def _generate_next_value_(name: str, start, count, last_values) -> str:
+        """
+        Return the member name.
+        """
         return name
