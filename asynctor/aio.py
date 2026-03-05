@@ -336,11 +336,10 @@ def be_awaitable(
     async def do_await(*gs: Unpack[PosArgsT]) -> T_Retval:
         if callable(async_func):
             if is_async_callable(async_func):
-                res = await async_func(*gs)
+                return await async_func(*gs)  # ty:ignore
             else:
                 await checkpoint()
-                res = async_func(*gs)
-            return res
+                return async_func(*gs)  # ty:ignore
         else:
             if gs:
                 warnings.warn("`run_async` for coroutine, does not handle 'args'.", stacklevel=1)
