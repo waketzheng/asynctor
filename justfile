@@ -100,7 +100,7 @@ mypy *args:
 
 mypy310 *args:
     uv export --python=3.10 --no-hashes --all-extras --all-groups --no-group test --frozen -o dev_requirements.txt
-    uvx --python=3.10 --with-requirements=dev_requirements.txt mypy --cache-dir=.mypy310_cache asynctor {{args}}
+    uvx --python=3.10 --with-requirements=dev_requirements.txt mypy --cache-dir=.mypy310_cache {{SRC}} {{args}}
 
 right *args:
     @just uvx_py pyright --pythonpath={{PY_EXEC}} {{args}}
