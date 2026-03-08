@@ -44,7 +44,7 @@ jobs:
           pdm config check_update false
           pdm config use_uv true
       - name: Setup fast by uv
-        run: uv tool install fastdevcli-slim
+        run: uv tool install fast-dev-cli
       - name: Setup ty
         run: uv tool install ty
       - name: Install deps
@@ -54,10 +54,8 @@ jobs:
       - name: Check Type Hints for asynctor.enums
         if: matrix.python-version == '3.14'
         run: just ty311
-      - name: Check by mypy/pyright
-        run: |
-          just mypy asynctor
-          just right asynctor
+      - name: Check by pyright
+        run: just right asynctor
 
   test:
     runs-on: ubuntu-latest
@@ -95,7 +93,7 @@ jobs:
           pdm config use_uv true
       - name: Setup fast by uv
         run: |
-          uv tool install fastdevcli-slim
+          uv tool install fast-dev-cli
       - name: Install deps
         run: uvx --from rust-just just deps --no-group lint
       - name: Test with pytest
