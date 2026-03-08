@@ -108,10 +108,9 @@ class ThreadGroup(AbstractContextManager):
             for future in concurrent.futures.as_completed(fs, timeout=self._timeout):
                 idx = fs[future]
                 try:
-                    res = future.result()
+                    self._results[idx] = future.result()
                 except Exception as exc:
-                    res = exc
-                self._results[idx] = res
+                    self._results[idx] = exc  # ty:ignore[invalid-assignment]
         else:
             for t in self._threads:
                 t.join(timeout=self._timeout)

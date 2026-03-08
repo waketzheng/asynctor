@@ -201,7 +201,7 @@ class RunServer:
         docs_params: dict | None = None,
         echo: Callable | None = None,
     ) -> str:
-        if host == "0.0.0.0":
+        if host == "0.0.0.0":  # nosec:B104
             if declared_host := os.getenv("ASYNCTOR_HOST"):
                 host = declared_host
             else:
@@ -282,7 +282,7 @@ class RunServer:
                 pre_start()
         if kw.pop("open_browser", False) or load_bool("ASYNCTOR_BROWSER"):
             command = "explorer" if platform.system() == "Windows" else "open"
-            if host == "0.0.0.0" and (m := re.search(r"://(.*?)[:/]", url)):
+            if host == "0.0.0.0" and (m := re.search(r"://(.*?)[:/]", url)):  # nosec:B104
                 url = url.replace(m.group(1), "127.0.0.1")
             Shell([command, url]).run(verbose=True)
         cls.uvicorn_run(app, host, port, reload, **kw)
@@ -301,7 +301,7 @@ def runserver(
     app: FastAPI,
     addrport: str | int | None = None,
     port: int | None = None,
-    host: str = "0.0.0.0",
+    host: str = "0.0.0.0",  # nosec:B104
     reload: bool = False,
     verbose: bool = False,
     docs_params: dict[str, str] | None = None,
@@ -320,10 +320,9 @@ def runserver(
         return RunServer.echo_and_run(app, host, port, reload, **kw)
     try:
         import typer
-    except ImportError:
-        raise ImportError(
-            "You must install typer or typer-slim to support arguments"
-            ", e.g.: pip install typer-slim"
+    except ImportError as e:
+        raise type(e)(
+            "You must install typer to support arguments, e.g.: pip install typer"
         ) from None
 
     def cli(

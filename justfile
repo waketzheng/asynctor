@@ -16,6 +16,7 @@ UV_DEPS := "uv sync --all-extras --all-groups"
 UV_PIP_I := "uv pip install"
 BIN_DIR := if os_family() == "windows" { "Scripts" } else { "bin" }
 PY_EXEC := if os_family() == "windows" { ".venv/Scripts/python.exe" } else { ".venv/bin/python" }
+SRC := "asynctor"
 
 [unix]
 venv *args:
@@ -24,24 +25,26 @@ venv *args:
 venv *args:
     @if (-Not (Test-Path '.venv')) { {{ VENV_CREATE }} {{ args }} }
 
-venv313:
-    {{ VENV_CREATE }} 3.13
+venv313 *args:
+    {{ VENV_CREATE }} 3.13 {{args}}
 
-pypi_reverse:
-    @uv run --no-sync fast pypi --reverse --quiet
+pypi *args:
+    @uv run --no-sync fast pypi --quiet {{args}}
+
+pypi_reverse *args:
+    @just pypi --reverse {{args}}
 
 uv_deps *args:
     @just pypi_reverse
-    {{ UV_DEPS }} {{args}}
-    @just install_me
-    @uv run --no-sync fast pypi --quiet
+    {{ UV_DEPS }} --reinstall-package={{SRC}} {{args}}
+    @just pypi
 
 [unix]
 deps *args: venv
     @just uv_deps {{args}}
 [windows]
 deps *args: venv
-    if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; {{ PDM_DEPS }} {{ args }} } else { echo 'uv sync...'; just uv_deps {{ args }} }
+    if (Test-Path '~/AppData/Roaming/uv/tools/rust-just') { echo 'uv sync ...'; just uv_deps {{ args }} } else { echo 'Using pdm ...'; pdm i -G :all --frozen {{ args }} }
 
 uv_lock *args:
     @just pypi_reverse
@@ -55,8 +58,17 @@ lock *args:
 lock *args:
     if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; pdm lock -G :all {{ args }} } else { echo 'uv lock...'; just uv_lock {{ args }} }
 
-up:
-    @just lock --upgrade
+add *args:
+    @just pypi_reverse
+    uv add {{args}}
+    @just pypi
+
+[unix]
+up *args:
+    @just uv_lock --upgrade {{args}}
+[windows]
+up *args:
+    if (-Not (Test-Path '~/AppData/Roaming/uv/tools/rust-just')) { echo 'Using pdm ...'; pdm update -G :all {{ args }} } else { echo 'uv lock...'; just uv_lock --upgrade {{ args }} }
 
 uv_clear *args:
     {{ UV_DEPS }} {{args}}
@@ -75,9 +87,10 @@ ty311:
     ty check --config-file .ty_py311.toml
 
 _lint *args:
-    pdm run fast lint --ty {{args}}
+    pdm run fast lint --ty --bandit {{args}}
     @just ty311
-    @just mypy asynctor
+    @just mypy {{SRC}}
+    @just right {{SRC}}
 
 uvx_py *args:
     uvx --python={{PY_EXEC}} {{args}}
@@ -105,18 +118,16 @@ style *args: deps
 
 _check *args:
     pdm run fast check --ty {{args}}
+    @just mypy {{SRC}}
 
 check *args: deps
     @just _check {{args}}
 
-check314:
-    ty check --config-file .ty_py311.toml
-
 _build *args:
-    pdm build {{args}}
+    uv build --offline {{args}}
 
 build *args: deps
-    @just _build {{args}}
+    pdm build {{args}}
 
 _test *args:
     pdm run fast test {{args}}
@@ -141,14 +152,20 @@ start:
     pre-commit install
     @just deps
 
-version part="patch":
-    pdm run fast bump {{part}}
+version part="patch" *args:
+    pdm run fast bump {{part}} {{args}}
 
 bump *args:
-    pdm run fast bump patch --commit {{args}}
+    @just version patch --commit {{args}}
 
 tag *args:
     pdm run fast tag {{args}}
 
+# Bump version with patch part(0.1.1->0.1.2) and auto mark tag
 release: venv bump tag
+    git --no-pager log -1
+
+# Bump version with minor part(0.1.1->0.2.0) and auto mark tag
+minor *args:
+    @just version minor --commit {{args}}
     git --no-pager log -1
