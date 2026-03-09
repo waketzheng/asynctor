@@ -13,6 +13,7 @@ except ImportError as e:
 if TYPE_CHECKING:
     from collections.abc import Iterator, ValuesView
 
+
 __all__ = ["Choices", "IntegerChoices", "TextChoices"]
 
 
@@ -95,8 +96,6 @@ class IntegerChoices(Choices, IntEnum):
     if TYPE_CHECKING:
         _value_: int | tuple[int, str]
 
-        def __iter__(self) -> list[int]: ...
-
         @property
         def values(cls) -> list[int]: ...
 
@@ -113,3 +112,8 @@ class TextChoices(Choices, StrEnum):
         Return the member name.
         """
         return name
+
+    if TYPE_CHECKING:
+
+        @enum_property
+        def value(self) -> str: ...
