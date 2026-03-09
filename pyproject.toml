@@ -8,10 +8,9 @@ requires-python = ">=3.10"
 dynamic = [ "version" ]
 dependencies = [
     "anyio>=3.7.1",
+    "typing-extensions>=4.15.0; python_version < '3.11'",
+    "exceptiongroup>=1.3.0; python_version < '3.11'",
 ]
-# requires by anyio:
-#    "exceptiongroup >= 1.0.2; python_version < '3.11'",
-#    "typing_extensions >= 4.1; python_version < '3.11'",
 keywords = ["asyncio", "anyio", "aioredis"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -28,14 +27,15 @@ classifiers = [
 ]
 
 [project.optional-dependencies]
+accel = ["orjson>=3.11.5"]
 toml = ["tomli>=2.2.1; python_version < '3.11'"]
 redis = ["redis>=5.0.0"]
 xlsx = ["pandas>=2.2.0", "openpyxl>=3.1.0"]
 testing = ["httpx>=0.28.1", "asgi-lifespan>=2.1.0"]
-fastapi = ["asynctor[redis,testing]", "fastapi>=0.115.0"]
+fastapi = ["asynctor[redis,testing]", "fastapi>=0.115.0", "uvicorn>=0.34.3"]
 tomli = ["asynctor[toml]"]
 xls = ["asynctor[xlsx]"]
-all = ["asynctor[xlsx,redis,fastapi,toml,testing]"]
+all = ["asynctor[accel,xlsx,redis,fastapi,toml,testing]"]
 
 [project.urls]
 homepage = "https://github.com/waketzheng/asynctor"
@@ -44,22 +44,12 @@ repository = "https://github.com/waketzheng/asynctor.git"
 
 [dependency-groups]
 dev = [
-    "fastdevcli-slim>=0.20.0",
+    "fast-dev-cli[all]>=0.22.0",
     "fastapi-cdn-host>=0.10.0",
-    "uvicorn>=0.34.3",
-    "pytest>=8.4.2",
 ]
 lint = [
-    "exceptiongroup>=1.3.0; python_version < '3.11'",
-    "typing-extensions>=4.14.1; python_version < '3.11'",
     "types-redis>=4.6.0.20241004",
     "pandas-stubs>=2.2.0",
-    "bandit>=1.8.6",
-    "orjson>=3.11.5",
-]
-test = [
-    "pytest-mock>=3.14.1",
-    "coverage>=7.11.0",
 ]
 
 [tool.ruff]

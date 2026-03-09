@@ -48,7 +48,7 @@ jobs:
       - name: Setup ty
         run: uv tool install ty
       - name: Install deps
-        run: just deps --no-group test
+        run: just deps
       - name: Check code style and Type Hints
         run: just _check
       - name: Check Type Hints for asynctor.enums
