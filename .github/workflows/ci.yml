@@ -53,7 +53,7 @@ jobs:
         run: just _check
       - name: Check Type Hints for asynctor.enums
         if: matrix.python-version == '3.14'
-        run: just ty311
+        run: just mypy asynctor/enums.py
       - name: Check by pyright
         run: just right asynctor
 

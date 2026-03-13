@@ -54,6 +54,7 @@ lint = [
 
 [tool.ruff]
 line-length = 100
+extend-exclude = ["asynctor/_enum.py"]
 
 [tool.ruff.lint]
 extend-select = [
@@ -80,8 +81,7 @@ extend-select = [
 pretty = true
 check_untyped_defs = true
 warn_unused_ignores = true
-# TODO: remove exclude section when drop support for Python3.10
-exclude = ["asynctor/enums.py", "test_enums.py"]
+exclude = ["asynctor/_enum.py"]
 
 [[tool.mypy.overrides]]
 module = [
@@ -103,7 +103,7 @@ module = "anyio._core._eventloop.current_async_library"
 disable_error_code = ["attr-defined"]
 
 [tool.ty.src]
-exclude = ["asynctor/enums.py", "tests/test_enums.py"]
+exclude = ["asynctor/_enum.py"]
 
 [tool.ty.rules]
 unused-ignore-comment = "ignore"
@@ -111,7 +111,7 @@ unused-type-ignore-comment = "ignore"
 
 [tool.pyright]
 # TODO: remove this exclude when dropping support for Python3.10
-exclude = ["asynctor/enums.py"]
+exclude = ["asynctor/_enum.py"]
 
 [tool.coverage.run]
 source = ["asynctor"]
@@ -123,6 +123,7 @@ omit = [
     # omit this single file
     "examples/fastapi/conftest.py",
     "_types.py",
+    "asynctor/_enum.py",
 ]
 [tool.coverage.report]
 omit = ["*/tests/*", "test_*"]

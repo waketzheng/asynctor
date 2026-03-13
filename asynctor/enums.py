@@ -1,20 +1,23 @@
 # Copied from source code of Django 6.0(0174a8)
 # And improve type hints without change any code logic
-import enum
-from enum import IntEnum
-from typing import TYPE_CHECKING, Any
+import sys
+from typing import TYPE_CHECKING, Any, cast
 
-try:
-    from enum import EnumType, StrEnum
+if sys.version_info >= (3, 11):
+    import enum
+    from enum import EnumType, IntEnum, StrEnum, auto
     from enum import property as enum_property
-except ImportError as e:
-    raise type(e)("This module only support Python3.11+") from e
+else:
+    # asynctor/_enum.py was copied from source code of Python3.14.2
+    from . import _enum as enum
+    from ._enum import EnumType, IntEnum, StrEnum, auto
+    from ._enum import property as enum_property
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, ValuesView
 
 
-__all__ = ["Choices", "IntegerChoices", "TextChoices"]
+__all__ = ["Choices", "IntegerChoices", "TextChoices", "auto"]
 
 
 class Promise:
@@ -47,7 +50,7 @@ class ChoicesType(EnumType):
             # assignment in enum's classdict.
             dict.__setitem__(classdict, key, value)
         cls = super().__new__(metacls, classname, bases, classdict, **kwds)
-        member_values: ValuesView[Choices] = cls.__members__.values()  # type: ignore[assignment]
+        member_values: ValuesView[Choices] = cls.__members__.values()  # pyright:ignore
         for member, label in zip(member_values, labels, strict=False):
             member._label_ = label
         return enum.unique(cls)  # type:ignore[type-var]
@@ -63,7 +66,7 @@ class ChoicesType(EnumType):
 
     @property
     def choices(cls) -> list[tuple[Any, str]]:
-        empty = [(None, cls.__empty__)] if hasattr(cls, "__empty__") else []  # type:ignore[attr-defined]
+        empty = [(None, cast(str, cls.__empty__))] if hasattr(cls, "__empty__") else []  # pyright:ignore
         return empty + [(member.value, member.label) for member in cls]
 
     @property
@@ -80,6 +83,7 @@ class Choices(enum.Enum, metaclass=ChoicesType):
 
     do_not_call_in_templates = enum.nonmember(True)
     _label_: str
+    _name_: str
 
     @enum_property
     def label(self) -> str:
@@ -94,7 +98,7 @@ class IntegerChoices(Choices, IntEnum):
     """Class for creating enumerated integer choices."""
 
     if TYPE_CHECKING:
-        _value_: int | tuple[int, str]
+        _value_: int | tuple[int, str]  # pyright:ignore
 
         @property
         def values(cls) -> list[int]: ...

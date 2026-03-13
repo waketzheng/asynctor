@@ -1,13 +1,4 @@
-import sys
-from enum import auto
-
-import pytest
-
-if sys.version_info >= (3, 11):
-    from asynctor.enums import IntegerChoices, TextChoices
-else:
-    from enum import Enum as IntegerChoices
-    from enum import Enum as TextChoices
+from asynctor.enums import IntegerChoices, TextChoices, auto
 
 
 class DirectionChoices(IntegerChoices):
@@ -29,9 +20,6 @@ def label_to_value(label: str, enum_type=DirectionChoices) -> int:
     return {v: k for k, v in enum_type.choices}[label]
 
 
-@pytest.mark.skipif(
-    sys.version_info < (3, 11), reason="IntegerChoices requires python3.11 or higher"
-)
 def test_int():
     assert DirectionChoices.dong == 0
     assert DirectionChoices.dong is not 0  # NOQA
@@ -43,8 +31,11 @@ def test_int():
     assert DirectionChoices.names == ["dong", "nan", "xi", "bei"]
     assert DirectionChoices.labels == ["East", "South", "West", "North"]
     assert DirectionChoices.choices == [(0, "East"), (1, "South"), (2, "West"), (3, "North")]
-    assert DirectionChoices[DirectionChoices.xi.name] == DirectionChoices.xi
-    assert DirectionChoices(DirectionChoices.xi.value) == DirectionChoices.xi
+    xi_label, xi_name = DirectionChoices.xi.label, DirectionChoices.xi.name  # type:ignore
+    xi_value = DirectionChoices.xi.value  # type:ignore
+    assert xi_label == "West"
+    assert DirectionChoices[xi_name] == DirectionChoices.xi
+    assert DirectionChoices(xi_value) == DirectionChoices.xi
     assert dict(zip(DirectionChoices.names, DirectionChoices.labels, strict=False)) == {
         "dong": "East",
         "nan": "South",
@@ -71,7 +62,6 @@ class AutoName(TextChoices):
     good_luck = auto()
 
 
-@pytest.mark.skipif(sys.version_info < (3, 11), reason="TextChoices requires python3.11 or higher")
 def test_str():
     assert BoolEnum.no == "false"
     assert str(BoolEnum.no) == "false"
