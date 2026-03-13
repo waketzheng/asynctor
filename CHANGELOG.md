@@ -4,6 +4,9 @@
 
 ### Unrelease
 
+### [0.12.6](../../releases/tag/v0.12.6) - 2026-03-13
+- feat: enums support python3.10
+
 ### [0.12.5](../../releases/tag/v0.12.5) - 2026-03-05
 
 #### Changed
