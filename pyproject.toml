@@ -95,7 +95,7 @@ module = [
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = ['tests.test_compat', 'tests/test_enums']
+module = ['tests.test_compat', 'tests/test_enums', 'asynctor/enums']
 warn_unused_ignores = false
 
 [[tool.mypy.overrides]]

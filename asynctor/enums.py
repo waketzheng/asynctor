@@ -78,7 +78,7 @@ class ChoicesType(EnumType):
         return [value for value, _ in cls.choices]
 
 
-class Choices(enum.Enum, metaclass=ChoicesType):
+class Choices(enum.Enum, metaclass=ChoicesType):  # type:ignore[misc,valid-type]
     """Class for creating enumerated choices."""
 
     do_not_call_in_templates = enum.nonmember(True)

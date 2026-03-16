@@ -36,7 +36,7 @@ venv313 *args:
     {{ VENV_CREATE }} 3.13 {{args}}
 
 pypi *args:
-    @uv run --no-sync fast pypi --quiet {{args}}
+    @uv run --no-sync fast pypi --quiet --slim {{args}}
 
 pypi_reverse *args:
     @just pypi --reverse {{args}}
@@ -104,7 +104,7 @@ mypy path=(SRC) *args:
 
 mypy310 path=(SRC) *args:
     uv export --python=3.10 --no-hashes --all-extras --all-groups --frozen -o dev_requirements.txt
-    uvx --python=3.10 --with-requirements=dev_requirements.txt mypy --cache-dir=.mypy310_cache {{path}} --exclude asynctor/enums.py {{args}}
+    uvx --python=3.10 --with-requirements=dev_requirements.txt mypy --cache-dir=.mypy310_cache {{path}} {{args}}
 
 right path=(SRC) *args:
     @just uvx_py pyright --pythonpath={{PY_EXEC}} {{path}} {{args}}
@@ -127,7 +127,7 @@ style *args: deps
 
 _check *args:
     pdm run fast check --ty {{args}}
-    just mypy {{SRC}} --exclude asynctor/enums.py
+    just mypy {{SRC}}
 
 check *args: deps
     @just _check {{args}}
