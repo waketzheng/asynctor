@@ -381,7 +381,9 @@ class ExtendSyspath(AbstractContextManager):
 
     """
 
-    def __init__(self, path: Path | str | None = None, rollback: bool = False) -> None:
+    def __init__(
+        self, path: Path | str | None = None, rollback: bool = False, insert: bool = False
+    ) -> None:
         if path is None:
             path = Path()
         elif isinstance(path, str):
@@ -389,13 +391,20 @@ class ExtendSyspath(AbstractContextManager):
         self.path: Path = path
         self._path = ""
         self.rollback = rollback
+        self._insert = insert
 
     def __enter__(self) -> Self:
         if (path := self.path).is_file():
             path = path.parent
         if (p := path.as_posix()) not in sys.path:
             self._path = p
-            sys.path.append(p)
+            if self._insert:
+                sys.path.insert(0, p)
+            else:
+                sys.path.append(p)
+        elif self._insert and sys.path[0] != p:
+            self._path = p
+            sys.path.insert(0, p)
         return self
 
     def __exit__(

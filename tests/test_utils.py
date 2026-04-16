@@ -1,6 +1,7 @@
 # mypy: disable-error-code="attr-defined"
 from __future__ import annotations
 
+import contextlib
 import re
 import shlex
 import shutil
@@ -103,7 +104,7 @@ class TestAttrDict:
         assert AttrDict(a=1) == {"a": 1} == {"a": 1}
         assert AttrDict(a=1, b=2) == {"a": 1, "b": 2} == {"a": 1, "b": 2}
         assert (
-            AttrDict({1: 2}, a=1, b=2) == {1: 2, "a": 1, "b": 2} == dict({1: 2}, a=1, b=2)  # type:ignore[dict-item]
+            AttrDict({1: 2}, a=1, b=2) == {1: 2, "a": 1, "b": 2} == dict({1: 2}, a=1, b=2)  # type:ignore
         )
         assert AttrDict({1: 0}, a=1, b=2, **{"c": 3}) == {1: 0, "a": 1, "b": 2, "c": 3}
 
@@ -356,3 +357,46 @@ class TestExtendSyspath:
             import ccc2  # ty:ignore[unresolved-import]
 
             assert ccc2.num == 3
+
+    def test_insert(self, tmp_work_dir):
+        d = Path("prefer")
+        d.mkdir()
+        f = d / "dup.py"
+        f.write_text("num = 3")
+        Path(f.name).write_text("num = 2")
+        if "." not in sys.path:
+            sys.path.append(".")
+        with contextlib.suppress(FileNotFoundError):
+            import dup  # ty:ignore[unresolved-import]
+
+            assert dup.num == 2
+        sys.modules.pop("dup", None)
+        with ExtendSyspath(d, rollback=True, insert=True):
+            import dup  # ty:ignore[unresolved-import]
+
+            assert dup.num == 3
+        sys.modules.pop("dup", None)
+        with contextlib.suppress(FileNotFoundError):
+            import dup  # ty:ignore[unresolved-import]
+
+            assert dup.num == 2
+        sys.modules.pop("dup", None)
+        with ExtendSyspath(d, rollback=True):
+            import dup  # ty:ignore[unresolved-import]
+
+            assert dup.num == 2
+        sys.modules.pop("dup", None)
+        with contextlib.suppress(FileNotFoundError):
+            import dup  # ty:ignore[unresolved-import]
+
+            assert dup.num == 2
+        sys.modules.pop("dup", None)
+        with ExtendSyspath(d, insert=True):
+            import dup  # ty:ignore[unresolved-import]
+
+            assert dup.num == 3
+        sys.modules.pop("dup", None)
+        with contextlib.suppress(FileNotFoundError):
+            import dup  # ty:ignore[unresolved-import]
+
+            assert dup.num == 3

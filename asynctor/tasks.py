@@ -22,7 +22,7 @@ class StoredThread(Thread):
     def run(self):
         """Use a new attribute `_result` to stored target result or exception."""
         try:
-            self._result = self._target(*self._args, **self._kwargs)  # type:ignore[attr-defined]
+            self._result = self._target(*self._args, **self._kwargs)  # type:ignore
         except Exception as e:
             self._result = e
 
@@ -116,7 +116,7 @@ class ThreadGroup(AbstractContextManager):
                 t.join(timeout=self._timeout)
             for t in self._threads:
                 if t.is_alive():
-                    fn, gs, kw = t._target, t._args, t._kwargs  # type:ignore[attr-defined]
+                    fn, gs, kw = t._target, t._args, t._kwargs  # type:ignore
                     if len(msg := f"{fn}(*{gs!r}, **{kw!r})") > 50:
                         msg = msg[:47] + "..."
                     res = TimeoutError(msg)

@@ -240,7 +240,7 @@ async def bulk_gather(
     """
     results: list[T_Retval | None]
     try:
-        total = len(coros)  # type:ignore[arg-type]
+        total = len(coros)  # type:ignore
     except TypeError:  # if coros is generator
         total = 0
         results = []
@@ -332,14 +332,14 @@ async def wait_for(coro: Awaitable[T_Retval], timeout: int | float) -> T_Retval:
 def be_awaitable(
     async_func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
 ) -> Callable[[Unpack[PosArgsT]], AwaitT]:
-    @functools.wraps(async_func)  # type:ignore[arg-type]
+    @functools.wraps(async_func)  # type:ignore
     async def do_await(*gs: Unpack[PosArgsT]) -> T_Retval:
         if callable(async_func):
             if is_async_callable(async_func):
                 return await async_func(*gs)  # ty:ignore
             else:
                 await checkpoint()
-                return async_func(*gs)  # ty:ignore
+                return async_func(*gs)  # type:ignore
         else:
             if gs:
                 warnings.warn("`run_async` for coroutine, does not handle 'args'.", stacklevel=1)

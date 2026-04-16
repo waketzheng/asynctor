@@ -331,7 +331,7 @@ def test_run_until_complete_function_arguments():
     def async_func_requires_position_argument(a: int): ...
 
     with pytest.raises(TypeError):
-        run_until_complete(async_func_requires_position_argument)  # type:ignore[arg-type]
+        run_until_complete(async_func_requires_position_argument)  # type:ignore
     ints: list[int] = []
 
     def async_func_argument_with_default_value(a: int = 1):

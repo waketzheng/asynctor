@@ -91,7 +91,7 @@ def test_self():
         _b: str = "B"
 
     self_b = B().a_self()._b
-    class_b = B().a_class()._b  # type:ignore[attr-defined]
+    class_b = B().a_class()._b  # type:ignore
     assert self_b == class_b == "B"
 
     assert get_type_hints(B().a_self)["return"] is Self
