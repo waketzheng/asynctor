@@ -4,6 +4,9 @@
 
 ### Unrelease
 
+### [0.12.7](../../releases/tag/v0.12.7) - 2026-04-16
+- feat: support `insert` argument for ExtendSyspath
+
 ### [0.12.6](../../releases/tag/v0.12.6) - 2026-03-13
 - feat: enums support python3.10
 
