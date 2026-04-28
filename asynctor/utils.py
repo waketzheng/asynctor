@@ -162,6 +162,19 @@ class AsyncTestClient(AbstractAsyncContextManager):
             await self._manager.__aexit__(exc_type, exc_value, traceback)
 
 
+def local_dict(data: dict[str, T], *keys: str) -> dict[str, T]:
+    """
+    Build dict by key from keys, value from data; if key not in data, raise KeyError
+
+    Usage::
+        >>> a, b = 1, 2
+        >>> local_dict(locals(), 'a', 'b')
+        {'a': 1, 'b': 2}
+
+    """
+    return {k: data[k] for k in keys}
+
+
 class AttrDict(dict):
     """Support get dict value by attribution
 
