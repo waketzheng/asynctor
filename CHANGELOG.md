@@ -4,7 +4,7 @@
 
 ### Unrelease
 
-### [0.12.8]
+### [0.12.8](../../releases/tag/v0.12.8) - 2026-04-28
 - feat: add `asynctor.utils.local_dict`
 
 ### [0.12.7](../../releases/tag/v0.12.7) - 2026-04-16
