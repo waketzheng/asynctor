@@ -37,7 +37,7 @@ jobs:
           activate-environment: true
           enable-cache: true
       - uses: astral-sh/ruff-action@v3
-      - uses: extractions/setup-just@v3  # Or: uv tool install rust-just
+      - uses: extractions/setup-just@v4  # Or: uv tool install rust-just
       - name: Setup PDM by uv
         run: |
           uv tool install pdm --with pdm-plugin-i
