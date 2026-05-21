@@ -44,7 +44,7 @@ jobs:
         uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
       - name: Run prek - pre-commit
         id: precommit
-        run: uvx prek run --from-ref origin/${GITHUB_BASE_REF} --to-ref HEAD --show-diff-on-failure
+        run: uvx --with pdm --with ruff --with ty --with fast-dev-cli prek run --from-ref origin/${GITHUB_BASE_REF} --to-ref HEAD --show-diff-on-failure
         continue-on-error: true
       - name: Commit and push changes
         if: env.HAS_SECRETS == 'true'
