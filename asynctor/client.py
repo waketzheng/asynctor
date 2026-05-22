@@ -4,8 +4,8 @@ import os
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
 if TYPE_CHECKING:
-    from redis.asyncio import Redis
     from fastapi import FastAPI, Request
+    from redis.asyncio import Redis
 
     from .compat import Self
 else:
