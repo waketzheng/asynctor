@@ -4,7 +4,10 @@ import os
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
 if TYPE_CHECKING:
+    from fastapi import FastAPI, Request
     from redis.asyncio import Redis
+
+    from .compat import Self
 else:
     try:
         from redis.asyncio import Redis
@@ -15,12 +18,6 @@ else:
             async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool | None: ...
             async def ping(self) -> bool:
                 return False
-
-
-if TYPE_CHECKING:
-    from fastapi import FastAPI, Request
-
-    from .compat import Self
 
 
 def ensure_redis_is_installed() -> None:

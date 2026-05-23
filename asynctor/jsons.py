@@ -9,8 +9,13 @@ from typing import Any, Literal, TypeAlias, overload
 from .exceptions import UnsupportedError
 
 BasicJsonType: TypeAlias = str | bool | int | float | None
-JsonAbleType: TypeAlias = dict[str, Any] | list[Any] | BasicJsonType
-StrictJsonType: TypeAlias = dict[str, JsonAbleType] | list[JsonAbleType] | BasicJsonType
+JsonAbleType: TypeAlias = dict[BasicJsonType, Any] | list[Any] | tuple[Any, ...] | BasicJsonType
+StrictJsonType: TypeAlias = (
+    dict[BasicJsonType, JsonAbleType]
+    | list[JsonAbleType]
+    | tuple[JsonAbleType, ...]
+    | BasicJsonType
+)
 DumpedJsonType: TypeAlias = str | bytes | bytearray
 
 try:
