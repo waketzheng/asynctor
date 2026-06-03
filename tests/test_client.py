@@ -3,10 +3,13 @@ from __future__ import annotations
 import os
 
 import pytest
+from fastapi import FastAPI
 from redis.asyncio import Redis
 
 from asynctor import AsyncRedis
+from asynctor.contrib import fastapi as fastapi_utils
 from asynctor.testing import async_client_fixture
+from asynctor.utils import AsyncTestClient
 
 from .main import app
 
@@ -48,6 +51,41 @@ def test_redis_host_port():
     custom_port = 8888
     redis = AsyncRedis(port=custom_port)
     assert redis.connection_pool.connection_kwargs["port"] == custom_port
+
+
+def test_redis_reuses_fastapi_state_instance():
+    app = FastAPI()
+    redis = AsyncRedis(app, check_connection=False, host="192.168.0.2")
+
+    assert app.state.redis is redis
+    assert AsyncRedis(app, host="127.0.0.1") is redis
+    assert redis.connection_pool.connection_kwargs["host"] == "192.168.0.2"
+
+
+@pytest.mark.anyio
+async def test_register_aioredis_passes_check_connection(monkeypatch):
+    calls = []
+
+    class FakeRedis:
+        def __init__(self, app, check_connection=True, **kwargs):
+            calls.append((app, check_connection, kwargs))
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args):
+            return None
+
+    monkeypatch.setattr(fastapi_utils, "AsyncRedis", FakeRedis)
+    app = FastAPI()
+    fastapi_utils.register_aioredis(app, check_connection=False, host="redis")
+
+    async with AsyncTestClient(app) as client:
+        response = await client.get("/missing")
+
+    assert response.status_code == 404
+    assert len(calls) == 1
+    assert calls[0][1:] == (False, {"host": "redis"})
 
 
 @pytest.mark.anyio

@@ -7,7 +7,7 @@ from httpx import AsyncClient
 @pytest.mark.anyio
 async def test_index(client: AsyncClient):
     response = await client.get("/")
-    assert response.json() == {"a": 1}
+    assert response.json() == {"a": 1, "lifespan": False}
 
 
 def test_current_dir_changed(tmp_work_dir):

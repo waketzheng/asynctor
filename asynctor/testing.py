@@ -15,14 +15,16 @@ if TYPE_CHECKING:
 
 
 def async_client_fixture(app: FastAPI, mount_lifespan: bool = True) -> FixtureFunctionDefinition:
-    """Async test client for FastAPI as session fixture
+    """Create a session-scoped async client fixture for a FastAPI app.
+
+    The returned fixture is named ``client`` and yields an ``httpx.AsyncClient``
+    configured with ``AsyncTestClient``.
 
     :param app: a fastapi instance.
     :param mount_lifespan: if True, auto mount lifespan for app.
+    :return: a pytest fixture function named ``client``.
 
     Usage::
-
-    ... code-block:: python3
 
         import pytest
         from asynctor.testing import async_client_fixture
@@ -41,13 +43,28 @@ def async_client_fixture(app: FastAPI, mount_lifespan: bool = True) -> FixtureFu
 
     @pytest.fixture(scope="session")
     async def client() -> AsyncClientGenerator:
-        async with AsyncTestClient(app) as c:
+        async with AsyncTestClient(app, mount_lifespan=mount_lifespan) as c:
             yield c
 
     return client
 
 
 def anyio_backend_fixture() -> FixtureFunctionDefinition:
+    """Create a session-scoped anyio backend fixture for pytest.
+
+    The returned fixture is named ``anyio_backend`` and forces pytest-anyio to
+    run tests with the ``asyncio`` backend.
+
+    :return: a pytest fixture function named ``anyio_backend``.
+
+    Usage::
+
+        from asynctor.testing import anyio_backend_fixture
+
+        anyio_backend = anyio_backend_fixture()
+
+    """
+
     @pytest.fixture(scope="session")
     def anyio_backend() -> str:
         return "asyncio"
@@ -56,6 +73,22 @@ def anyio_backend_fixture() -> FixtureFunctionDefinition:
 
 
 def tmp_workdir_fixture() -> FixtureFunctionDefinition:
+    """Create a temporary working-directory fixture for pytest.
+
+    The returned fixture is named ``tmp_work_dir``. It changes the current
+    working directory to pytest's ``tmp_path`` for the duration of a test,
+    yields that path, and restores the previous working directory afterwards.
+
+    :return: a pytest fixture function named ``tmp_work_dir``.
+
+    Usage::
+
+        from asynctor.testing import tmp_workdir_fixture
+
+        tmp_work_dir = tmp_workdir_fixture()
+
+    """
+
     @pytest.fixture
     def tmp_work_dir(tmp_path: Path) -> Generator[Path]:
         with chdir(tmp_path):

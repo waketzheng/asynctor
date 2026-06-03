@@ -6,14 +6,23 @@ import shlex
 import subprocess
 import sys
 import time
-from enum import IntEnum
 
 
-class Tools(IntEnum):
-    poetry = 0
-    pdm = 1
-    uv = 2
-    none = 3
+class _Tool:
+    def __init__(self, name):
+        # type: (str) -> None
+        self.name = name
+
+    def __str__(self):
+        # type: () -> str
+        return self.name
+
+
+class Tools:
+    poetry = _Tool("poetry")
+    pdm = _Tool("pdm")
+    uv = _Tool("uv")
+    none = _Tool("none")
 
 
 _tool = Tools.uv

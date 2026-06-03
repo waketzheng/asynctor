@@ -60,3 +60,33 @@ async def test_client_ip_dep(client):
     r = await client.get(path)
     assert r.status_code == 200
     assert r.json() == {"client ip": ip, "server ip": ip}
+
+    client.headers.clear()
+    client.headers["x-forwarded-for"] = ip + ",192.0.2.60"
+    r = await client.get(path)
+    assert r.status_code == 200
+    assert r.json() == {"client ip": ip, "server ip": ip}
+
+    client.headers.clear()
+    client.headers["x-forwarded-for"] = f" {ip} ,192.0.2.60"
+    r = await client.get(path)
+    assert r.status_code == 200
+    assert r.json() == {"client ip": ip, "server ip": ip}
+
+    client.headers.clear()
+    client.headers["x-forwarded-for"] = " "
+    client.headers["x-real-ip"] = f" {fake_ip} "
+    r = await client.get(path)
+    assert r.status_code == 200
+    assert r.json() == {"client ip": fake_ip, "server ip": ip}
+
+    client.headers.clear()
+    client.headers["Forwarded"] = 'For="192.0.2.61";proto=https'
+    r = await client.get(path)
+    assert r.status_code == 200
+    assert r.json() == {"client ip": "192.0.2.61", "server ip": ip}
+
+    client.headers["Forwarded"] = 'proto=https; For="192.0.2.62", for=192.0.2.63'
+    r = await client.get(path)
+    assert r.status_code == 200
+    assert r.json() == {"client ip": "192.0.2.62", "server ip": ip}

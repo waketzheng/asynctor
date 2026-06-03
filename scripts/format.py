@@ -9,15 +9,26 @@ Usage:
 """
 
 import os
+import shlex
+import subprocess
 import sys
-from enum import IntEnum
 
 
-class Tools(IntEnum):
-    poetry = 0
-    pdm = 1
-    uv = 2
-    none = 3
+class _Tool:
+    def __init__(self, name):
+        # type: (str) -> None
+        self.name = name
+
+    def __str__(self):
+        # type: () -> str
+        return self.name
+
+
+class Tools:
+    poetry = _Tool("poetry")
+    pdm = _Tool("pdm")
+    uv = _Tool("uv")
+    none = _Tool("none")
 
 
 CMD = "fast lint --skip-mypy"
@@ -34,5 +45,5 @@ if os.getcwd() != work_dir:
     os.chdir(work_dir)
 
 cmd = PREFIX + CMD
-if os.system(cmd) != 0:
+if subprocess.call(shlex.split(cmd)) != 0:
     sys.exit(1)

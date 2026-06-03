@@ -25,12 +25,12 @@ else:  # pragma: no cover
     except ImportError:
         ExceptionGroup = Exception  # type:ignore  # ty:ignore[invalid-assignment]
 try:
-    # anyio>=4.12.0 no longer depends on sniffio, and has it's own current_async_library
-    from anyio._core._eventloop import current_async_library
+    # anyio>=4.12.0 no longer depends on sniffio and has its own current_async_library.
+    from anyio._core._eventloop import current_async_library as _raw_current_async_library
 except ImportError:
     import sniffio
 
-    def current_async_library() -> str | None:
+    def _raw_current_async_library() -> str | None:
         try:
             asynclib_name = sniffio.current_async_library()
         except sniffio.AsyncLibraryNotFoundError:
@@ -50,6 +50,34 @@ AwaitT = Awaitable[T_Retval]
 CallableT = Callable[T_ParamSpec, AwaitT]
 AsyncFunc: TypeAlias = Callable[..., Awaitable[Any]]
 CoroFunc: TypeAlias = Awaitable[Any] | AsyncFunc
+
+
+def current_async_library() -> str | None:
+    """Return the async library only when the current thread has a running loop."""
+    asynclib_name = _raw_current_async_library()
+    if asynclib_name != "asyncio":
+        return asynclib_name
+
+    import asyncio
+
+    try:
+        asyncio.get_running_loop()
+    except RuntimeError:
+        return None
+    return asynclib_name
+
+
+def _clear_stale_sniffio_context() -> tuple[Any, object] | None:
+    if current_async_library() is not None:
+        return None
+    try:
+        import sniffio
+    except ImportError:
+        return None
+
+    if sniffio.current_async_library_cvar.get() != "asyncio":
+        return None
+    return sniffio, sniffio.current_async_library_cvar.set(None)
 
 
 @overload
@@ -100,7 +128,18 @@ def run(
         assert result_asyncio_format == result_anyio_format
 
     """
-    return anyio.run(be_awaitable(func), *args, backend=backend, backend_options=backend_options)
+    sniffio_reset = _clear_stale_sniffio_context()
+    try:
+        return anyio.run(
+            be_awaitable(func),
+            *args,
+            backend=backend,
+            backend_options=backend_options,
+        )
+    finally:
+        if sniffio_reset is not None:
+            sniffio_module, token = sniffio_reset
+            sniffio_module.current_async_library_cvar.reset(token)
 
 
 class LengthFixedList(list[T]):
@@ -178,10 +217,10 @@ class BulkGather:
     ) -> None:
         if is_generator:
             todos: list[tuple[int, Awaitable]] = []
-            for count, args in zip(itertools.count(), enumerate(coros)):
+            for args in enumerate(coros):
                 todos.append(args)
                 self._results.append(None)
-                if count % batch_size == 0:
+                if len(todos) >= batch_size:
                     await map_group(self.runner, todos)
                     todos.clear()
             if todos:

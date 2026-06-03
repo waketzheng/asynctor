@@ -228,6 +228,16 @@ def test_shell_run_kw(tmp_work_dir):
     assert file.name in out_file.read_text()
 
 
+def test_shell_run_kwargs_do_not_leak_between_calls():
+    shell = Shell("python -c \"print('x')\"")
+
+    first = shell.run(capture_output=True, text=True, encoding="utf-8")
+    second = shell.run()
+
+    assert first.stdout == "x\n"
+    assert second.stdout is None
+
+
 def test_shell_run_verbose(capsys):
     Shell("ls pyproject.toml").run(verbose=True)
     assert "--> ls pyproject.toml" in capsys.readouterr().out

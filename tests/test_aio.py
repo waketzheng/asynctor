@@ -64,6 +64,22 @@ def test_run():
     assert run(foo, 2, backend="asyncio", backend_options=None) == 2
 
 
+def test_stale_asyncio_library_state_is_ignored():
+    sniffio = pytest.importorskip("sniffio")
+
+    async def foo() -> str:
+        return "ok"
+
+    token = sniffio.current_async_library_cvar.set("asyncio")
+    try:
+        assert current_async_library() is None
+        assert run(foo) == "ok"
+        assert run_until_complete(foo()) == "ok"
+        assert async_to_sync(foo)() == "ok"
+    finally:
+        sniffio.current_async_library_cvar.reset(token)
+
+
 @pytest.mark.anyio
 async def test_wait_for():
     async def do_sth(seconds=0.2):
@@ -237,6 +253,27 @@ class TestGather:
         lazy_tasks = (a() for _ in range(3))
         assert (await bulk_gather(lazy_tasks)) == (1, 1, 1)
 
+    @pytest.mark.anyio
+    async def test_bulk_wait_last_generator_starts_full_first_batch(self):
+        created: list[int] = []
+
+        async def a() -> tuple[int, ...]:
+            await checkpoint()
+            return tuple(created)
+
+        def lazy_tasks():
+            for i in range(5):
+                created.append(i)
+                yield a()
+
+        assert await bulk_gather(lazy_tasks(), batch_size=2, wait_last=True) == (
+            (0, 1),
+            (0, 1),
+            (0, 1, 2, 3),
+            (0, 1, 2, 3),
+            (0, 1, 2, 3, 4),
+        )
+
 
 class TestStartTasks:
     root = anyio.Path(__file__).parent
@@ -313,7 +350,7 @@ def test_run_until_complete():
         run_until_complete(functools.partial(append, a, 4))
         await append(a, 5)
 
-    anyio.run(do_sth)
+    run(do_sth)
     assert a == [1, 2, 3, 4, 5]
 
     async def never():

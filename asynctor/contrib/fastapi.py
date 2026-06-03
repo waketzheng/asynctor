@@ -27,17 +27,28 @@ def register_aioredis(
     check_connection: bool = True,
     **kwargs: Annotated[Any, "Kwargs that will pass to `redis.asyncio.Redis.__init__`"],
 ) -> None:
-    """
-    Register redis to fastapi application
+    """Register an async Redis client on a FastAPI application.
 
-    :param app: the fastapi application instance
-    :param check_connection: whether check redis server pingable
-    :param kwargs: such like: host, port, etc.
+    The client is created during FastAPI lifespan startup, stored on
+    ``app.state.redis``, and closed when the lifespan exits. Any existing
+    lifespan context on the application is preserved.
+
+    :param app: the FastAPI application instance.
+    :param check_connection: if True, ping Redis while entering the lifespan.
+    :param kwargs: Redis connection options such as ``host`` and ``port``.
+
+    Usage::
+
+        from fastapi import FastAPI
+        from asynctor.contrib.fastapi import register_aioredis
+
+        app = FastAPI()
+        register_aioredis(app, host="localhost")
     """
 
     @asynccontextmanager
     async def redis_lifespan(app_instance: FastAPI) -> AsyncGenerator[None]:
-        async with AsyncRedis(app_instance, **kwargs):
+        async with AsyncRedis(app_instance, check_connection=check_connection, **kwargs):
             yield
 
     original_lifespan = app.router.lifespan_context
@@ -45,12 +56,20 @@ def register_aioredis(
 
 
 async def get_redis_client(request: Request) -> AsyncRedis:
+    """Return the registered Redis client for the current request.
+
+    The application must have a Redis client mounted on ``app.state.redis``,
+    typically by calling ``register_aioredis(app)``.
+
+    :param request: the incoming FastAPI request.
+    :return: the ``AsyncRedis`` instance stored on the FastAPI application.
+    """
     return AsyncRedis(request)
 
 
 AioRedis = Annotated[AsyncRedis, Depends(get_redis_client)]
 AioRedisDep = AioRedis
-AioRedisDep.__doc__ = """Get register redis cli from application.
+AioRedisDep.__doc__ = """Get the registered Redis client from the application.
 
 Example::
 
@@ -69,17 +88,32 @@ Example::
 
 
 def get_client_ip(request: Request) -> str:
-    if x_forwarded_for := request.headers.get("x_forwarded_for"):
-        # X-Forwarded-For may includes many IP address, the first one is origin IP
-        return x_forwarded_for.split(",")[0]
-    elif x_real_ip := request.headers.get("x_real_ip"):
-        return x_real_ip
-    elif forwarded := request.headers.get("forwarded"):
+    """Resolve the original client IP address for a request.
+
+    Proxy headers are checked before falling back to the socket peer address.
+    The lookup order is ``X-Forwarded-For``, ``X-Real-IP``, ``Forwarded``, and
+    finally ``request.client.host``.
+
+    :param request: the incoming FastAPI request.
+    :return: the resolved client IP address, or an empty string if unavailable.
+    """
+    headers = request.headers
+    # X-Forwarded-For may include many IP addresses; the first one is the origin IP.
+    if (x_forwarded_for := headers.get("x-forwarded-for") or headers.get("x_forwarded_for")) and (
+        client_ip := x_forwarded_for.split(",", 1)[0].strip()
+    ):
+        return client_ip
+    if (x_real_ip := headers.get("x-real-ip") or headers.get("x_real_ip")) and (
+        client_ip := x_real_ip.strip()
+    ):
+        return client_ip
+    if forwarded := headers.get("forwarded"):
         # Forwarded: for=192.0.2.60;proto=http;by=203.0.113.43
-        parts = forwarded.split(";")
-        for part in parts:
-            if part.startswith("for="):
-                return part[4:]
+        for forwarded_item in forwarded.split(","):
+            for part in forwarded_item.split(";"):
+                key, _, value = part.strip().partition("=")
+                if key.lower() == "for" and (client_ip := value.strip().strip('"')):
+                    return client_ip
     if request.client is None:  # pragma: no cover
         # request.client is not None if server started by uvicorn
         # put it here to improve type hints
@@ -88,15 +122,24 @@ def get_client_ip(request: Request) -> str:
 
 
 async def get_client_host(request: Request) -> str:
+    """FastAPI dependency that returns the request client IP address.
+
+    This async wrapper avoids FastAPI running the dependency in a thread pool
+    while reusing ``get_client_ip`` for the actual header parsing.
+
+    :param request: the incoming FastAPI request.
+    :return: the resolved client IP address.
+    """
     # If the function is non-async and you use it as a dependency, it will run in a thread.
     # https://github.com/kludex/fastapi-tips?tab=readme-ov-file#9-your-dependencies-may-be-running-on-threads
     return get_client_ip(request)
 
 
 ClientIpDep = Annotated[str, Depends(get_client_host)]
-ClientIpDep.__doc__ = """Get real ip of request client.
+ClientIpDep.__doc__ = """Get the real IP address of the request client.
 
 Usage::
+
     >>> @app.get('/')
     >>> def index(client_ip: ClientIpDep):
     ...     assert isinstance(client_ip, str)
@@ -106,14 +149,22 @@ ACCESS_LOG_FMT = "%(asctime)s - %(levelname)s - %(message)s"
 
 
 def config_access_log(fmt=ACCESS_LOG_FMT, log: str = "uvicorn.access") -> None:
-    """Config access logging format for uvicorn show request time
+    """Configure the uvicorn access logger format.
+
+    A ``logging.StreamHandler`` with the provided formatter is added to the
+    target logger. Passing a ``FastAPI`` instance as ``fmt`` is accepted for
+    backward compatibility with ``config_access_log(app)``.
+
+    :param fmt: the logging format string to use.
+    :param log: the logger name to configure.
 
     Usage::
+
         >>> from asynctor.contrib.fastapi import config_access_log
         >>> app = FastAPI()
         >>> config_access_log()
     """
-    if isinstance(fmt, FastAPI):
+    if isinstance(fmt, FastAPI):  # Support `config_access_log(app)`
         fmt = ACCESS_LOG_FMT
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter(fmt))
@@ -121,9 +172,12 @@ def config_access_log(fmt=ACCESS_LOG_FMT, log: str = "uvicorn.access") -> None:
 
 
 def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
-    """Config access logging format for uvicorn
+    """Configure uvicorn access logs with the default asynctor format.
+
+    :param log: the logger name to configure.
 
     Usage::
+
         >>> from asynctor.contrib.fastapi import config_access_log_to_show_time
         >>> app = FastAPI()
         >>> config_access_log_to_show_time()
@@ -143,8 +197,22 @@ PreStartFunc: TypeAlias = Callable[
 
 
 class RunServer:
+    """Implementation helpers used by ``runserver``."""
+
     @staticmethod
     def uvicorn_run(app: FastAPI, host: str, port: int | None, reload: bool, **kw) -> None:
+        """Start uvicorn with the resolved application and network options.
+
+        When reload is enabled, uvicorn receives ``"__main__:app"`` because
+        reload mode requires an import string. Otherwise the FastAPI instance is
+        passed directly.
+
+        :param app: the FastAPI application instance to run.
+        :param host: the host interface passed to uvicorn.
+        :param port: the port passed to uvicorn; if None, uvicorn chooses its default.
+        :param reload: whether to enable uvicorn reload mode.
+        :param kw: additional keyword arguments passed to ``uvicorn.run``.
+        """
         asgi = "__main__:app" if reload else app
         run = functools.partial(uvicorn.run, asgi, host=host, reload=reload, **kw)
         if port:
@@ -156,6 +224,17 @@ class RunServer:
     def parse_host_port(
         addrport: str | int, verbose: bool, echo: Callable
     ) -> tuple[str | None, int | None]:
+        """Parse a CLI address or port argument into host and port overrides.
+
+        Accepted forms include ``9000``, ``":9000"``, ``"127.0.0.1:9000"``,
+        and ``"0:9000"``. A returned value of None means the existing option
+        should be kept.
+
+        :param addrport: a port number, or a ``host:port`` value.
+        :param verbose: whether to print a message for ignored values.
+        :param echo: callback used to print verbose messages.
+        :return: a ``(host, port)`` tuple containing parsed overrides.
+        """
         host, port = None, None
         if isinstance(addrport, int) or addrport.isdigit():
             port = int(addrport)
@@ -173,6 +252,17 @@ class RunServer:
 
     @staticmethod
     def load_prod_port(config_file: Path, verbose: bool, echo: Callable) -> int:
+        """Load a production port from a gunicorn config file.
+
+        The config module is imported from ``config_file``. ``PORT`` is used
+        first; otherwise the final port segment of ``bind`` is used when it is
+        numeric.
+
+        :param config_file: path to a Python gunicorn config file.
+        :param verbose: whether to print diagnostic messages.
+        :param echo: callback used to print diagnostic messages.
+        :return: the configured port, or 0 when no usable port is found.
+        """
         import importlib.util
 
         spec = importlib.util.spec_from_file_location(config_file.stem, config_file)
@@ -201,6 +291,18 @@ class RunServer:
         docs_params: dict | None = None,
         echo: Callable | None = None,
     ) -> str:
+        """Build, print, and return the FastAPI documentation URL.
+
+        If ``host`` is ``"0.0.0.0"``, the displayed host is replaced by
+        ``ASYNCTOR_HOST`` when set, or by the machine IP address otherwise.
+
+        :param app: the FastAPI application whose ``docs_url`` is used.
+        :param host: the configured server host.
+        :param port: the configured server port; defaults to 8000 for display.
+        :param docs_params: optional query parameters appended to the docs URL.
+        :param echo: optional output callback; ``print`` is used when omitted.
+        :return: the documentation URL that was printed.
+        """
         if host == "0.0.0.0":  # nosec:B104
             if declared_host := os.getenv("ASYNCTOR_HOST"):
                 host = declared_host
@@ -224,6 +326,10 @@ class RunServer:
 
     @staticmethod
     def load_port_from_env() -> int | None:
+        """Load ``ASYNCTOR_PORT`` from the environment.
+
+        :return: the integer port value, or None when unset or invalid.
+        """
         if p := os.getenv("ASYNCTOR_PORT"):
             try:
                 return int(p)
@@ -247,6 +353,26 @@ class RunServer:
         open_browser: bool | None = None,
         **kw,
     ) -> None:
+        """Resolve command-line server options and start uvicorn.
+
+        ``addrport`` takes precedence over ``host`` and ``port``. When
+        ``prod`` is enabled and no ``addrport`` is provided, parent directories
+        are scanned for ``deployment/gunicorn_config.py`` and the port is loaded
+        from that file when possible.
+
+        :param app: the FastAPI application instance to run.
+        :param addrport: optional port number, or ``host:port`` value.
+        :param port: explicit server port.
+        :param host: server host interface.
+        :param reload: whether to enable uvicorn reload mode.
+        :param prod: whether to discover the port from a deployment config.
+        :param verbose: whether to print diagnostic messages.
+        :param echo: callback used to print messages.
+        :param docs_params: optional query parameters appended to the docs URL.
+        :param pre_start: optional callback invoked before uvicorn starts.
+        :param open_browser: browser-opening option accepted by the public API.
+        :param kw: additional keyword arguments passed to ``uvicorn.run``.
+        """
         if addrport:
             h, p = cls.parse_host_port(addrport, verbose, echo)
             if h:
@@ -272,6 +398,21 @@ class RunServer:
 
     @classmethod
     def echo_and_run(cls, app, host, port, reload, docs_params, pre_start, echo=None, **kw) -> None:
+        """Print the docs URL, run startup hooks, optionally open it, then start uvicorn.
+
+        If ``port`` is not supplied, ``ASYNCTOR_PORT`` is used when it contains
+        a valid integer. The ``open_browser`` keyword or ``ASYNCTOR_BROWSER``
+        controls whether the docs URL is opened before the server starts.
+
+        :param app: the FastAPI application instance to run.
+        :param host: server host interface.
+        :param port: explicit server port.
+        :param reload: whether to enable uvicorn reload mode.
+        :param docs_params: optional query parameters appended to the docs URL.
+        :param pre_start: optional callback invoked before uvicorn starts.
+        :param echo: optional output callback.
+        :param kw: additional keyword arguments passed to ``uvicorn.run``.
+        """
         if not port:
             port = cls.load_port_from_env()
         url = cls.echo_docs_url(app, host, port, docs_params, echo)
@@ -290,6 +431,11 @@ class RunServer:
 
 @functools.cache
 def get_log_config(fmt: str) -> dict[str, Any]:
+    """Return a cached uvicorn logging config with a custom access-log format.
+
+    :param fmt: the access-log formatter string.
+    :return: a copied uvicorn logging config dictionary.
+    """
     from uvicorn.config import LOGGING_CONFIG
 
     log_config = copy.deepcopy(LOGGING_CONFIG)
@@ -310,6 +456,37 @@ def runserver(
     log_access_time: bool = True,
     **kw,
 ) -> None:
+    """Run a FastAPI application with asynctor's development server helper.
+
+    With no command-line arguments, the application starts immediately. When
+    command-line arguments are present, ``typer`` is used to expose options for
+    ``addrport``, ``port``, ``host``, ``reload``, ``prod``, and ``verbose``.
+    The Django-style ``--noreload`` flag is translated to ``--no-reload``.
+
+    :param app: the FastAPI application instance to run.
+    :param addrport: optional port number, or ``host:port`` value.
+    :param port: explicit server port.
+    :param host: server host interface.
+    :param reload: whether to enable uvicorn reload mode.
+    :param verbose: whether to print diagnostic messages.
+    :param docs_params: optional query parameters appended to the docs URL.
+    :param pre_start: optional callback invoked before uvicorn starts.
+    :param open_browser: whether to open the docs URL before the server starts.
+    :param log_access_time: whether to install the default access-log format.
+    :param kw: additional keyword arguments passed to ``uvicorn.run``.
+    :raises UnsupportedError: if ``log_access_time`` and ``log_config`` are both supplied.
+    :raises ImportError: if command-line arguments are used without ``typer`` installed.
+
+    Usage::
+
+        from fastapi import FastAPI
+        from asynctor.contrib.fastapi import runserver
+
+        app = FastAPI()
+
+        if __name__ == "__main__":
+            runserver(app, reload=True)
+    """
     kw.update(docs_params=docs_params, pre_start=pre_start, open_browser=open_browser)
     if log_access_time:
         if (log_config := kw.get("log_config")) is not None:
@@ -344,6 +521,22 @@ def runserver(
 
 
 def add_timing_middleware(app: FastAPI, header: str = "X-Process-Time") -> None:
+    """Add middleware that writes request processing time to a response header.
+
+    The measured duration is written as an integer number of milliseconds.
+
+    :param app: the FastAPI application instance to update.
+    :param header: response header name used for the elapsed time.
+
+    Usage::
+
+        from fastapi import FastAPI
+        from asynctor.contrib.fastapi import add_timing_middleware
+
+        app = FastAPI()
+        add_timing_middleware(app)
+    """
+
     @app.middleware("http")
     async def add_process_time_header(request: Request, call_next):
         with Timer(request.url.path, decimal_places=3, verbose=False) as t:

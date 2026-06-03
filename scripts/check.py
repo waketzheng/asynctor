@@ -11,15 +11,26 @@ Usage::
 """
 
 import os
+import shlex
+import subprocess
 import sys
-from enum import IntEnum
 
 
-class Tools(IntEnum):
-    poetry = 0
-    pdm = 1
-    uv = 2
-    none = 3
+class _Tool:
+    def __init__(self, name):
+        # type: (str) -> None
+        self.name = name
+
+    def __str__(self):
+        # type: () -> str
+        return self.name
+
+
+class Tools:
+    poetry = _Tool("poetry")
+    pdm = _Tool("pdm")
+    uv = _Tool("uv")
+    none = _Tool("none")
 
 
 CMD = "fast check --skip-mypy"
@@ -36,18 +47,24 @@ work_dir = os.path.dirname(parent)
 if os.getcwd() != work_dir:
     os.chdir(work_dir)
 
+
+def run_command(cmd):
+    # type: (str) -> int
+    return subprocess.call(shlex.split(cmd))
+
+
 cmd = PREFIX + CMD
-if os.system(cmd) != 0:
+if run_command(cmd) != 0:
     print("\033[1m Please run './scripts/format.py' to auto-fix style issues \033[0m")
     sys.exit(1)
 cmd = PREFIX + "ty check ."
-if os.system(cmd) != 0:
+if run_command(cmd) != 0:
     sys.exit(1)
 
 if BANDIT:
     package_name = os.path.basename(work_dir).replace("-", "_")
-    cmd = PREFIX + "bandit -r {}".format(package_name)
+    cmd = PREFIX + "bandit -r " + package_name
     print("--> " + cmd)
-    if os.system(cmd) != 0:
+    if run_command(cmd) != 0:
         sys.exit(1)
 print("Done. ✨ 🍰 ✨")

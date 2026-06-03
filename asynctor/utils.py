@@ -343,9 +343,7 @@ class Shell:
         cmd = self.command
         if verbose:
             print("-->", cmd)
-        if kwargs is None:
-            kwargs = self._kwargs
-        kwargs.update(kw)
+        kwargs = {**(self._kwargs if kwargs is None else kwargs), **kw}
         if kwargs.get("shell") is None and self.shell_should_be_true(self._command):
             kwargs["shell"] = True
         elif isinstance(self._command, list):
