@@ -4,6 +4,19 @@
 
 ### Unrelease
 
+#### Fixes
+- fix: avoid stale `sniffio` asyncio context when running async helpers
+- fix: batch generator inputs correctly in `asynctor.aio.bulk_gather`
+- fix: improve FastAPI client IP parsing for proxy headers
+- fix: pass `check_connection` when registering Redis lifespan
+- fix: pass `mount_lifespan` through `async_client_fixture`
+- fix: avoid mutating keyword arguments in `Shell.run`
+
+### [0.12.9](../../releases/tag/v0.12.9) - 2026-05-23
+
+#### Changed
+- refactor: expand JSON type aliases to support basic JSON keys and tuple values
+
 ### [0.12.8](../../releases/tag/v0.12.8) - 2026-04-28
 - feat: add `asynctor.utils.local_dict`
 
