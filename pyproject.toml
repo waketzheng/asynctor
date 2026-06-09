@@ -134,8 +134,8 @@ exclude_also = [
     "if TYPE_CHECKING:",
 ]
 
-[tool.pdm]
-version = {source="file", path="asynctor/__init__.py"}
+[tool.pdm.version]
+path = "asynctor/__init__.py"
 
 [tool.pdm.build]
 excludes = ["./**/.git", "./**/.*_cache", "examples", "tests"]

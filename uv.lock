@@ -485,7 +485,7 @@ name = "exceptiongroup"
 version = "1.3.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "typing-extensions", marker = "python_full_version < '3.11'" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/50/79/66800aadf48771f6b62f7eb014e352e5d06856655206165d775e675a02c9/exceptiongroup-1.3.1.tar.gz", hash = "sha256:8b412432c6055b0b7d14c310000ae93352ed6754f70fa8f7c34141f91c4e3219" }
 wheels = [
@@ -494,15 +494,15 @@ wheels = [
 
 [[package]]
 name = "fast-dev-cli"
-version = "0.22.0"
+version = "0.23.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e0/a6/747987f57c199ab6f9f6ef79a28bcc14dd7cc8d376e66a2b1b88e038bfd5/fast_dev_cli-0.22.0.tar.gz", hash = "sha256:d5658092a9dca9a36a8b1c4d4147c60c38c38b3a96fbf0fdad05dce3f3b68e70" }
+sdist = { url = "https://files.pythonhosted.org/packages/49/49/1b382c20e22c71e7cfba61819be59fba7cadd56b05ba76b4bd9c9d6aadfe/fast_dev_cli-0.23.0.tar.gz", hash = "sha256:7baecc51fe783ab7f8f7e06529d59ecd9bc487209b3a68558b60fd3030b6afb5" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/c5/3e/38a3808af7a005528dd46fe8f5d347ca285e58d90780ee116288d71e1a5b/fast_dev_cli-0.22.0-py3-none-any.whl", hash = "sha256:17398ac942cd86e9560bd1f29a24883c9378701b8a5acf0465c2cb702aedf6e1" },
+    { url = "https://files.pythonhosted.org/packages/ec/79/2cc4f6bc1ac5c59e1df43442477fa8bc65709b260227f406688deb85ae21/fast_dev_cli-0.23.0-py3-none-any.whl", hash = "sha256:5a5bfeb563c5e3bf839ab06de9c4bc45f621746f093c07406ace8a58feafd99c" },
 ]
 
 [package.optional-dependencies]
@@ -1445,7 +1445,7 @@ wheels = [
 
 [[package]]
 name = "typer"
-version = "0.26.6"
+version = "0.26.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "annotated-doc" },
@@ -1453,9 +1453,9 @@ dependencies = [
     { name = "rich" },
     { name = "shellingham" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f4/8a/8dc5733b8939e7f1a71173091a6e27a1658345edbff548a0bf3f5bb26173/typer-0.26.6.tar.gz", hash = "sha256:cdbc160fe7e795b835fb6016419494a521a67bfb86b9476a1ccd0e7727d3ae5b" }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/ed/ef06584ccdd5c410df0837951ecd7e15d9a6144ea1bd4c73cecab1a89891/typer-0.26.7.tar.gz", hash = "sha256:e314a34c617e419c091b2830dda3ea1f257134ff593061a8f5b9717ab8dddb3a" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/30/c7/519138260db5e2fe03a509bf9e8ef6af9a514d3565c8fa74fc4fededbae1/typer-0.26.6-py3-none-any.whl", hash = "sha256:49f96d9ee5730cef607bbe155042f40b41fa4c0d0dec04990d580837493805be" },
+    { url = "https://files.pythonhosted.org/packages/24/25/2201973529af2c954de0bb725323c3aaed6d7f0ceee8f550dec9185df013/typer-0.26.7-py3-none-any.whl", hash = "sha256:5c87cfbc5d34491c5346ebf49c23e18d56ccb863268d3a8d592b26087c2f5e58" },
 ]
 
 [[package]]
@@ -1546,14 +1546,14 @@ wheels = [
 
 [[package]]
 name = "uvicorn"
-version = "0.48.0"
+version = "0.49.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
     { name = "h11" },
     { name = "typing-extensions", marker = "python_full_version < '3.11'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/e6/bf/f6544ba992ddb9a6077343a576f9844f7f8f06ab819aefd00206e9255f18/uvicorn-0.48.0.tar.gz", hash = "sha256:a5504207195d08c2511bf9125ede5ac4a4b71725d519e758d01dcf0bc2d31c37" }
+sdist = { url = "https://files.pythonhosted.org/packages/c4/1f/fa18009dea8469069cca78a4e877a008ab78f08b064bfc9ab891579077ff/uvicorn-0.49.0.tar.gz", hash = "sha256:ebf4271aa580d9de97f93192d4595176df6e91f9aae919ca73e4fc07df1e66a3" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/01/be/72532be3da7acc5fdfbccdb95215cd04f995a0886532a5b423f929cda4cc/uvicorn-0.48.0-py3-none-any.whl", hash = "sha256:48097851328b87ec36117d3d575234519eb58c2b22d79666e9bbc6c49a761dad" },
+    { url = "https://files.pythonhosted.org/packages/88/fa/e1388bbcf24ef3274f45c0c1c7b501fd14971037c1b6ee23610553307497/uvicorn-0.49.0-py3-none-any.whl", hash = "sha256:ba3d14c3ee7e41c6c654c46c9eb489d33213cdd30aa1696eab1374337c13f68f" },
 ]

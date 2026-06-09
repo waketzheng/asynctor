@@ -8,7 +8,7 @@ from io import StringIO
 import anyio
 import pytest
 
-from asynctor.timing import Timer, ZoneInfo, timeit
+from asynctor.timing import UTC, Timer, ZoneInfo, timeit
 
 
 @contextmanager
@@ -245,6 +245,13 @@ def test_nows():
         datetime.strptime(str(Timer.to_beijing(utc_now)).split(".")[0], fmt)
         - datetime.strptime(str(utc_now).split(".")[0], fmt)
     ) == timedelta(hours=8)
+
+
+def test_current_time(monkeypatch):
+    now = datetime(1970, 1, 1, 0, 0, 1, 234567, tzinfo=UTC)
+    monkeypatch.setattr(Timer, "now", staticmethod(lambda: now))
+
+    assert Timer.current_time() == 1234
 
 
 def test_export():

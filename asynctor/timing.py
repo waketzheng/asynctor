@@ -133,7 +133,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
     def __repr__(self) -> str:
         return f"{type(self).__name__}({self.message!r}, {self._decimal_places}, {self._verbose})"
 
-    async def __aenter__(self) -> Timer:
+    async def __aenter__(self) -> Self:
         return self.__enter__()
 
     async def __aexit__(self, *args, **kwargs) -> None:
@@ -200,6 +200,25 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
             True
         """
         return cls.to_beijing(cls.now())
+
+    @classmethod
+    def current_time(cls) -> int:
+        """Get the current Unix timestamp in milliseconds.
+
+        The value is derived from :meth:`now`, and fractions smaller than one
+        millisecond are truncated.
+
+        Usage::
+            >>> isinstance(Timer.current_time(), int)
+            True
+            >>> len(str(Timer.current_time())) == 13
+            True
+            >>> utc_dt = datetime.fromtimestamp(Timer.current_time() / 1000, UTC)
+            >>> now = Timer.now()
+            >>> (now - utc_dt).total_seconds() < 1
+            True
+        """
+        return int(cls.now().timestamp() * 1000)
 
 
 @overload
