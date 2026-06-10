@@ -4,6 +4,9 @@
 
 ### Unrelease
 
+#### Fixes
+- fix: show Redis installation guidance when optional dependency is missing
+
 ### [0.12.10](../../releases/tag/v0.12.10) - 2026-06-10
 
 #### Fixes

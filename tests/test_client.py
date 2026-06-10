@@ -1,12 +1,16 @@
 from __future__ import annotations
 
+import builtins
+import importlib.util
 import os
+import re
 import sys
 
 import pytest
 from fastapi import FastAPI, Request
 from redis.asyncio import Redis
 
+import asynctor.client as client_mod
 from asynctor import AsyncRedis
 from asynctor.contrib import fastapi as fastapi_utils
 from asynctor.testing import async_client_fixture
@@ -15,6 +19,25 @@ from asynctor.utils import AsyncTestClient
 from .main import app
 
 client = async_client_fixture(app)
+
+
+def _load_client_without_redis(monkeypatch):
+    real_import = builtins.__import__
+
+    def import_without_redis(name, globals=None, locals=None, fromlist=(), level=0):
+        if name == "redis" or name.startswith("redis."):
+            raise ImportError
+        return real_import(name, globals, locals, fromlist, level)
+
+    monkeypatch.setattr(builtins, "__import__", import_without_redis)
+    spec = importlib.util.spec_from_file_location(
+        "asynctor._client_without_redis", client_mod.__file__
+    )
+    assert spec is not None
+    assert spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 @pytest.mark.anyio
@@ -128,4 +151,26 @@ async def test_redis_not_installed(monkeypatch):
             pass
     with pytest.raises(RuntimeError, match=r'pip install "asynctor\[redis\]"'):
         async with AsyncRedis(check_connection=False):
+            pass
+
+
+@pytest.mark.anyio
+async def test_redis_not_installed_accepts_connection_kwargs(monkeypatch):
+    module = _load_client_without_redis(monkeypatch)
+    app = FastAPI()
+    with pytest.raises(RuntimeError, match=r'pip install "asynctor\[redis\]"'):
+        async with module.AsyncRedis(app, check_connection=False, host="redis"):
+            pass
+
+
+@pytest.mark.anyio
+async def test_register_aioredis_not_installed_accepts_connection_kwargs(monkeypatch):
+    module = _load_client_without_redis(monkeypatch)
+    monkeypatch.setattr(fastapi_utils, "AsyncRedis", module.AsyncRedis)
+
+    app = FastAPI()
+    fastapi_utils.register_aioredis(app, check_connection=False, host="redis")
+
+    with pytest.raises(RuntimeError, match=re.escape('pip install "asynctor[redis]"')):
+        async with AsyncTestClient(app):
             pass

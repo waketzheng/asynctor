@@ -15,6 +15,7 @@ else:
         from contextlib import AbstractAsyncContextManager
 
         class Redis(AbstractAsyncContextManager):  # type:ignore[no-redef]
+            def __init__(self, *args: Any, **kwargs: Any) -> None: ...
             async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool | None: ...
             async def ping(self) -> bool:
                 return False
