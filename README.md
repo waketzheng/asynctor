@@ -65,7 +65,7 @@ uv pip install "asynctor[redis] @git+ssh://git@github.com/waketzheng/asynctor.gi
 >>> run_async(foo) == run_async(foo()) == run_async(foo, 1) == 1
 True
 ```
-- timeit
+- timeit/Timer
 ```py
 >>> import time
 >>> import anyio
@@ -87,6 +87,14 @@ sleep_test2 Cost: 3.1 seconds
 ...     sleep()
 ...
 Sleeping Cost: 3.0 seconds
+>>> from loguru import logger
+>>> with Timer('doing sth', verbose=False) as t:
+...     time.sleep(0.222)
+...
+>>> logger.debug(t)
+2026-06-10 12:07:55.658 | DEBUG    | __main__:<module>:1 - doing sth Cost: 0.2 seconds
+>>> Timer.beijing_now()
+datetime.datetime(2026, 6, 10, 12, 9, 1, 577094, tzinfo=asynctor.timing.ZoneInfo(key='Asia/Shanghai'))
 ```
 - AioRedis
 
@@ -155,4 +163,46 @@ if __name__ == '__main__':
 >>> from asynctor.xlsx import load_xlsx
 >>> await load_xlsx('tests/demo.xlsx')
 [{'Column1': 'row1-\\t%c', 'Column2\nMultiLines': 0, 'Column 3': 1, 4: ''}, {'Column1': 'r2c1\n00', 'Column2\nMultiLines': 'r2 c2', 'Column 3': 2, 4: ''}]
+```
+
+- json
+
+Auto use orjson if it's installed, fallback to standard json module.
+
+```
+>>> from asynctor.jsons import json_dump_bytes
+>>> json_dump_bytes({'a': 1})
+b'{"a":1}'
+>>> json_dump_bytes({'a': 1}, pretty=True)
+b'{\n  "a": 1\n}'
+```
+
+- utils
+1. `load_bool`
+```
+>>> from asynctor.utils import load_bool
+>>> load_bool('NOT_EXIST')
+False
+>>> import os
+>>> os.environ['MY_ENV'] = '0'
+>>> load_bool('MY_ENV')
+False
+>>> os.environ['MY_ENV'] = '1'
+>>> load_bool('MY_ENV')
+True
+```
+2. ExtendSyspath
+```
+>>> import conftest
+Traceback (most recent call last):
+  File "<python-input-0>", line 1, in <module>
+    import conftest
+ModuleNotFoundError: No module named 'conftest'
+>>> from pathlib import Path
+>>> from asynctor.utils import ExtendSyspath
+>>> with ExtendSyspath('tests'):
+...     import conftest
+...
+>>> Path(conftest.__file__).relative_to(Path.cwd()).as_posix()
+'tests/conftest.py'
 ```
