@@ -1,0 +1,12 @@
+{# Select theme translations from the current document language. #}
+{% set language = config.theme.language | d("en", true) %}
+{% if page and page.url %}
+  {% if page.url == "zh/" or page.url[:3] == "zh/" %}
+    {% set language = "zh" %}
+  {% elif page.url == "en/" or page.url[:3] == "en/" %}
+    {% set language = "en" %}
+  {% endif %}
+{% endif %}
+{% import "partials/languages/" ~ language ~ ".html" as lang %}
+{% import "partials/languages/en.html" as fallback %}
+{% macro t(key) %}{{ lang.t(key) or fallback.t(key) or key }}{% endmacro %}

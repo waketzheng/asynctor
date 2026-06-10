@@ -1,0 +1,111 @@
+{% set current = namespace(language = none) %}
+{% if page and page.url %}
+  {% if page.url == "zh/" or page.url[:3] == "zh/" %}
+    {% set current.language = "zh" %}
+  {% elif page.url == "en/" or page.url[:3] == "en/" %}
+    {% set current.language = "en" %}
+  {% endif %}
+{% endif %}
+{% if not current.language %}
+  {% set current.language = "zh" %}
+{% endif %}
+{% set previous_page = page.previous_page %}
+{% set next_page = page.next_page %}
+{% if current.language == "zh" %}
+  {% if previous_page and not (previous_page.url == "zh/" or previous_page.url[:3] == "zh/") %}
+    {% set previous_page = none %}
+  {% endif %}
+  {% if next_page and not (next_page.url == "zh/" or next_page.url[:3] == "zh/") %}
+    {% set next_page = none %}
+  {% endif %}
+{% elif current.language == "en" %}
+  {% if previous_page and not (previous_page.url == "en/" or previous_page.url[:3] == "en/") %}
+    {% set previous_page = none %}
+  {% endif %}
+  {% if next_page and not (next_page.url == "en/" or next_page.url[:3] == "en/") %}
+    {% set next_page = none %}
+  {% endif %}
+{% else %}
+  {% set previous_page = none %}
+  {% set next_page = none %}
+{% endif %}
+<footer class="md-footer">
+  {% if "navigation.footer" in features %}
+    {% if previous_page or next_page %}
+      {% if page.meta and page.meta.hide %}
+        {% set hidden = "hidden" if "footer" in page.meta.hide %}
+      {% endif %}
+      <nav class="md-footer__inner md-grid" aria-label="{{ lang.t('footer') }}" {{ hidden }}>
+        {% if previous_page %}
+          {% set direction = lang.t("footer.previous") %}
+          <a href="{{ previous_page.url | url }}" class="md-footer__link md-footer__link--prev" aria-label="{{ direction }}: {{ previous_page.title | e }}">
+            <div class="md-footer__button md-icon">
+              {% set icon = config.theme.icon.previous or "material/arrow-left" %}
+              {% include ".icons/" ~ icon ~ ".svg" %}
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                {{ direction }}
+              </span>
+              <div class="md-ellipsis">
+                {{ previous_page.title }}
+              </div>
+            </div>
+          </a>
+        {% endif %}
+        {% if next_page %}
+          {% set direction = lang.t("footer.next") %}
+          <a href="{{ next_page.url | url }}" class="md-footer__link md-footer__link--next" aria-label="{{ direction }}: {{ next_page.title | e }}">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                {{ direction }}
+              </span>
+              <div class="md-ellipsis">
+                {{ next_page.title }}
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              {% set icon = config.theme.icon.next or "material/arrow-right" %}
+              {% include ".icons/" ~ icon ~ ".svg" %}
+            </div>
+          </a>
+        {% endif %}
+      </nav>
+    {% endif %}
+  {% endif %}
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      {% include "partials/copyright.html" %}
+      {% if config.extra.social %}
+        {% include "partials/social.html" %}
+      {% endif %}
+    </div>
+  </div>
+</footer>
+<script>
+  (function () {
+    var currentLanguage = "{{ current.language }}";
+    document.querySelectorAll('.md-select__link[hreflang="' + currentLanguage + '"]').forEach(function (link) {
+      var item = link.closest(".md-select__item");
+      if (item) {
+        item.remove();
+      }
+    });
+
+    var match = window.location.pathname.match(/^(.*\/)(zh|en)(?:\/|$)/);
+    if (!match && !currentLanguage) {
+      return;
+    }
+    var href;
+    if (match) {
+      href = match[1] + match[2] + "/";
+    } else {
+      var path = window.location.pathname;
+      var base = path.endsWith("/") ? path : path.replace(/[^/]*$/, "");
+      href = base + currentLanguage + "/";
+    }
+    document.querySelectorAll('a[data-md-component="logo"]').forEach(function (link) {
+      link.setAttribute("href", href);
+    });
+  })();
+</script>

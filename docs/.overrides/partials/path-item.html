@@ -1,0 +1,45 @@
+{% macro render_content(nav_item, ref) %}
+  {% set ref = ref or nav_item %}
+  {% set title = ref.title or nav_item.title %}
+  <span class="md-ellipsis">
+    {% if title == "入口" %}
+      {% if page and page.url and (page.url == "en/" or page.url[:3] == "en/") %}
+        Start
+      {% else %}
+        入口
+      {% endif %}
+    {% else %}
+      {{ title }}
+    {% endif %}
+  </span>
+{% endmacro %}
+{% macro render(nav_item, ref) %}
+  {% set ref = ref or nav_item %}
+  {% if nav_item.children %}
+    {% set _ = namespace(index = none) %}
+    {% if "navigation.indexes" in features %}
+      {% for item in nav_item.children %}
+        {% if item.is_index and _.index is none %}
+          {% set _.index = item %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+    {% set index = _.index %}
+    {% set first = index or nav_item.children | first %}
+    {% if first.children %}
+      {{ render(first, ref) }}
+    {% else %}
+      <li class="md-path__item">
+        <a href="{{ first.url | url }}" class="md-path__link">
+          {{ render_content(first, ref) }}
+        </a>
+      </li>
+    {% endif %}
+  {% else %}
+    <li class="md-path__item">
+      <a href="{{ nav_item.url | url }}" class="md-path__link">
+        {{ render_content(first, ref) }}
+      </a>
+    </li>
+  {% endif %}
+{% endmacro %}

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">asynctor documentation icon</title>
+  <desc id="desc">A document with async arrows and a timing mark.</desc>
+  <defs>
+    <linearGradient id="bg" x1="92" y1="56" x2="420" y2="456" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0f766e"/>
+      <stop offset="0.58" stop-color="#2563eb"/>
+      <stop offset="1" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="page" x1="160" y1="104" x2="356" y2="406" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset="1" stop-color="#eaf2ff"/>
+    </linearGradient>
+    <filter id="shadow" x="48" y="44" width="416" height="428" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#0f172a" flood-opacity="0.22"/>
+    </filter>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="#0b1220"/>
+  <rect x="44" y="44" width="424" height="424" rx="96" fill="url(#bg)"/>
+  <g filter="url(#shadow)">
+    <path d="M152 102h150l76 76v226a32 32 0 0 1-32 32H152a32 32 0 0 1-32-32V134a32 32 0 0 1 32-32Z" fill="url(#page)"/>
+    <path d="M300 102v58a20 20 0 0 0 20 20h58Z" fill="#bfdbfe"/>
+  </g>
+  <path d="M186 204h86M186 246h140M186 288h96" fill="none" stroke="#1e3a8a" stroke-linecap="round" stroke-width="24"/>
+  <path d="M333 298a72 72 0 0 1-118 49" fill="none" stroke="#0f766e" stroke-linecap="round" stroke-width="24"/>
+  <path d="m206 386 4-50 44 23Z" fill="#0f766e"/>
+  <path d="M179 252a72 72 0 0 1 118-49" fill="none" stroke="#4f46e5" stroke-linecap="round" stroke-width="24"/>
+  <path d="m306 164-4 50-44-23Z" fill="#4f46e5"/>
+  <circle cx="332" cy="332" r="46" fill="#f59e0b"/>
+  <circle cx="332" cy="332" r="28" fill="#fffbeb"/>
+  <path d="M332 315v19l16 10" fill="none" stroke="#92400e" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"/>
+</svg>

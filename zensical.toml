@@ -1,0 +1,60 @@
+[project]
+site_name = "asynctor"
+site_description = "asynctor 文档。"
+site_author = "Waket Zheng"
+repo_url = "https://github.com/waketzheng/asynctor"
+copyright = """
+Copyright &copy; 2026 Waket Zheng and contributors
+"""
+nav = [
+  { "入口" = "index.md" },
+  { "中文" = [
+    { "概览" = "zh/index.md" },
+    { "安装" = "zh/installation.md" },
+    { "使用指南" = "zh/usage.md" },
+    { "API 速查" = "zh/api.md" },
+  ] },
+  { "English" = [
+    { "Overview" = "en/index.md" },
+    { "Installation" = "en/installation.md" },
+    { "Usage Guide" = "en/usage.md" },
+    { "API Reference" = "en/api.md" },
+  ] },
+]
+
+[project.theme]
+custom_dir = "docs/.overrides"
+favicon = "assets/asynctor-docs.svg"
+language = "zh"
+logo = "assets/asynctor-docs.svg"
+features = [
+  "content.code.copy",
+  "content.tabs.link",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+]
+
+[[project.theme.palette]]
+scheme = "default"
+toggle.icon = "lucide/sun"
+toggle.name = "切换到深色模式"
+
+[[project.theme.palette]]
+scheme = "slate"
+toggle.icon = "lucide/moon"
+toggle.name = "切换到浅色模式"
+
+[[project.extra.alternate]]
+name = "中文"
+link = "zh/"
+lang = "zh"
+
+[[project.extra.alternate]]
+name = "English"
+link = "en/"
+lang = "en"
