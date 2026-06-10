@@ -4,7 +4,10 @@
 
 ### Unrelease
 
+### [0.12.10](../../releases/tag/v0.12.10) - 2026-06-10
+
 #### Fixes
+- fix: preserve registered Redis connection options during FastAPI dependency reuse
 - fix: avoid stale `sniffio` asyncio context when running async helpers
 - fix: batch generator inputs correctly in `asynctor.aio.bulk_gather`
 - fix: improve FastAPI client IP parsing for proxy headers
