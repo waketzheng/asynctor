@@ -33,6 +33,13 @@ def ensure_redis_is_installed() -> None:
         ) from None
 
 
+def _get_app_state(app: Any) -> Any | None:
+    if app is None or isinstance(app, str):
+        return None
+    fastapi_app = getattr(app, "app", app)
+    return getattr(fastapi_app, "state", None)
+
+
 class RedisClient(Redis):  # ty: ignore[unsupported-base]
     def __init__(self, **kw: Annotated[Any, "Same as redis.asyncio.Redis"]) -> None:
         """Expand `redis.asyncio.Redis` to auto load REDIS_HOST from os environ,
@@ -89,13 +96,11 @@ class AsyncRedis(RedisClient):
         :param check_connection: whether check redis host pingable when __aenter__
         :param kw: kwargs that pass to the Redis class when initial
         """
-        if (
-            app is not None
-            and (app := getattr(app, "app", None))
-            and (state := getattr(app, "state", None))
-        ):
+        if (state := _get_app_state(app)) is not None and (
+            redis := getattr(state, "redis", None)
+        ) is not None:
             # app isinstance of fastapi.FastAPI or fastapi.Request
-            return cast(AsyncRedis, state.redis)
+            return cast(AsyncRedis, redis)
         return super().__new__(cls)
 
     def __init__(
@@ -110,14 +115,16 @@ class AsyncRedis(RedisClient):
         :param check_connection: whether check redis host pingable when __aenter__
         :param kw: kwargs that pass to the Redis class when initial
         """
+        state = _get_app_state(app)
+        if state is not None and getattr(state, "redis", None) is self:
+            return
         if isinstance(app, str):
             kw.setdefault("host", app)
-            app = None
         super().__init__(**kw)
         self._check_connection = check_connection
-        if app is not None and hasattr(app, "state"):
+        if state is not None:
             # isinstance(app, FastAPI)
-            app.state.redis = self
+            state.redis = self
 
     async def __aenter__(self) -> Self:
         if not hasattr(self, "aclose"):

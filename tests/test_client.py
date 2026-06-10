@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 import os
+import sys
 
 import pytest
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from redis.asyncio import Redis
 
 from asynctor import AsyncRedis
@@ -89,9 +90,36 @@ async def test_register_aioredis_passes_check_connection(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_redis_not_installed(monkeypatch):
-    import sys
+async def test_register_aioredis_preserves_host_for_dependency():
+    app = FastAPI()
+    fastapi_utils.register_aioredis(app, check_connection=False, host="redis", port=6380)
 
+    def _get_redis_config(redis: AsyncRedis) -> dict[str, str | int]:
+        connection_kwargs = redis.connection_pool.connection_kwargs
+        return {"host": connection_kwargs["host"], "port": connection_kwargs["port"]}
+
+    @app.get("/redis-config")
+    async def redis_config(redis: fastapi_utils.AioRedisDep) -> dict[str, str | int]:
+        return _get_redis_config(redis)
+
+    @app.get("/redis-check")
+    async def redis_check(request: Request) -> dict[str, str | int]:
+        redis = AsyncRedis(request)
+        return _get_redis_config(redis)
+
+    async with AsyncTestClient(app) as client:
+        response = await client.get("/redis-config")
+        response2 = await client.get("/redis-check")
+
+    assert response.status_code == 200
+    assert response.json() == {"host": "redis", "port": 6380}
+    assert app.state.redis.connection_pool.connection_kwargs["host"] == "redis"
+    assert response2.status_code == 200
+    assert response2.json() == {"host": "redis", "port": 6380}
+
+
+@pytest.mark.anyio
+async def test_redis_not_installed(monkeypatch):
     monkeypatch.setitem(sys.modules, "redis", None)
     monkeypatch.delattr(Redis, "aclose")
 
