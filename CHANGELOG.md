@@ -4,8 +4,13 @@
 
 ### Unrelease
 
+### [0.12.11](../../releases/tag/v0.12.11) - 2026-06-10
+
 #### Fixes
 - fix: show Redis installation guidance when optional dependency is missing
+
+#### Changed
+- docs: add xlsx helper documentation
 
 ### [0.12.10](../../releases/tag/v0.12.10) - 2026-06-10
 
