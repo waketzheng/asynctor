@@ -20,6 +20,7 @@ from asynctor.utils import (
     client_manager,
     get_machine_ip,
     load_bool,
+    local_dict,
 )
 
 from .main import app_default_to_mount_lifespan, app_for_utils_test
@@ -65,6 +66,11 @@ async def test_async_test_client2(client_without_lifespan, client_func_style_wit
         r = await c.get(path)
         assert r.status_code == 200
         assert r.json() == {"redis": "None"}
+
+
+def test_local_dict():
+    a = b = c = 1
+    assert local_dict(locals(), "a", "c", "b") == {"a": 1, "b": 1, "c": 1}
 
 
 class TestAttrDict:
@@ -329,6 +335,7 @@ class TestExtendSyspath:
         sys.path.pop(index)
 
     def test_dir(self, tmp_work_dir):
+        assert ExtendSyspath().path == Path()
         d = Path("sub")
         d.mkdir()
         f = d / "sth.py"
@@ -381,10 +388,22 @@ class TestExtendSyspath:
 
             assert dup.num == 2
         sys.modules.pop("dup", None)
+        sys.path.insert(0, str(tmp_work_dir))
         with ExtendSyspath(d, rollback=True, insert=True):
             import dup  # ty:ignore[unresolved-import]
 
             assert dup.num == 3
+            sys.path.pop(0)
+        assert sys.path[0] == str(tmp_work_dir)
+        dirname = d.as_posix()
+        sys.path.append(dirname)
+        with ExtendSyspath(d, rollback=True, insert=True):
+            assert sys.path[0] == dirname
+            sys.path.pop(0)
+        assert sys.path[0] == str(tmp_work_dir)
+        sys.path.pop(0)
+        with contextlib.suppress(ValueError):
+            sys.path.pop(sys.path.index(dirname))
         sys.modules.pop("dup", None)
         with contextlib.suppress(FileNotFoundError):
             import dup  # ty:ignore[unresolved-import]

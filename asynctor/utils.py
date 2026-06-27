@@ -427,7 +427,7 @@ class ExtendSyspath(AbstractContextManager):
         if self.rollback and self._path:
             try:
                 index = sys.path.index(self._path)
-            except IndexError:
+            except ValueError:
                 ...
             else:
                 sys.path.pop(index)
