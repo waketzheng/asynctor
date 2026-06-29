@@ -4,7 +4,7 @@ import functools
 import itertools
 import sys
 import warnings
-from collections.abc import AsyncGenerator, Awaitable, Callable, Generator, Iterable, Sequence
+from collections.abc import AsyncGenerator, Callable, Coroutine, Generator, Iterable, Sequence
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeVar, cast, overload
 
@@ -46,10 +46,10 @@ T = TypeVar("T")
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 PosArgsT = TypeVarTuple("PosArgsT")
-AwaitT = Awaitable[T_Retval]
-CallableT = Callable[T_ParamSpec, AwaitT]
-AsyncFunc: TypeAlias = Callable[..., Awaitable[Any]]
-CoroFunc: TypeAlias = Awaitable[Any] | AsyncFunc
+CoroutineT = Coroutine[Any, Any, T_Retval]
+CallableT = Callable[T_ParamSpec, CoroutineT]
+AsyncFunc: TypeAlias = Callable[..., Coroutine[Any, Any, Any]]
+CoroFunc: TypeAlias = Coroutine[Any, Any, Any] | AsyncFunc
 
 
 def current_async_library() -> str | None:
@@ -85,12 +85,14 @@ def ensure_afunc(coro: CallableT) -> CallableT: ...
 
 
 @overload
-def ensure_afunc(coro: Awaitable[T_Retval]) -> Callable[[], Awaitable[T_Retval]]: ...
+def ensure_afunc(
+    coro: Coroutine[Any, Any, T_Retval],
+) -> Callable[[], Coroutine[Any, Any, T_Retval]]: ...
 
 
 def ensure_afunc(
-    coro: CallableT | Awaitable[T_Retval],
-) -> CallableT | Callable[[], Awaitable[T_Retval]]:
+    coro: CallableT | Coroutine[Any, Any, T_Retval],
+) -> CallableT | Callable[[], Coroutine[Any, Any, T_Retval]]:
     """Wrap coroutine to be async function"""
     if callable(coro):
         return coro  # ty: ignore[invalid-return-type]
@@ -102,7 +104,8 @@ def ensure_afunc(
 
 
 def run(
-    func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
+    func: Coroutine[Any, Any, T_Retval]
+    | Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval]],
     *args: Unpack[PosArgsT],
     backend: str = "asyncio",
     backend_options: dict[str, Any] | None = None,
@@ -178,11 +181,11 @@ class BulkGather:
     def __init__(self, results) -> None:
         self._results = results
 
-    async def runner(self, index: int, coro: Awaitable[T_Retval]) -> None:
+    async def runner(self, index: int, coro: Coroutine[Any, Any, T_Retval]) -> None:
         self._results[index] = await coro
 
     async def limited_runner(
-        self, index: int, coro: Awaitable[T_Retval], limiter: anyio.CapacityLimiter
+        self, index: int, coro: Coroutine[Any, Any, T_Retval], limiter: anyio.CapacityLimiter
     ) -> None:
         async with limiter:
             self._results[index] = await coro
@@ -216,7 +219,7 @@ class BulkGather:
         self, batch_size, coros, is_generator, total
     ) -> None:
         if is_generator:
-            todos: list[tuple[int, Awaitable]] = []
+            todos: list[tuple[int, Coroutine]] = []
             for args in enumerate(coros):
                 todos.append(args)
                 self._results.append(None)
@@ -238,7 +241,7 @@ class BulkGather:
 
 @overload
 async def bulk_gather(
-    coros: Sequence[Awaitable[T_Retval]] | Generator[Awaitable[T_Retval]],
+    coros: Sequence[Coroutine[Any, Any, T_Retval]] | Generator[Coroutine[Any, Any, T_Retval]],
     batch_size: int = 0,
     wait_last: bool = False,
     raises: Literal[True] = True,
@@ -249,7 +252,7 @@ async def bulk_gather(
 
 @overload
 async def bulk_gather(
-    coros: Sequence[Awaitable[T_Retval]] | Generator[Awaitable[T_Retval]],
+    coros: Sequence[Coroutine[Any, Any, T_Retval]] | Generator[Coroutine[Any, Any, T_Retval]],
     batch_size: int = 0,
     wait_last: bool = False,
     raises: Literal[False] = False,
@@ -259,7 +262,7 @@ async def bulk_gather(
 
 
 async def bulk_gather(
-    coros: Sequence[Awaitable[T_Retval]] | Generator[Awaitable[T_Retval]],
+    coros: Sequence[Coroutine[Any, Any, T_Retval]] | Generator[Coroutine[Any, Any, T_Retval]],
     batch_size: int = 0,
     wait_last: bool = False,
     raises: bool = True,
@@ -311,7 +314,9 @@ async def bulk_gather(
     return bg.results
 
 
-async def gather(*coros: Awaitable[T_Retval], limit: int | None = None) -> tuple[T_Retval, ...]:
+async def gather(
+    *coros: Coroutine[Any, Any, T_Retval], limit: int | None = None
+) -> tuple[T_Retval, ...]:
     """Similar like asyncio.gather, but support set `limit` to control concurrency number.
 
     :param coros: Coroutines to be executed in the running loop
@@ -320,7 +325,9 @@ async def gather(*coros: Awaitable[T_Retval], limit: int | None = None) -> tuple
     return await bulk_gather(coros, limit=limit)
 
 
-def create_task(coro: Awaitable[Any], task_group: TaskGroup, *, name: object = None) -> None:
+def create_task(
+    coro: Coroutine[Any, Any, Any], task_group: TaskGroup, *, name: object = None
+) -> None:
     """Start an async task, similar to asyncio.create_task, but need a task_group param.
 
     :param coro: Coroutine that will be run in the backgroup
@@ -362,15 +369,16 @@ async def start_tasks(coro: CoroFunc, *more: CoroFunc) -> AsyncGenerator[None]:
                 tg.cancel_scope.cancel()
 
 
-async def wait_for(coro: Awaitable[T_Retval], timeout: int | float) -> T_Retval:
+async def wait_for(coro: Coroutine[Any, Any, T_Retval], timeout: int | float) -> T_Retval:
     """Similar like asyncio.wait_for"""
     with anyio.fail_after(timeout):
         return await coro
 
 
 def be_awaitable(
-    async_func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
-) -> Callable[[Unpack[PosArgsT]], AwaitT]:
+    async_func: Coroutine[Any, Any, T_Retval]
+    | Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval]],
+) -> Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval]]:
     @functools.wraps(async_func)  # type:ignore
     async def do_await(*gs: Unpack[PosArgsT]) -> T_Retval:
         if callable(async_func):
@@ -388,7 +396,8 @@ def be_awaitable(
 
 
 def run_async(
-    async_func: Awaitable[T_Retval] | Callable[[Unpack[PosArgsT]], Awaitable[T_Retval]],
+    async_func: Coroutine[Any, Any, T_Retval]
+    | Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval]],
     *args: Unpack[PosArgsT],
 ) -> T_Retval:
     """Run async function in worker thread and get the result of it"""
@@ -403,7 +412,7 @@ def run_async(
 
 
 def async_to_sync(
-    func: Callable[T_ParamSpec, Awaitable[T_Retval]],
+    func: Callable[T_ParamSpec, Coroutine[Any, Any, T_Retval]],
 ) -> Callable[T_ParamSpec, T_Retval]:
     """Run async function to be sync.
 
@@ -437,7 +446,7 @@ def async_to_sync(
 
 
 def run_until_complete(
-    async_func: Awaitable[T_Retval] | Callable[[], Awaitable[T_Retval]],
+    async_func: CoroutineT | Callable[[], Coroutine[Any, Any, T_Retval]],
 ) -> T_Retval:
     """Run async function or coroutine in runing loop or worker thread"""
     return async_to_sync(ensure_afunc(async_func))()
