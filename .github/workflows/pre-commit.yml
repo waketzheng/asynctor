@@ -16,7 +16,7 @@ jobs:
   pre-commit:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Checkout PR for own repo
         if: env.HAS_SECRETS == 'true'
         with:
@@ -29,7 +29,7 @@ jobs:
           token: ${{ secrets.PRE_COMMIT }} # zizmor: ignore[secrets-outside-env]
           persist-credentials: true # Required for `git push` command
       # pre-commit lite ci needs the default checkout configs to work
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         name: Checkout PR for fork
         if: env.HAS_SECRETS == 'false'
         with:
