@@ -17,8 +17,8 @@ UV_DEPS := "uv sync --all-extras --all-groups"
 UV_PIP_I := "uv pip install"
 BIN_DIR := if os_family() == "windows" { "Scripts" } else { "bin" }
 PY_EXEC := if os_family() == "windows" { ".venv/Scripts/python.exe" } else { ".venv/bin/python" }
-PROJECT_NAME := "asynctor"
-SRC := "asynctor"
+PROJECT_NAME := file_name(justfile_directory())
+SRC := if path_exists("src") == "true" { "src" } else { PROJECT_NAME }
 
 _uv_venv *args:
     {{ VENV_CREATE }} --with uv {{ args }}
@@ -55,6 +55,8 @@ deps *args: venv
 [windows]
 deps *args: venv
     if (Test-Path '~/AppData/Roaming/uv/tools/rust-just') { echo 'uv sync ...'; just _uv_deps {{ args }} } else { echo 'Using pdm ...'; {{ PDM_DEPS }} {{ args }} }
+
+alias install := deps
 
 _uv_lock *args:
     @just _pypi_reverse
