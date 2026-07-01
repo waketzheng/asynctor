@@ -67,8 +67,7 @@ async def get_redis_client(request: Request) -> AsyncRedis:
     return AsyncRedis(request)
 
 
-AioRedis = Annotated[AsyncRedis, Depends(get_redis_client)]
-AioRedisDep = AioRedis
+AioRedisDep = Annotated[AsyncRedis, Depends(get_redis_client)]
 AioRedisDep.__doc__ = """Get the registered Redis client from the application.
 
 Example::
@@ -85,6 +84,7 @@ Example::
         return keys
 
 """
+AioRedis = AioRedisDep  # For compatiable
 
 
 def get_client_ip(request: Request) -> str:
@@ -148,7 +148,7 @@ Usage::
 ACCESS_LOG_FMT = "%(asctime)s - %(levelname)s - %(message)s"
 
 
-def config_access_log(fmt=ACCESS_LOG_FMT, log: str = "uvicorn.access") -> None:
+def config_access_log(fmt: FastAPI | str = ACCESS_LOG_FMT, log: str = "uvicorn.access") -> None:
     """Configure the uvicorn access logger format.
 
     A ``logging.StreamHandler`` with the provided formatter is added to the
