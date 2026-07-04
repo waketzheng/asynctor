@@ -1,8 +1,13 @@
 # ChangeLog
 
-## 0.12
+## 0.13
 
 ### Unrelease
+
+#### Added
+- feat: prefer to use `httpx2` for the testing module (#33)
+
+## 0.12
 
 ### [0.12.11](../../releases/tag/v0.12.11) - 2026-06-10
 
