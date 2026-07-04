@@ -4,10 +4,24 @@
 
 ### Unrelease
 
+### [0.13.0](../../releases/tag/v0.13.0) - 2026-07-04
+
 #### Added
 - feat: prefer to use `httpx2` for the testing module (#33)
 
 ## 0.12
+
+### [0.12.12](../../releases/tag/v0.12.12) - 2026-07-02
+
+#### Added
+- docs: add zensical documentation and publish to `waketzheng.github.io/asynctor/`
+
+#### Changed
+- refactor: use Coroutine instead of Awaitable for aio module to fix mypy complaints
+
+#### Fixes
+- refactor: improve type hints for `asynctor.contrib.fastapi.config_access_log`
+- refactor: full test for utils module
 
 ### [0.12.11](../../releases/tag/v0.12.11) - 2026-06-10
 
