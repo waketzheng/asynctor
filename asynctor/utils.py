@@ -18,12 +18,8 @@ if TYPE_CHECKING:
     from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
 
-    try:
-        from httpx2 import AsyncClient
-    except ImportError:
-        from httpx import AsyncClient
-
     from .compat import Self
+    from .testing import AsyncClient
 
 
 T = TypeVar("T")

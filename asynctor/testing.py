@@ -11,7 +11,7 @@ try:
     from httpx2 import ASGITransport, AsyncClient
 except ImportError:
     try:
-        from httpx import ASGITransport, AsyncClient
+        from httpx import ASGITransport, AsyncClient  # type:ignore[assignment]
     except ModuleNotFoundError:
         raise RuntimeError(
             "The asynctor.testing module requires the httpx2 package to be installed.\n"
@@ -82,9 +82,9 @@ async def client_manager(
             yield c
 
 
-def _init_client(app, base_url: str, timeout: int | float, **kwargs: Any) -> AsyncClient:
-    return AsyncClient(
-        transport=ASGITransport(app),  # type:ignore
+def _init_client(app: ASGIApp, base_url: str, timeout: int | float, **kwargs: Any) -> AsyncClient:
+    return AsyncClient(  # pyright:ignore
+        transport=ASGITransport(app),  # ty:ignore[invalid-argument-type]  # pyright:ignore
         timeout=timeout,
         base_url=base_url,
         **kwargs,
