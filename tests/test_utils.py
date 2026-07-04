@@ -210,7 +210,7 @@ def test_shell():
     assert r.stdout == out
 
 
-def test_shell_redirect(tmp_work_dir):
+def test_shell_redirect(tmp_workdir):
     file = Path("a")
     file.touch()
     cmd = 'python -c "import os;[print(i) for i in os.listdir() if len(i) < 3]"'
@@ -222,7 +222,7 @@ def test_shell_redirect(tmp_work_dir):
     assert file.name in out_file.read_text()
 
 
-def test_shell_run_kw(tmp_work_dir):
+def test_shell_run_kw(tmp_workdir):
     file = Path("a")
     file.touch()
     cmd = 'python -c "import os;[print(i) for i in os.listdir() if len(i) < 3]"'
@@ -314,7 +314,7 @@ def test_load_bool(monkeypatch):
 
 
 class TestExtendSyspath:
-    def test_file(self, tmp_work_dir):
+    def test_file(self, tmp_workdir):
         d = Path("subdir")
         d.mkdir()
         f = d / "foo.py"
@@ -334,7 +334,7 @@ class TestExtendSyspath:
         index = sys.path.index(path)
         sys.path.pop(index)
 
-    def test_dir(self, tmp_work_dir):
+    def test_dir(self, tmp_workdir):
         assert ExtendSyspath().path == Path()
         d = Path("sub")
         d.mkdir()
@@ -355,7 +355,7 @@ class TestExtendSyspath:
         index = sys.path.index(path)
         sys.path.pop(index)
 
-    def test_rollback(self, tmp_work_dir):
+    def test_rollback(self, tmp_workdir):
         d = Path("subpath")
         d.mkdir()
         f = d / "ccc.py"
@@ -375,7 +375,7 @@ class TestExtendSyspath:
 
             assert ccc2.num == 3
 
-    def test_insert(self, tmp_work_dir):
+    def test_insert(self, tmp_workdir):
         d = Path("prefer")
         d.mkdir()
         f = d / "dup.py"
@@ -388,19 +388,19 @@ class TestExtendSyspath:
 
             assert dup.num == 2
         sys.modules.pop("dup", None)
-        sys.path.insert(0, str(tmp_work_dir))
+        sys.path.insert(0, str(tmp_workdir))
         with ExtendSyspath(d, rollback=True, insert=True):
             import dup  # ty:ignore[unresolved-import]
 
             assert dup.num == 3
             sys.path.pop(0)
-        assert sys.path[0] == str(tmp_work_dir)
+        assert sys.path[0] == str(tmp_workdir)
         dirname = d.as_posix()
         sys.path.append(dirname)
         with ExtendSyspath(d, rollback=True, insert=True):
             assert sys.path[0] == dirname
             sys.path.pop(0)
-        assert sys.path[0] == str(tmp_work_dir)
+        assert sys.path[0] == str(tmp_workdir)
         sys.path.pop(0)
         with contextlib.suppress(ValueError):
             sys.path.pop(sys.path.index(dirname))

@@ -6,7 +6,7 @@ from pathlib import Path
 from asynctor.testing import tmp_workdir_fixture
 
 
-def test_fixtures(tmp_work_dir):
+def test_fixtures(tmp_workdir):
     asset_dir = Path(__file__).parent / "assets" / "testing_fixtures"
     for p in asset_dir.glob("*.py"):
         dst = "conftest.py" if p.stem == "conftest_" else "."

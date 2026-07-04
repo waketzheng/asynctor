@@ -6,6 +6,7 @@ import shlex
 import socket
 import subprocess  # nosec
 import sys
+import warnings
 from collections.abc import AsyncGenerator, Callable
 from contextlib import AbstractAsyncContextManager, AbstractContextManager, asynccontextmanager
 from pathlib import Path
@@ -14,16 +15,28 @@ from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from asgi_lifespan import LifespanManager
     from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
-    from httpx import AsyncClient
 
-    from asynctor.compat import Self
+    try:
+        from httpx2 import AsyncClient
+    except ImportError:
+        from httpx import AsyncClient
+
+    from .compat import Self
 
 
 T = TypeVar("T")
 AsyncClientGenerator: TypeAlias = AsyncGenerator["AsyncClient"]
+
+
+def _deprecated_warns(name: str) -> None:
+    msg = "Using `asynctor.utils.{0}` is deprecated; use `asynctor.testing.{0}` instead."
+    warnings.warn(
+        msg.format(name),
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
 
 @asynccontextmanager
@@ -34,132 +47,42 @@ async def client_manager(
     timeout: int | float = 30,
     **kwargs,
 ) -> AsyncClientGenerator:
-    """Async test client
-
-    Usage::
-
-    ```py
-    from collections.abc import AsyncGenerator
-
-    import pytest
-    from asynctor.utils import client_manager
-    from httpx import AsyncClient
-
-    from main import app
-
-
-    @pytest.fixture(scope='session')
-    async def client() -> AsyncGenerator[AsyncClient, None]:
-        async with client_manager(app) as c:
-            yield c
-
-
-    @pytest.fixture(scope="session")
-    def anyio_backend():
-        return "asyncio"
-
-
-    @pytest.mark.anyio
-    async def test_api(client: AsyncClient):
-        response = await client.get("/")
-        assert response.status_code == 200
-    ```
     """
-    import httpx
+    Deprecated! Use `asynctor.testing.client_manager` instead.
+    """
+    from asynctor.testing import client_manager as _client_manager
 
-    if mount_lifespan:
-        from asgi_lifespan import LifespanManager
-
-        async with LifespanManager(app) as manager:
-            transport = httpx.ASGITransport(manager.app)
-            async with httpx.AsyncClient(
-                timeout=timeout, transport=transport, base_url=base_url, **kwargs
-            ) as c:
-                yield c
-    else:
-        transport = httpx.ASGITransport(app)
-        kwargs.update(transport=transport, base_url=base_url)
-        async with httpx.AsyncClient(timeout=timeout, **kwargs) as c:
-            yield c
+    _deprecated_warns("client_manager")
+    async with _client_manager(app, base_url, mount_lifespan, timeout, **kwargs) as c:
+        yield c
 
 
 class AsyncTestClient(AbstractAsyncContextManager):
-    """Async test client for FastAPI
-
-    :param app: a fastapi instance.
-    :param mount_lifespan: if True, auto mount lifespan for app.
-    :param base_url: scheme and host for the httpx AsyncClient.
-    :param kwargs: other kwargs to pass to httpx AsyncClient.
-
-    Usage::
-
-    ... code-block:: python3
-
-        import pytest
-        from asynctor import AsyncTestClient, AsyncClientGenerator
-        from httpx import AsyncClient
-
-        from main import app
-
-        @pytest.fixture(scope='session')
-        async def client() -> AsyncClientGenerator:
-            async with AsyncTestClient(app) as c:
-                yield c
-
-        @pytest.fixture(scope="session")
-        def anyio_backend():
-            return "asyncio"
-
-        @pytest.mark.anyio
-        async def test_api(client: AsyncClient):
-            response = await client.get("/")
-            assert response.status_code == 200
-
+    """
+    Deprecated! Use `asynctor.testing.AsyncTestClient` instead.
     """
 
-    def __init__(
-        self,
-        app: FastAPI,
-        mount_lifespan: bool = True,
-        base_url: str = "http://test",
-        timeout: int | float = 30,
-        **kwargs,
-    ) -> None:
-        self._app = app
-        self._mount_lifespan = mount_lifespan
-        self._manager: LifespanManager | None = None
-        self._client: AsyncClient | None = None
-        self._base_url = base_url
-        self._timeout = timeout
-        self._kwargs = kwargs
+    def __init__(self, *args, **kwargs) -> None:
+        from asynctor.testing import AsyncTestClient as _AsyncTestClient
+
+        _deprecated_warns("AsyncTestClient")
+        _AsyncTestClient.__init__(self, *args, **kwargs)  # type:ignore
 
     async def __aenter__(self) -> AsyncClient:
-        from httpx import ASGITransport, AsyncClient
+        from asynctor.testing import AsyncTestClient as _AsyncTestClient
 
-        app: ASGIApp = self._app
-        if self._mount_lifespan:
-            from asgi_lifespan import LifespanManager
+        await _AsyncTestClient.__aenter__(self)  # type:ignore
+        return self._client  # type:ignore
 
-            self._manager = manager = await LifespanManager(app).__aenter__()
-            app = manager.app
-        self._client = client = await AsyncClient(
-            transport=ASGITransport(app),
-            base_url=self._base_url,
-            timeout=self._timeout,
-            **self._kwargs,
-        ).__aenter__()
-        return client
+    async def _init_app(self) -> ASGIApp:
+        from asynctor.testing import AsyncTestClient as _AsyncTestClient
 
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> None:
-        if self._client:
-            await self._client.__aexit__(exc_type, exc_value, traceback)
-        if self._manager:
-            await self._manager.__aexit__(exc_type, exc_value, traceback)
+        return await _AsyncTestClient._init_app(self)  # type:ignore
+
+    async def __aexit__(self, *args, **kw) -> None:
+        from asynctor.testing import AsyncTestClient as _AsyncTestClient
+
+        await _AsyncTestClient.__aexit__(self, *args, **kw)  # type: ignore
 
 
 def local_dict(data: dict[str, T], *keys: str) -> dict[str, T]:
