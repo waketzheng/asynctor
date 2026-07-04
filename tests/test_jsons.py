@@ -71,7 +71,7 @@ def test_fast_json_unsupported_output():
         FastJson.dumps({1: 1}, output=bytes)  # type:ignore
 
 
-def test_fast_json_write(tmp_work_dir):
+def test_fast_json_write(tmp_workdir):
     p = Path("a.json")
     assert FastJson.dumps({1: 1}, p) == b'{"1":1}'
     assert p.read_bytes() == b'{"1":1}'

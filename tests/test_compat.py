@@ -24,8 +24,8 @@ class AutoEnum(StrEnum):
     _six = auto()
 
 
-def test_chdir(tmp_work_dir):
-    assert tmp_work_dir == Path.cwd()
+def test_chdir(tmp_workdir):
+    assert tmp_workdir == Path.cwd()
 
 
 def test_strenum():

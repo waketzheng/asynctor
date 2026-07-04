@@ -42,7 +42,7 @@ def test_init_excel():
     assert Excel(filename)._path == Excel(Path(filename))._path
 
 
-@pytest.mark.usefixtures("tmp_work_dir")
+@pytest.mark.usefixtures("tmp_workdir")
 class TestExcel:
     file = Path("a.xlsx")
     df_data: dict[str, list[Any]] = {

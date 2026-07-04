@@ -10,9 +10,9 @@ async def test_index(client: AsyncClient):
     assert response.json() == {"a": 1, "lifespan": False}
 
 
-def test_current_dir_changed(tmp_work_dir):
+def test_current_dir_changed(tmp_workdir):
     pwd = Path.cwd()
-    assert pwd == tmp_work_dir
+    assert pwd == tmp_workdir
     root_dir = Path(__file__).parent
     assert pwd != root_dir
     assert not root_dir.is_relative_to(pwd)
