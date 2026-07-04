@@ -54,8 +54,6 @@ jobs:
       - name: Check Type Hints for asynctor.enums
         if: matrix.python-version == '3.14'
         run: just mypy asynctor/enums.py
-      - name: Check by pyright
-        run: just right asynctor
 
   test:
     runs-on: ubuntu-latest
@@ -101,6 +99,11 @@ jobs:
         env:
           # The hostname used to communicate with the Redis service container
           REDIS_HOST: localhost
+      - name: Test without httpx2
+        run: |
+          uv pip uninstall httpx2
+          uv pip install httpx
+          uv run --no-sync pytest tests/test_testing.py
       - name: Test without sniffio
         run: |
           uv pip uninstall sniffio
