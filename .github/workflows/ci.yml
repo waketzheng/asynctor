@@ -102,6 +102,8 @@ jobs:
       - name: Test without httpx2
         run: |
           uv pip uninstall httpx2
+          uv pip uninstall httpx
+          uv run --no-sync pytest tests/test_testing.py::test_raise_runtime_error_without_httpx2_and_httpx
           uv pip install httpx
           uv run --no-sync pytest tests/test_testing.py
       - name: Test without sniffio

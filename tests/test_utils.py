@@ -28,8 +28,9 @@ from .main import app_default_to_mount_lifespan, app_for_utils_test
 
 @pytest.fixture(scope="session")
 async def client():
-    async with AsyncTestClient(app_default_to_mount_lifespan) as c:
-        yield c
+    with pytest.deprecated_call():
+        async with AsyncTestClient(app_default_to_mount_lifespan) as c:
+            yield c
 
 
 @pytest.fixture(scope="session")
@@ -40,8 +41,9 @@ async def client_without_lifespan():
 
 @pytest.fixture(scope="session")
 async def client_func_style():
-    async with client_manager(app_default_to_mount_lifespan) as c:
-        yield c
+    with pytest.deprecated_call():
+        async with client_manager(app_default_to_mount_lifespan) as c:
+            yield c
 
 
 @pytest.fixture(scope="session")
