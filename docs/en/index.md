@@ -4,7 +4,7 @@ icon: lucide/book-open
 
 # asynctor Overview
 
-asynctor is a Python toolkit for async execution helpers, FastAPI testing, Redis integration, and Excel data handling. It is built on anyio, keeps a familiar `asyncio`-style workflow, and adds practical helpers for concurrency limits, sync entry points, testing fixtures, and integrations.
+asynctor is a Python toolkit that mainly provides async helper classes and functions, plus a small set of simple synchronous utilities commonly used in backend projects. It includes anyio-based helpers with familiar `asyncio`-style APIs, `Timer` for timing and timezone conversion, FastAPI testing tools, async Redis integration, and Excel read/write helpers.
 
 ## When To Use It
 
@@ -35,25 +35,26 @@ asynctor requires Python 3.10 or newer.
 
 ## Quick Example
 
+- Timer
+
 ```py
 from anyio import sleep
 from asynctor import Timer, run_async
 
 
-async def main() -> Timer:
-    with Timer('do sth', verbose=False) as t:
+async def main() -> None:
+    print(Timer.now())
+    # 2026-06-10 10:01:45.742821+00:00
+
+    with Timer("do sth", decimal_places=2, verbose=False) as timer:
         await sleep(0.11)
-    return t
+    print(timer)
+    # do sth Cost: 0.11 seconds
 
+    print(Timer.beijing_now())
+    # 2026-06-10 18:01:49.383679+08:00
 
-result = run_async(main)
-result2 = run_async(main())
-
-assert str(result) == str(result2) == 'do sth Cost: 0.1 seconds'
-assert result.cost == result2.cost == 0.1
-
-print(Timer.beijing_now())
-# 2026-06-10 18:01:49.383679+08:00
+run_async(main)
 ```
 
 ## Next Steps

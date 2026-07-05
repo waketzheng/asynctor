@@ -223,7 +223,7 @@ pip install "asynctor[accel]"
 | --- | --- |
 | `client_manager(app, base_url="http://test", mount_lifespan=True, **kwargs)` | Async test client context manager for FastAPI/ASGI apps |
 | `AsyncTestClient(app, mount_lifespan=True, base_url="http://test", **kwargs)` | Async test client wrapper for FastAPI apps |
-| `AsyncClientGenerator` | Async generator type alias for `httpx.AsyncClient` |
+| `AsyncClientGenerator` | Async generator type alias for `AsyncClient` |
 | `AttrDict(data)` | Allow attribute access for string keys in dictionaries; nested dictionaries are converted recursively |
 | `local_dict(data, *keys)` | Build a new dictionary by selecting keys from an existing dictionary |
 | `get_machine_ip()` | Get the current machine IP, returning `127.0.0.1` on failure |

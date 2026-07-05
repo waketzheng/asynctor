@@ -223,7 +223,7 @@ pip install "asynctor[accel]"
 | --- | --- |
 | `client_manager(app, base_url="http://test", mount_lifespan=True, **kwargs)` | FastAPI/ASGI 异步测试客户端 context manager |
 | `AsyncTestClient(app, mount_lifespan=True, base_url="http://test", **kwargs)` | FastAPI 异步测试客户端封装 |
-| `AsyncClientGenerator` | `httpx.AsyncClient` 异步生成器类型别名 |
+| `AsyncClientGenerator` | `AsyncClient` 异步生成器类型别名 |
 | `AttrDict(data)` | 让字典中的字符串键支持属性访问，嵌套字典会递归转换 |
 | `local_dict(data, *keys)` | 从已有字典中按 key 取值组成新字典 |
 | `get_machine_ip()` | 获取当前机器 IP，失败时返回 `127.0.0.1` |

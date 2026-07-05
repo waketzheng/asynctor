@@ -9,23 +9,33 @@ icon: lucide/code
 `gather` 接近 `asyncio.gather`，并支持通过 `limit` 控制并发数量。
 
 ```py
+import time
+import anyio
 from asynctor.aio import gather
 
 
 async def fetch(item: int) -> int:
+    await anyio.sleep(0.1)
     return item * 2
 
+# 不加limit参数的话，等同于asyncio.gather
+start = time.time()
+assert (await gather(*[fetch(i) for i in range(3)]))  == (0, 1, 4)
+assert 0.1 <= time.time() - start <= 0.2
 
+# 加上limit=1，同一个时间内只会执行一个异步任务
+start = time.time()
 results = await gather(
     fetch(1),
     fetch(2),
     fetch(3),
-    limit=2,
+    limit=1,
 )
 assert results == (2, 4, 6)
+assert 0.3 <= time.time() - start <= 0.4
 ```
 
-`bulk_gather` 适合从列表或生成器批量执行协程。`batch_size` 控制同时运行的任务数量，`wait_last=True` 表示每批完成后再启动下一批。
+`bulk_gather`是gather的扩展版，适合从列表或生成器批量执行协程。`batch_size` 控制同时运行的任务数量，`wait_last=True` 表示每批完成后再启动下一批。
 
 ```py
 from asynctor.aio import bulk_gather
@@ -34,17 +44,18 @@ coros = [fetch(i) for i in range(5)]
 results = await bulk_gather(coros, batch_size=2, wait_last=True)
 ```
 
-`run` 可在同步入口中运行协程或异步函数。
+`run` 揉合了asyncio.run和anyio.run, 即可传Coroutine，也可传AsyncFunction。
 
 ```py
-from asynctor.aio import run
+import asynctor
 
 
 async def main() -> str:
     return "ok"
 
 
-assert run(main()) == "ok"
+assert asynctor.run(main()) == "ok"
+assert asynctor.run(main) == "ok"
 ```
 
 `run_async` 可在已有同步代码中启动一个工作线程运行异步函数，并返回结果。
@@ -61,64 +72,55 @@ user = run_async(load_user, 1)
 assert user == {"id": 1}
 ```
 
-`wait_for` 用 anyio 的超时机制包装协程。
-
-```py
-from asynctor.aio import wait_for
-
-
-result = await wait_for(fetch(1), timeout=3)
-```
-
-`start_tasks` 适合在 lifespan 或上下文中启动后台任务，退出上下文时自动取消。
-
-```py
-import anyio
-from asynctor.aio import start_tasks
-
-
-async def background() -> None:
-    while True:
-        await anyio.sleep(1)
-
-
-async with start_tasks(background()):
-    ...
-```
-
 ## 耗时统计
 
-`timeit` 可作为装饰器或上下文管理器使用。
+`timeit` 开发环境用的便捷耗时统计, 可作为装饰器或上下文管理器使用。
+
+*注：只会保留一位小数*
 
 ```py
 import anyio
-from asynctor.timing import timeit
+from asynctor import run_async, timeit
 
 
 @timeit
 async def sleep_test() -> None:
-    await anyio.sleep(0.1)
+    await anyio.sleep(0.11)
+
+run_async(sleep_test)
+# sleep_test Cost: 0.1 seconds
 
 
-await sleep_test()
+async def main() -> None:
+    with timeit("load data"):
+        await anyio.sleep(0.11)
 
-with timeit("load data"):
-    await anyio.sleep(0.1)
+run_async(main)
+# load data Cost: 0.1 seconds
 ```
 
-如果需要保留耗时值，使用 `Timer` 并关闭输出。
+生产环境可用功能更强大的`Timer`。
 
 ```py
+import anyio
 from asynctor import Timer
+from loguru import logger
 
 
-with Timer("job", verbose=False) as timer:
-    ...
+async def my_func() -> None:
+    with Timer("job", decimal_places=3, verbose=False) as t:
+        await anyio.sleep(0.11)
 
-assert isinstance(timer.cost, float)
+    logger.debug(t)
+    # job Cost: 0.111 seconds
 
-beijing_now = Timer.beijing_now()
+    assert isinstance(t.cost, float) and t.cost == 0.111
+
+
+utc_now = Timer.now()  # 带时区信息的UTC时间
+beijing_now = Timer.beijing_now()  # 带时区信息的北京时间
 assert beijing_now.tzinfo is not None
+assert beijing_now.tzinfo.zone == 'Asia/Shanghai'
 ```
 
 ## FastAPI Redis
@@ -132,17 +134,46 @@ pip install "asynctor[fastapi]"
 注册 Redis 后，可通过依赖注入获取客户端。
 
 ```py
+from asynctor import AsyncRedis
 from asynctor.contrib.fastapi import AioRedisDep, register_aioredis
 from fastapi import FastAPI
 
 app = FastAPI()
-register_aioredis(app, host="localhost", port=6379)
+register_aioredis(app, host="localhost", port=6379, db=0)
 
 
 @app.get("/redis")
 async def get_value(redis: AioRedisDep, key: str) -> str:
     value = await redis.get(key)
     return "" if value is None else value.decode()
+
+
+@app.get("/redis-keys")
+async def get_value(redis: AioRedisDep, pattern: str | None = None) -> list[str]:
+    keys = await _get_redis_keys(redis, pattern)
+    return [i.decode() if isinstance(i, bytes) else i for i in keys]
+
+
+async def _get_redis_keys(redis: AsyncRedis, pattern: str | None) -> list[bytes | str]:
+    if pattern:
+        keys = await redis.keys(pattern)
+    else:
+        keys = await redis.keys()
+    return keys
+```
+单独使用AsyncRedis(需要安装redis可选依赖：`pip install "asynctor[redis]"`)
+```
+from asynctor import AsyncClient
+
+redis = AsyncRedis()
+await redis.__aenter__()  # 检查redis server是否能ping通
+
+await redis.keys()
+await redis.get('a')
+expire = 30  # Seconds
+await redis.set('key', 'value', expire)
+
+await redis.aclose()  # 关闭redis连接
 ```
 
 获取真实客户端 IP：
@@ -168,6 +199,15 @@ app = FastAPI()
 if __name__ == "__main__":
     runserver(app, reload=True)
 ```
+其他fastapi的常用配置
+```py
+from asynctor.contrib.fastapi import add_timing_middleware, config_access_log
+from fastapi import FastAPI
+
+app = FastAPI()
+add_timing_middleware(app)  # Response的Headers中带上函数执行时间
+config_access_log()  # 日志里显示接口的请求时间和来源IP
+```
 
 ## 异步测试
 
@@ -177,12 +217,11 @@ if __name__ == "__main__":
 pip install "asynctor[testing]"
 ```
 
-在 `conftest.py` 中创建 pytest 夹具：
+在 `conftest.py` 中创建 pytest fixture：
 
 ```py
 import pytest
-from asynctor.testing import anyio_backend_fixture, async_client_fixture
-from httpx import AsyncClient
+from asynctor.testing import AsyncClient, anyio_backend_fixture, async_client_fixture
 
 from main import app
 
@@ -201,7 +240,13 @@ async def test_api(client: AsyncClient) -> None:
 ```py
 from asynctor.testing import tmp_workdir_fixture
 
-tmp_work_dir = tmp_workdir_fixture()
+tmp_workdir = tmp_workdir_fixture()
+
+def test_xxx(tmp_workdir):
+    # 已经为这个测试函数，单独创建临时目录，并cd到这个目录下
+    # 测试完成会自动删除这个临时目录
+    assert Path.cwd() != Path(__file__).parent
+    assert list(Path.glob('*')) == []
 ```
 
 ## Excel 读写
@@ -289,4 +334,24 @@ with ExtendSyspath("tests"):
     import conftest
 
 assert Path(conftest.__file__).relative_to(Path.cwd()).as_posix() == "tests/conftest.py"
+```
+没用ExtendSyspath的话，一般会这样写：
+
+1. import了两次，不够简洁
+```
+import sys
+
+try:
+    import conftest
+except ImportError:
+    sys.path.append('tests')
+
+    import conftest
+```
+2. import没置顶，代码检查工具如ruff会报错
+```
+import sys
+
+sys.path.append('tests')
+import conftest
 ```

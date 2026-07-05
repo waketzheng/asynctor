@@ -24,6 +24,12 @@ icon: lucide/download
     pdm add asynctor
     ```
 
+=== "poetry"
+
+    ```sh
+    poetry add asynctor
+    ```
+
 ## Optional Extras
 
 Install extras only when you need the related feature.
@@ -60,7 +66,7 @@ uv pip install "asynctor[redis] @ git+ssh://git@github.com/waketzheng/asynctor.g
 ## Preview This Documentation
 
 This repository uses Zensical to build the documentation site. The configuration
-is stored in `mkdocs.yml`, which Zensical can read directly. After installing
+is stored in `zensical.toml`, which Zensical can read directly. After installing
 Zensical or using `uvx`, run this from the repository root:
 
 ```sh
