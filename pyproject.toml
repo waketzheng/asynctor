@@ -38,9 +38,9 @@ xls = ["asynctor[xlsx]"]
 all = ["asynctor[accel,xlsx,redis,fastapi,toml,testing]"]
 
 [project.urls]
-homepage = "https://github.com/waketzheng/asynctor"
+homepage = "https://waketzheng.github.io/asynctor/"
 repository = "https://github.com/waketzheng/asynctor.git"
-"Bug Tracker" = "https://github.com/waketzheng/asynctor/issues"
+"Bug Tracker" = "https://github.com/waketzheng/asynctor/issues/"
 
 [dependency-groups]
 dev = [
