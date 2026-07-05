@@ -8,7 +8,8 @@ if sys.version_info >= (3, 11):
     from enum import EnumType, IntEnum, StrEnum, auto
     from enum import property as enum_property
 else:
-    # asynctor/_enum.py was copied from source code of Python3.14.2
+    # The `_enum` module was copied from source code of Python3.14.6 by:
+    # cp `python3.14 -c 'import enum as m;print(m.__file__)'` asynctor/_enum.py
     from . import _enum as enum
     from ._enum import EnumType, IntEnum, StrEnum, auto
     from ._enum import property as enum_property

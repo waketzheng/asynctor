@@ -1,5 +1,5 @@
 """
-This module is for those that support both (python >=3.9,<3.11) and (python >= 3.11)
+This module is for those that support both (python >=3.10,<3.11) and (python >= 3.11)
 """
 
 from __future__ import annotations
