@@ -4,6 +4,13 @@
 
 ### Unrelease
 
+#### Changed
+- feat: prefer to use `anyio.current_time` when async with Timer
+- refactor: simplify examples
+
+#### Fixes
+- refactor: simplify utils.AsyncTestClient
+
 ### [0.13.0](../../releases/tag/v0.13.0) - 2026-07-04
 
 #### Added
