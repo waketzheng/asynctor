@@ -102,11 +102,11 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         self._end = self._start = time.time()
         self._verbose = verbose
 
-    def start(self) -> None:
-        self._start = time.time()
+    def start(self, ts: float | None = None) -> None:
+        self._start = ts or time.time()
 
-    def capture(self, verbose=None) -> None:
-        self._end = time.time()
+    def capture(self, ts: float | None = None, verbose=None) -> None:
+        self._end = ts or time.time()
         if verbose is None:
             verbose = self._verbose
         if verbose:
@@ -134,10 +134,19 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         return f"{type(self).__name__}({self.message!r}, {self._decimal_places}, {self._verbose})"
 
     async def __aenter__(self) -> Self:
-        return self.__enter__()
+        self.start(self._get_current_timestamp())
+        return self
+
+    def _get_current_timestamp(self) -> float:
+        try:
+            import anyio
+
+            return anyio.current_time()
+        except ImportError:
+            return time.time()
 
     async def __aexit__(self, *args, **kwargs) -> None:
-        self.__exit__(*args, **kwargs)
+        self.capture(self._get_current_timestamp())
 
     def __enter__(self) -> Self:
         self.start()
