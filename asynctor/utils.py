@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
 
+    from . import testing
     from .compat import Self
     from .testing import AsyncClient
 
@@ -58,27 +59,25 @@ class AsyncTestClient(AbstractAsyncContextManager):
     Deprecated! Use `asynctor.testing.AsyncTestClient` instead.
     """
 
-    def __init__(self, *args, **kwargs) -> None:
+    @property
+    def client_cls(self) -> type[testing.AsyncTestClient]:
         from asynctor.testing import AsyncTestClient as _AsyncTestClient
 
+        return _AsyncTestClient
+
+    def __init__(self, *args, **kwargs) -> None:
         _deprecated_warns("AsyncTestClient")
-        _AsyncTestClient.__init__(self, *args, **kwargs)  # type:ignore
+        self.client_cls.__init__(self, *args, **kwargs)  # type:ignore
 
     async def __aenter__(self) -> AsyncClient:
-        from asynctor.testing import AsyncTestClient as _AsyncTestClient
-
-        await _AsyncTestClient.__aenter__(self)  # type:ignore
+        await self.client_cls.__aenter__(self)  # type:ignore
         return self._client  # type:ignore
 
     async def _init_app(self) -> ASGIApp:
-        from asynctor.testing import AsyncTestClient as _AsyncTestClient
-
-        return await _AsyncTestClient._init_app(self)  # type:ignore
+        return await self.client_cls._init_app(self)  # type:ignore
 
     async def __aexit__(self, *args, **kw) -> None:
-        from asynctor.testing import AsyncTestClient as _AsyncTestClient
-
-        await _AsyncTestClient.__aexit__(self, *args, **kw)  # type: ignore
+        await self.client_cls.__aexit__(self, *args, **kw)  # type: ignore
 
 
 def local_dict(data: dict[str, T], *keys: str) -> dict[str, T]:
