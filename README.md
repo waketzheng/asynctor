@@ -139,7 +139,7 @@ async def test_api(client: AsyncClient):
 
 - runserver for fastapi projects
 
-*pip install asynctor fastapi uvicorn*
+*pip install "asynctor[fastapi]"*
 ```py
 from fastapi import FastAPI
 

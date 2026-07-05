@@ -1,26 +1,22 @@
 import anyio
 import pytest
 
+from asynctor.testing import AsyncClient
+
 
 @pytest.mark.anyio
-async def test_users(client):
-    response = await client.get("/users")
+async def test_redis_keys(client: AsyncClient):
+    response = await client.get("/redis/keys")
     assert response.status_code == 200
-    assert response.json() == [{"id": 1, "name": "John"}]
+    assert isinstance(response.json(), list)
     process_time = response.headers.get("X-Process-Time")
+    assert process_time is not None
     assert process_time.endswith(" ms")
     assert process_time.replace(" ms", "").isdigit()
 
 
 @pytest.mark.anyio
-async def test_redis_keys(client):
-    response = await client.get("/redis/keys")
-    assert response.status_code == 200
-    assert isinstance(response.json(), list)
-
-
-@pytest.mark.anyio
-async def test_redis_set_get(client):
+async def test_redis_set_get(client: AsyncClient):
     response = await client.post("/redis/set", json={"key": "foo", "value": "sth"})
     assert response.status_code == 200
     assert response.json() == {"msg": "OK"}

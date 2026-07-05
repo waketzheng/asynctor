@@ -1,11 +1,6 @@
 from __future__ import annotations
 
-import copy
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
-
-import fastapi_cdn_host
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
 
 from asynctor.contrib.fastapi import (
@@ -16,45 +11,10 @@ from asynctor.contrib.fastapi import (
     runserver,
 )
 
-fake_db = {"users": [{"id": 1, "name": "John"}]}
-
-
-async def init_db(fastapp: FastAPI) -> None:
-    db = copy.deepcopy(fake_db)
-    fastapp.state.db = db
-
-
-async def teardown(fastapp: FastAPI) -> None:
-    app.state.db.clear()
-
-
-@asynccontextmanager
-async def register_db(fastapp: FastAPI) -> AsyncGenerator[None]:
-    await init_db(app)
-    try:
-        yield
-    finally:
-        await teardown(app)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None]:
-    async with register_db(app):
-        yield
-
-
-app = FastAPI(lifespan=lifespan)
+app = FastAPI()
 add_timing_middleware(app)
 register_aioredis(app)
-fastapi_cdn_host.patch_docs(app)
 config_access_log(app)
-
-
-@app.get("/users")
-async def get_user_list(request: Request) -> list[dict[str, int | str]]:
-    db = request.app.state.db
-    users = db["users"]
-    return users
 
 
 @app.get("/redis/keys")
