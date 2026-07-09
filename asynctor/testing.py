@@ -11,7 +11,7 @@ try:
     from httpx2 import ASGITransport, AsyncClient
 except ImportError:
     try:
-        from httpx import ASGITransport, AsyncClient  # type:ignore[assignment]
+        from httpx import ASGITransport, AsyncClient  # type:ignore
     except ModuleNotFoundError:
         raise RuntimeError(
             "The asynctor.testing module requires the httpx2 package to be installed.\n"

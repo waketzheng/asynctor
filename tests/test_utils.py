@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import contextlib
+import os
 import re
 import shlex
 import shutil
@@ -274,6 +275,52 @@ def test_shell_run_and_echo(capsys, tmp_path):
     assert rc == 0
     rc = Shell.run_and_echo(cmd, cwd=tmp_path)
     assert rc == 1
+
+
+class TestShellExpandUser:
+    home = os.path.expanduser("~")
+
+    @pytest.mark.parametrize(
+        "command",
+        [
+            ["echo", "", "~", "../~"],
+            ["wave_not_at_left", "../~/..", "../~"],
+            ["without_wave", "../", "$USER"],
+            ["double_waves", "~~"],
+            ["no_path_sep_followed", "~ "],
+        ],
+    )
+    def test_remain(self, command):
+        origin = command[:]
+        Shell.expand_user(command)
+        assert command == origin
+
+    @pytest.mark.parametrize(
+        "command",
+        [
+            ["cd", "~"],
+            ["ls", "~/"],
+            ["ls", "-a", "~/.."],
+            ["ll", "-h", "~/coding"],
+        ],
+    )
+    def test_normal_expand(self, command):
+        expected = command[:-1] + [self.home + command[-1][1:]]
+        Shell.expand_user(command)
+        assert command == expected
+
+    @pytest.mark.parametrize(
+        "command",
+        [
+            ["find", "~/", "-name", "'~'"],
+            ["ls", "~/", "~ "],
+            ["ls", "~", " ~"],
+        ],
+    )
+    def test_expand_and_remain(self, command):
+        expected = command[:1] + [self.home + command[1][1:]] + command[2:]
+        Shell.expand_user(command)
+        assert command == expected
 
 
 def test_load_bool(monkeypatch):

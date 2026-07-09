@@ -1,7 +1,8 @@
 from pathlib import Path
 
 import pytest
-from httpx import AsyncClient
+
+from asynctor.testing import AsyncClient
 
 
 @pytest.mark.anyio

@@ -225,6 +225,14 @@ class Shell:
     """
 
     @staticmethod
+    def expand_user(cs: list[str]) -> None:
+        if cs[0] == "echo":
+            return
+        for i, c in enumerate(cs):
+            if c.startswith("~"):
+                cs[i] = os.path.expanduser(c)
+
+    @staticmethod
     def shell_should_be_true(command: list[str] | str) -> bool:
         return bool(set(command) & {"|", ">", "&"})
 
@@ -273,7 +281,8 @@ class Shell:
 
     def capture_output(self, *, verbose: bool = False) -> str:
         kw = dict(self._kwargs, text=True, encoding="utf-8", capture_output=True)
-        return self.run(kw, verbose=verbose).stdout
+        r = self.run(kw, verbose=verbose)
+        return r.stdout or r.stderr or ""
 
 
 def load_bool(env: str, *, strict: bool = False) -> bool:
