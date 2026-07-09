@@ -17,6 +17,7 @@ from asynctor.utils import (
     AsyncTestClient,
     ExtendSyspath,
     Shell,
+    TempExtendSyspath,
     cache_attr,
     client_manager,
     get_machine_ip,
@@ -384,7 +385,7 @@ class TestExtendSyspath:
         sys.path.pop(index)
 
     def test_dir(self, tmp_workdir):
-        assert ExtendSyspath().path == Path()
+        assert ExtendSyspath().path == Path.cwd()
         d = Path("sub")
         d.mkdir()
         f = d / "sth.py"
@@ -392,7 +393,7 @@ class TestExtendSyspath:
         shutil.copy(f, f.with_stem(f.stem + "2"))
         with pytest.raises(ImportError):
             import sth  # ty:ignore[unresolved-import]
-        with ExtendSyspath(d):
+        with ExtendSyspath(str(d)):
             import sth  # ty:ignore[unresolved-import]
 
             assert sth.ss == 2
@@ -413,6 +414,13 @@ class TestExtendSyspath:
         with pytest.raises(ImportError):
             import ccc  # ty:ignore[unresolved-import]
         path = d.as_posix()
+        with ExtendSyspath(str(d), rollback=True):
+            import ccc  # ty:ignore[unresolved-import]
+
+            assert ccc.num == 3
+            assert path in sys.path
+        assert path not in sys.path
+        path = d.resolve().as_posix()
         with ExtendSyspath(d, rollback=True):
             import ccc  # ty:ignore[unresolved-import]
 
@@ -423,6 +431,26 @@ class TestExtendSyspath:
             import ccc2  # ty:ignore[unresolved-import]
 
             assert ccc2.num == 3
+
+    def test_temp_extend(self, tmp_workdir):
+        d = Path("subpath")
+        d.mkdir()
+        f = d / "ddd.py"
+        f.write_text("num = 3")
+        shutil.copy(f, f.with_stem(f.stem + "2"))
+        with pytest.raises(ImportError):
+            import ddd  # ty:ignore[unresolved-import]
+        path = d.resolve().as_posix()
+        with TempExtendSyspath(d):
+            import ddd  # ty:ignore[unresolved-import]
+
+            assert ddd.num == 3
+            assert path == sys.path[0]
+        assert path not in sys.path
+        with pytest.raises(ImportError):
+            import ddd2  # ty:ignore[unresolved-import]
+
+            assert ddd2.num == 3
 
     def test_insert(self, tmp_workdir):
         d = Path("prefer")
@@ -447,6 +475,9 @@ class TestExtendSyspath:
         dirname = d.as_posix()
         sys.path.append(dirname)
         with ExtendSyspath(d, rollback=True, insert=True):
+            assert sys.path[0] == d.resolve().as_posix()
+            sys.path.pop(0)
+        with ExtendSyspath(str(d), rollback=True, insert=True):
             assert sys.path[0] == dirname
             sys.path.pop(0)
         assert sys.path[0] == str(tmp_workdir)

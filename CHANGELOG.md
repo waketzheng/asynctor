@@ -4,6 +4,15 @@
 
 ### Unrelease
 
+### [0.13.2]
+
+#### Added
+- feat: add `expand_user` function to `Shell` class
+- feat: add `asynctor.utils.TempExtendSyspath`
+
+#### Changed
+- refactor: call `.resolve()` use abspath when `path` param of ExtendSyspath is pathlib.Path or None
+
 ### [0.13.1](../../releases/tag/v0.13.1) - 2026-07-05
 
 #### Changed

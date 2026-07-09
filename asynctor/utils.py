@@ -322,10 +322,19 @@ class ExtendSyspath(AbstractContextManager):
     def __init__(
         self, path: Path | str | None = None, rollback: bool = False, insert: bool = False
     ) -> None:
+        """Initializes the extending path and style.
+
+        Parameters:
+            path: The dirpath or filepath(will use the parent of it) to be appended or inserted.
+            rollback: Whether rollback the sys.path out of the with block.
+            insert: Insert the path to left of sys.path even when path in it but not the first one.
+        """
         if path is None:
-            path = Path()
+            path = Path.cwd()
         elif isinstance(path, str):
             path = Path(path)
+        elif isinstance(path, Path):
+            path = path.resolve()
         self.path: Path = path
         self._path = ""
         self.rollback = rollback
@@ -358,6 +367,9 @@ class ExtendSyspath(AbstractContextManager):
                 ...
             else:
                 sys.path.pop(index)
+
+
+TempExtendSyspath = functools.partial(ExtendSyspath, rollback=True, insert=True)
 
 
 def _test() -> None:  # pragma: no cover
