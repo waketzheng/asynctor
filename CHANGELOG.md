@@ -4,7 +4,7 @@
 
 ### Unrelease
 
-### [0.13.2]
+### [0.13.2](../../releases/tag/v0.13.2) - 2026-07-10
 
 #### Added
 - feat: add `expand_user` function to `Shell` class
