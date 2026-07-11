@@ -84,7 +84,7 @@ Example::
         return keys
 
 """
-AioRedis = AioRedisDep  # For compatiable
+AioRedis = AioRedisDep  # For compatible
 
 
 def get_client_ip(request: Request) -> str:

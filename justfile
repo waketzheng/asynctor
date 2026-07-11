@@ -24,12 +24,12 @@ _venv_create *args:
 _uv_venv *args:
     @just _venv_create --with uv {{ args }}
 
-# Unix: uv is always available
+# Create virtual environment with uv by pdm
 [unix]
 venv *args:
     @if test ! -e .venv; then just _uv_venv {{ args }}; fi
 
-# Windows: check if uv is actually usable via the tools marker
+# Create virtual environment with pip by pdm
 [windows]
 venv *args:
     @if (-Not (Test-Path '.venv')) {
@@ -149,7 +149,7 @@ up *args: venv
         just _win_up {{ args }}
     }
 
-# ---------- clear/sync ----------
+# Install project dependencies and remove those that not are not required
 [unix]
 clear *args:
     @just _uv_sync {{ args }}

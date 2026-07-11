@@ -115,7 +115,7 @@ jobs:
           uv pip install sniffio
           uv pip install "anyio<4.12"
           uv run --no-sync pytest tests/test_aio.py
-      - name: Test trio suppport for aio
+      - name: Test trio support for aio
         run: |
           uv pip install pytest-trio
           echo -e "[pytest]\ntrio_mode = true" > pytest.ini

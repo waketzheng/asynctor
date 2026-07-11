@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 T_Retval = TypeVar("T_Retval")
 T_ParamSpec = ParamSpec("T_ParamSpec")
 FuncResults: TypeAlias = Annotated[
-    list[Any], "The return value of each funtion or the exception that it raises"
+    list[Any], "The return value of each function or the exception that it raises"
 ]
 
 

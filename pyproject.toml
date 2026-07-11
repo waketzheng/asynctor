@@ -112,6 +112,12 @@ unused-type-ignore-comment = "ignore"
 # TODO: remove this exclude when dropping support for Python3.10
 exclude = ["asynctor/_enum.py"]
 
+[tool.typos.default.extend-identifiers]
+alls = "alls"
+
+[tool.typos.default.extend-words]
+datas = "datas"
+
 [tool.coverage.run]
 source = ["asynctor"]
 omit = [

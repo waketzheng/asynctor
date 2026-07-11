@@ -15,6 +15,11 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.48.0
+    hooks:
+      - id: typos
+
   - repo: local
     hooks:
       - id: local-ruff-check
@@ -35,7 +40,7 @@ repos:
         name: check type hints by ty
         entry: pdm run ty check
         language: system
-        files: 'asynctor tests scripts examples'
+        pass_filenames: false
 
       - id: pypi
         name: ensure pypi for uv lock

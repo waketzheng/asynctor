@@ -448,5 +448,5 @@ def async_to_sync(
 def run_until_complete(
     async_func: CoroutineT | Callable[[], Coroutine[Any, Any, T_Retval]],
 ) -> T_Retval:
-    """Run async function or coroutine in runing loop or worker thread"""
+    """Run async function or coroutine in running loop or worker thread"""
     return async_to_sync(ensure_afunc(async_func))()
