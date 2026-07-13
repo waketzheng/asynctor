@@ -169,15 +169,36 @@ clear *args:
 _uvx_py *args:
     uvx --python={{ PY_EXEC }} {{ args }}
 
+_pdm_run *args:
+    pdm run {{ args }}
+
+[unix]
+_uvx_or_pdm command *args:
+    @if test ! -e ~/.local/bin/{{ command }}; then just _uvx_py {{ command }} {{ args }}; else just _pdm_run {{ command }} {{ args }}; fi
+
+[windows]
+_uvx_or_pdm command *args:
+    if (-Not (Test-Path '~/.local/bin/{{ command }}')) {
+        just _uvx_py {{ command }}} {{ args }}
+    } else {
+        just _pdm_run {{ command }} {{ args }}
+    }
+
+_mypy *args:
+    @just _uvx_or_pdm mypy {{ args }}
+
+_pyright *args:
+    @just _uvx_or_pdm pyright {{ args }}
+
 mypy path=(SRC) *args:
-    @just _uvx_py mypy --python-executable={{ PY_EXEC }} {{ path }} {{ args }}
+    @just _mypy --python-executable={{ PY_EXEC }} {{ path }} {{ args }}
 
 _mypy310 path=(SRC) *args:
     uv export --python=3.10 --no-hashes --all-extras --all-groups --frozen -o dev_requirements.txt
     uvx --python=3.10 --with-requirements=dev_requirements.txt mypy --cache-dir=.mypy310_cache {{ path }} {{ args }}
 
 right path=(SRC) *args:
-    @just _uvx_py pyright --pythonpath={{ PY_EXEC }} {{ path }} {{ args }}
+    @just _pyright --pythonpath={{ PY_EXEC }} {{ path }} {{ args }}
 
 _format *args:
     just --fmt
