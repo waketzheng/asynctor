@@ -43,6 +43,9 @@ venv *args:
 _venv313 *args:
     @just venv 3.13 {{ args }}
 
+_fast *args:
+    pdm run fast {{ args }}
+
 # ---------- pypi mirror helpers ----------
 # Update the registry in `uv.lock` to use the mirror set by the config.
 _pypi_reverse *args:
@@ -50,18 +53,18 @@ _pypi_reverse *args:
 
 # Change registry in uv.lock to be pypi.org
 pypi *args:
-    @uv run --no-sync fast pypi --quiet {{ args }}
+    @just _fast pypi --quiet {{ args }}
 
 # ---------- dependency installation ----------
 _pdm_deps *args:
     pdm install --frozen -G :all {{ args }}
 
 _uv_sync *args:
-    uv sync --all-extras --all-groups {{ args }}
+    @just _fast deps --uv {{ args }}
 
 _uv_deps *args:
     @just _pypi_reverse
-    @just _uv_sync --reinstall-package={{ PROJECT_NAME }} {{ args }}
+    @just _uv_sync {{ args }}
     @just pypi
 
 # Use uv to install dependencies
@@ -178,7 +181,7 @@ right path=(SRC) *args:
 
 _format *args:
     just --fmt
-    pdm run fast lint --ty {{ args }}
+    @just _fast lint --ty {{ args }}
 
 _codeqc *args:
     just --evaluate
@@ -203,7 +206,7 @@ style *args: install
     @just fmt {{ args }}
 
 _check *args:
-    pdm run fast check --ty {{ args }}
+    @just _fast check --ty {{ args }}
     @just _codeqc {{ args }}
 
 # install deps and check style
@@ -218,13 +221,13 @@ build *args: install
     pdm build {{ args }}
 
 _test *args:
-    pdm run fast test {{ args }}
+    @just _fast test {{ args }}
 
 test *args: install
     @just _test {{ args }}
 
 dev *args: venv
-    pdm run fast dev {{ args }}
+    @just _fast dev {{ args }}
 
 [unix]
 prod *args: venv
@@ -266,7 +269,7 @@ start:
 
 # ---------- versioning ----------
 _version part="patch" *args:
-    pdm run fast bump {{ part }} {{ args }}
+    @just _fast bump {{ part }} {{ args }}
 
 # Bump version with patch part
 bump *args:
@@ -274,7 +277,7 @@ bump *args:
 
 # Make git tag with project version and empty message
 tag *args:
-    pdm run fast tag {{ args }}
+    @just _fast tag {{ args }}
 
 _log:
     git --no-pager log -1
