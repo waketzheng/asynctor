@@ -48,4 +48,4 @@ def test_raise_runtime_error_without_httpx2_and_httpx():
         pytest.skip(f"Skipping this test as {httpx} installed")
 
     with pytest.raises(RuntimeError):
-        pass
+        from asynctor.testing import AsyncClient  # NOQA
