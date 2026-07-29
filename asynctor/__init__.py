@@ -5,13 +5,13 @@ from .utils import AsyncClientGenerator, AsyncTestClient, AttrDict, Shell, cache
 
 __version__ = "0.13.2"
 __all__ = (
-    "__version__",
     "AsyncClientGenerator",
     "AsyncRedis",
     "AsyncTestClient",
     "AttrDict",
     "Shell",
     "Timer",
+    "__version__",
     "bulk_gather",
     "cache_attr",
     "gather",

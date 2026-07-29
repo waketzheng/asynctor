@@ -23,7 +23,7 @@ class StoredThread(Thread):
         """Use a new attribute `_result` to stored target result or exception."""
         try:
             self._result = self._target(*self._args, **self._kwargs)  # type:ignore
-        except Exception as e:
+        except Exception as e:  # NOQA:BLE001
             self._result = e
 
 
@@ -109,7 +109,7 @@ class ThreadGroup(AbstractContextManager):
                 idx = fs[future]
                 try:
                     self._results[idx] = future.result()
-                except Exception as exc:
+                except Exception as exc:  # NOQA:BLE001
                     self._results[idx] = exc  # ty:ignore[invalid-assignment]
         else:
             for t in self._threads:

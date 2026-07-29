@@ -54,6 +54,7 @@ async def main() -> None:
     print(Timer.beijing_now())
     # 2026-06-10 18:01:49.383679+08:00
 
+
 run_async(main)
 ```
 

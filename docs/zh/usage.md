@@ -18,9 +18,10 @@ async def fetch(item: int) -> int:
     await anyio.sleep(0.1)
     return item * 2
 
+
 # 不加limit参数的话，等同于asyncio.gather
 start = time.time()
-assert (await gather(*[fetch(i) for i in range(3)]))  == (0, 1, 4)
+assert (await gather(*[fetch(i) for i in range(3)])) == (0, 1, 4)
 assert 0.1 <= time.time() - start <= 0.2
 
 # 加上limit=1，同一个时间内只会执行一个异步任务
@@ -87,6 +88,7 @@ from asynctor import run_async, timeit
 async def sleep_test() -> None:
     await anyio.sleep(0.11)
 
+
 run_async(sleep_test)
 # sleep_test Cost: 0.1 seconds
 
@@ -94,6 +96,7 @@ run_async(sleep_test)
 async def main() -> None:
     with timeit("load data"):
         await anyio.sleep(0.11)
+
 
 run_async(main)
 # load data Cost: 0.1 seconds
@@ -120,7 +123,7 @@ async def my_func() -> None:
 utc_now = Timer.now()  # 带时区信息的UTC时间
 beijing_now = Timer.beijing_now()  # 带时区信息的北京时间
 assert beijing_now.tzinfo is not None
-assert beijing_now.tzinfo.zone == 'Asia/Shanghai'
+assert beijing_now.tzinfo.zone == "Asia/Shanghai"
 ```
 
 ## FastAPI Redis
@@ -242,11 +245,12 @@ from asynctor.testing import tmp_workdir_fixture
 
 tmp_workdir = tmp_workdir_fixture()
 
+
 def test_xxx(tmp_workdir):
     # 已经为这个测试函数，单独创建临时目录，并cd到这个目录下
     # 测试完成会自动删除这个临时目录
     assert Path.cwd() != Path(__file__).parent
-    assert list(Path.glob('*')) == []
+    assert list(Path.glob("*")) == []
 ```
 
 ## Excel 读写

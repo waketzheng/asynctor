@@ -9,7 +9,7 @@ import sys
 import warnings
 from typing import Any
 
-__all__ = ("chdir", "StrEnum", "load_toml", "NotRequired", "Self")
+__all__ = ("NotRequired", "Self", "StrEnum", "chdir", "load_toml")
 
 if sys.version_info >= (3, 11):
     from contextlib import chdir

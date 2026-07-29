@@ -3,7 +3,6 @@ from __future__ import annotations
 import asyncio
 import functools
 from contextlib import asynccontextmanager
-from datetime import datetime
 from typing import Any
 
 import anyio
@@ -291,7 +290,7 @@ class TestStartTasks:
 
     async def running(self):
         while True:
-            now = datetime.now()
+            now = Timer.now()
             await self.root.joinpath(self.names[2]).write_text(str(now))
             await anyio.sleep(0.5)
 
@@ -302,7 +301,7 @@ class TestStartTasks:
 
         @asynccontextmanager
         async def lifespan(app):
-            now = datetime.now()
+            now = Timer.now()
             async with start_tasks(self.startup, self.running):
                 await anyio.sleep(0.1)
                 assert await root.joinpath(names[0]).exists()
@@ -313,7 +312,7 @@ class TestStartTasks:
                 assert await root.joinpath(names[1]).exists()
                 assert (await root.joinpath(names[2]).read_text()) > str(now)
                 yield
-            now = datetime.now()
+            now = Timer.now()
             assert (await root.joinpath(names[2]).read_text()) <= str(now)
             await self.remove_files()
 

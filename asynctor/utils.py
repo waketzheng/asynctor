@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import contextlib
 import functools
 import os
 import shlex
@@ -41,7 +42,7 @@ async def client_manager(
     app: FastAPI,
     base_url: str = "http://test",
     mount_lifespan: bool = True,
-    timeout: int | float = 30,
+    timeout: float = 30,
     **kwargs,
 ) -> AsyncClientGenerator:
     """
@@ -156,12 +157,11 @@ def get_machine_ip() -> str:
     """
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         s.settimeout(0)
-        try:
+        with contextlib.suppress(Exception):
             # doesn't even have to be reachable
             s.connect(("10.254.254.254", 1))
             return s.getsockname()[0]
-        except Exception:
-            return "127.0.0.1"
+        return "127.0.0.1"
 
 
 def cache_attr(func: Callable[..., T]) -> Callable[..., T]:
@@ -241,7 +241,8 @@ class Shell:
         if (shell := kw.get("shell")) is None and cls.shell_should_be_true(cmd):
             kw["shell"] = shell = True
         command = cmd if shell else shlex.split(cmd)
-        return subprocess.run(command, **kw)  # nosec
+        check = kw.pop("check", False)
+        return subprocess.run(command, check=check, **kw)  # nosec
 
     @classmethod
     def run_and_echo(
@@ -273,7 +274,8 @@ class Shell:
         if kwargs.get("shell") is None and self.shell_should_be_true(self._command):
             kwargs["shell"] = True
         elif isinstance(self._command, list):
-            return subprocess.run(self._command, **kwargs)  # nosec
+            check = kwargs.pop("check", False)
+            return subprocess.run(self._command, check=check, **kwargs)  # nosec
         return self.run_by_subprocess(cmd, **kwargs)
 
     def call(self, *, verbose: bool = False) -> int:

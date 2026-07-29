@@ -97,6 +97,7 @@ async def main() -> None:
     with timeit("load data"):
         await anyio.sleep(0.11)
 
+
 run_async(main)
 # load data Cost: 0.1 seconds
 ```

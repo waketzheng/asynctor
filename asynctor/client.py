@@ -90,7 +90,7 @@ class AsyncRedis(RedisClient):
         app: FastAPI | Request | Annotated[str, "redis host, e.g.: 127.0.0.1"] | None = None,
         check_connection: bool = True,
         **kw: Annotated[Any, "kwargs that pass to the Redis class"],
-    ) -> AsyncRedis:
+    ) -> Self:
         """Create a new redis instance or get the redis instance from fastapi state
 
         :param app: fastapi/fastapi.Request/redis host, if None get redis host from os environ
@@ -101,7 +101,7 @@ class AsyncRedis(RedisClient):
             redis := getattr(state, "redis", None)
         ) is not None:
             # app isinstance of fastapi.FastAPI or fastapi.Request
-            return cast(AsyncRedis, redis)
+            return cast("Self", redis)
         return super().__new__(cls)
 
     def __init__(

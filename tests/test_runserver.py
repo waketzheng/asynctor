@@ -110,9 +110,13 @@ class TestOpenBrowser:
         app = FastAPI()
         runserver(app, open_browser=True)
         if sys.platform.lower().startswith("win"):
-            mock_subprocess.assert_called_once_with(["explorer", "http://127.0.0.1:8000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["explorer", "http://127.0.0.1:8000/docs"], check=False
+            )
         else:
-            mock_subprocess.assert_called_once_with(["open", "http://127.0.0.1:8000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["open", "http://127.0.0.1:8000/docs"], check=False
+            )
         mock_uvicorn_run.assert_called_once_with(
             app, host="0.0.0.0", reload=False, log_config=EXPECTED_LOG_CONFIG
         )
@@ -122,9 +126,13 @@ class TestOpenBrowser:
         app = FastAPI()
         runserver(app)
         if sys.platform.lower().startswith("win"):
-            mock_subprocess.assert_called_once_with(["explorer", "http://127.0.0.1:8000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["explorer", "http://127.0.0.1:8000/docs"], check=False
+            )
         else:
-            mock_subprocess.assert_called_once_with(["open", "http://127.0.0.1:8000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["open", "http://127.0.0.1:8000/docs"], check=False
+            )
         mock_uvicorn_run.assert_called_once_with(
             app, host="0.0.0.0", reload=False, log_config=EXPECTED_LOG_CONFIG
         )
@@ -142,9 +150,13 @@ class TestOpenBrowser:
         app = FastAPI()
         runserver(app, port=9000, open_browser=True)
         if sys.platform.lower().startswith("win"):
-            mock_subprocess.assert_called_once_with(["explorer", "http://127.0.0.1:9000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["explorer", "http://127.0.0.1:9000/docs"], check=False
+            )
         else:
-            mock_subprocess.assert_called_once_with(["open", "http://127.0.0.1:9000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["open", "http://127.0.0.1:9000/docs"], check=False
+            )
         mock_uvicorn_run.assert_called_once_with(
             app, host="0.0.0.0", port=9000, reload=False, log_config=EXPECTED_LOG_CONFIG
         )
@@ -153,9 +165,13 @@ class TestOpenBrowser:
         app = FastAPI()
         runserver(app, host="192.168.0.3", open_browser=True)
         if sys.platform.lower().startswith("win"):
-            mock_subprocess.assert_called_once_with(["explorer", "http://192.168.0.3:8000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["explorer", "http://192.168.0.3:8000/docs"], check=False
+            )
         else:
-            mock_subprocess.assert_called_once_with(["open", "http://192.168.0.3:8000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["open", "http://192.168.0.3:8000/docs"], check=False
+            )
         mock_uvicorn_run.assert_called_once_with(
             app, host="192.168.0.3", reload=False, log_config=EXPECTED_LOG_CONFIG
         )
@@ -165,9 +181,13 @@ class TestOpenBrowser:
         opts = CliOpts(reload=True)
         RunServer.run(FastAPI(), echo=typer.secho, **opts.as_dict())
         if sys.platform.lower().startswith("win"):
-            mock_subprocess.assert_called_once_with(["explorer", "http://127.0.0.1:8000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["explorer", "http://127.0.0.1:8000/docs"], check=False
+            )
         else:
-            mock_subprocess.assert_called_once_with(["open", "http://127.0.0.1:8000/docs"])
+            mock_subprocess.assert_called_once_with(
+                ["open", "http://127.0.0.1:8000/docs"], check=False
+            )
         mock_uvicorn_run.assert_called_once_with("__main__:app", host="0.0.0.0", reload=True)
 
 

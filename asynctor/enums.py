@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator, ValuesView
 
 
-__all__ = ["Choices", "IntegerChoices", "TextChoices", "auto"]
+__all__ = ["Choices", "IntegerChoices", "StrEnum", "TextChoices", "auto"]
 
 
 class Promise:
@@ -27,13 +27,11 @@ class Promise:
     It's used to recognize promises in code.
     """
 
-    pass
-
 
 class ChoicesType(EnumType):
     """A metaclass for creating a enum choices."""
 
-    def __new__(metacls, classname, bases, classdict, **kwds) -> "ChoicesType":
+    def __new__(metacls, classname, bases, classdict, **kwds) -> "ChoicesType":  # NOQA: PYI034
         labels = []
         for key in classdict._member_names:
             value = classdict[key]
@@ -95,7 +93,7 @@ class Choices(enum.Enum, metaclass=ChoicesType):  # type:ignore[misc,valid-type]
         return f"{self.__class__.__qualname__}.{self._name_}"
 
 
-class IntegerChoices(Choices, IntEnum):
+class IntegerChoices(Choices, IntEnum):  # ty:ignore[invalid-method-override]
     """Class for creating enumerated integer choices."""
 
     if TYPE_CHECKING:
@@ -108,7 +106,7 @@ class IntegerChoices(Choices, IntEnum):
         def value(self) -> int: ...
 
 
-class TextChoices(Choices, StrEnum):
+class TextChoices(Choices, StrEnum):  # ty:ignore[invalid-method-override]
     """Class for creating enumerated string choices."""
 
     @staticmethod

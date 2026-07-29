@@ -12,7 +12,7 @@ from pathlib import Path
 
 import pytest
 
-from asynctor import AttrDict
+from asynctor import AttrDict, Timer
 from asynctor.utils import (
     AsyncTestClient,
     ExtendSyspath,
@@ -116,7 +116,8 @@ class TestAttrDict:
         assert (
             AttrDict({1: 2}, a=1, b=2) == {1: 2, "a": 1, "b": 2} == dict({1: 2}, a=1, b=2)  # type:ignore
         )
-        assert AttrDict({1: 0}, a=1, b=2, **{"c": 3}) == {1: 0, "a": 1, "b": 2, "c": 3}
+        kw = {"c": 3}
+        assert AttrDict({1: 0}, a=1, b=2, **kw) == {1: 0, "a": 1, "b": 2, "c": 3}
 
     def test_origin_attrs(self):
         d = AttrDict()
@@ -171,11 +172,11 @@ def test_cache_attr():
         @classmethod
         @cache_attr
         def first_instance_created_at(cls) -> datetime:
-            return datetime.now()
+            return Timer.now()
 
     a = A()
     b = A()
-    now = datetime.now()
+    now = Timer.now()
     assert a.started == b.started
     c = A()
     assert c.started < now

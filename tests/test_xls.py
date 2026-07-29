@@ -3,7 +3,7 @@ from __future__ import annotations
 from functools import cached_property
 from io import BytesIO
 from pathlib import Path
-from typing import Any
+from typing import Any, Final
 
 import anyio
 import pandas as pd
@@ -45,7 +45,7 @@ def test_init_excel():
 @pytest.mark.usefixtures("tmp_workdir")
 class TestExcel:
     file = Path("a.xlsx")
-    df_data: dict[str, list[Any]] = {
+    df_data: Final[dict[str, list[Any]]] = {
         "产品": ["苹果", "香蕉", "橙子"],
         "销量": [100, 150, 120],
         "单价": [5.5, 3.2, 4.8],

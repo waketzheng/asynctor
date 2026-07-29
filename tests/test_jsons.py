@@ -15,10 +15,14 @@ def default(obj):
     raise TypeError
 
 
+def _datetime(tzinfo=None) -> datetime:
+    return datetime(2025, 11, 13, tzinfo=tzinfo)
+
+
 def test_dumps():
     assert json_dumps({1: 1}) == '{"1":1}'
     assert json_dumps({1: 1}, pretty=True) == '{\n  "1": 1\n}'
-    dt = datetime(2025, 11, 13)
+    dt = _datetime()
     assert json_dumps({1: dt}) == '{"1":"2025-11-13T00:00:00"}'
     dc = Decimal(0)
     with pytest.raises(TypeError):
@@ -50,7 +54,7 @@ def test_fast_json():
     assert FastJson.dumps({1: 1}, output="bytes") == b'{"1":1}'
     assert FastJson.dumps({1: 1}, pretty=True) == b'{\n  "1": 1\n}'
     assert FastJson.dumps({1: 1}, "str") == '{"1":1}'
-    dt = datetime(2025, 11, 13)
+    dt = _datetime()
     assert FastJson.dumps({1: dt}) == b'{"1":"2025-11-13T00:00:00"}'
     dc = Decimal(0)
     with pytest.raises(TypeError):

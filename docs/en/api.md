@@ -115,8 +115,7 @@ from asynctor.timing import timeit
 
 
 @timeit
-async def job() -> None:
-    ...
+async def job() -> None: ...
 
 
 with Timer("load", verbose=False) as timer:

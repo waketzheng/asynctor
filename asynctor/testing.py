@@ -38,7 +38,7 @@ async def client_manager(
     app: FastAPI,
     base_url: str = "http://test",
     mount_lifespan: bool = True,
-    timeout: int | float = 30,
+    timeout: float = 30,
     **kwargs: Any,
 ) -> AsyncClientGenerator:
     """Async test client
@@ -82,7 +82,7 @@ async def client_manager(
             yield c
 
 
-def _init_client(app: ASGIApp, base_url: str, timeout: int | float, **kwargs: Any) -> AsyncClient:
+def _init_client(app: ASGIApp, base_url: str, timeout: float, **kwargs: Any) -> AsyncClient:
     return AsyncClient(  # pyright:ignore
         transport=ASGITransport(app),  # ty:ignore[invalid-argument-type]  # pyright:ignore
         timeout=timeout,
@@ -129,7 +129,7 @@ class AsyncTestClient(AbstractAsyncContextManager):
         app: FastAPI,
         mount_lifespan: bool = True,
         base_url: str = "http://test",
-        timeout: int | float = 30,
+        timeout: float = 30,
         **kwargs,
     ) -> None:
         self._app = app

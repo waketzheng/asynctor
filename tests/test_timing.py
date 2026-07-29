@@ -28,7 +28,7 @@ def capture_stdout():
 
 
 @timeit
-async def sleep(seconds: float | int) -> None:
+async def sleep(seconds: float) -> None:
     return await raw_sleep(seconds)
 
 
@@ -138,7 +138,7 @@ class TestTimer:
         assert repr(clock) == "Timer('testing start capture', 2, False)"
         start = time.time()
         assert clock._start <= start
-        time.sleep(0.5)
+        await anyio.sleep(0.5)
         clock.start()
         assert clock._start > start
         with capture_stdout() as stream:
@@ -149,17 +149,17 @@ class TestTimer:
         assert str(clock) == f"testing start capture Cost: {clock.cost} seconds"
         # with syntax
         with capture_stdout() as stream, Timer("Let it move:", verbose=False) as watch:
-            time.sleep(0.3)
+            await anyio.sleep(0.3)
         assert not stream.getvalue()
         assert watch.cost == 0.3
         assert str(watch) == "Let it move: Cost: 0.3 seconds"
         # Explicit set verbose as True
         with capture_stdout() as stream, Timer("Let it move:", verbose=True):
-            time.sleep(0.3)
+            await anyio.sleep(0.3)
         assert stream.getvalue().strip() == "Let it move: Cost: 0.3 seconds"
         # Initial with verbose False, but capture with verbose True
         pendulum = Timer("Initial verbose False but capture True", verbose=False)
-        time.sleep(0.2)
+        await anyio.sleep(0.2)
         with capture_stdout() as stream:
             pendulum.capture(verbose=True)
         assert (
@@ -167,7 +167,7 @@ class TestTimer:
         )
         # Initial with verbose True, capture will auto print cost message
         timepiece = Timer("I'm a teapot --")
-        time.sleep(0.1)
+        await anyio.sleep(0.1)
         with capture_stdout() as stream:
             timepiece.capture()
         assert stream.getvalue().strip() == "I'm a teapot -- Cost: 0.1 seconds"
@@ -242,9 +242,13 @@ def test_nows():
     assert str(Timer.to_beijing(utc_now)).endswith("+08:00")
     fmt = "%Y-%m-%d %H:%M:%S"
     assert (
-        datetime.strptime(str(Timer.to_beijing(utc_now)).split(".")[0], fmt)
-        - datetime.strptime(str(utc_now).split(".")[0], fmt)
+        datetime_strptime(str(Timer.to_beijing(utc_now)).split(".")[0], fmt)
+        - datetime_strptime(str(utc_now).split(".")[0], fmt)
     ) == timedelta(hours=8)
+
+
+def datetime_strptime(s: str, fmt: str) -> datetime:
+    return datetime.strptime(s, fmt).replace(tzinfo=UTC)
 
 
 def test_current_time(monkeypatch):

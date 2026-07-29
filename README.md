@@ -106,15 +106,17 @@ from fastapi import FastAPI
 app = FastAPI()
 register_aioredis(app)
 
-@app.get('/')
+
+@app.get("/")
 async def root(redis: AioRedisDep) -> list[str]:
     return await redis.keys()
 
-@app.get('/redis')
+
+@app.get("/redis")
 async def get_value_from_redis_by_key(redis: AioRedisDep, key: str) -> str:
     value = await redis.get(key)
     if not value:
-        return ''
+        return ""
     return value.decode()
 ```
 
@@ -130,6 +132,7 @@ from main import app
 
 anyio_backend = anyio_backend_fixture()
 client = async_client_fixture(app)
+
 
 @pytest.mark.anyio
 async def test_api(client: AsyncClient):
@@ -152,7 +155,7 @@ def main() -> None:
     runserver(app)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
 ```
 

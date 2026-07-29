@@ -310,7 +310,7 @@ async def bulk_gather(
             if es := getattr(e, "exceptions", []):
                 raise es[0] from e
             else:  # pragma: no cover
-                raise e
+                raise
     return bg.results
 
 
@@ -369,7 +369,7 @@ async def start_tasks(coro: CoroFunc, *more: CoroFunc) -> AsyncGenerator[None]:
                 tg.cancel_scope.cancel()
 
 
-async def wait_for(coro: Coroutine[Any, Any, T_Retval], timeout: int | float) -> T_Retval:
+async def wait_for(coro: Coroutine[Any, Any, T_Retval], timeout: float) -> T_Retval:
     """Similar like asyncio.wait_for"""
     with anyio.fail_after(timeout):
         return await coro
@@ -439,7 +439,7 @@ def async_to_sync(
                 if "This event loop is already running" in str(e):
                     return run_async(ensure_afunc(coro))
                 else:
-                    raise e
+                    raise
         return run_async(functools.partial(func, *args, **kwargs))
 
     return runner

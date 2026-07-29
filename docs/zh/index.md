@@ -46,13 +46,14 @@ async def main() -> None:
     print(Timer.now())
     # 2026-06-10 10:01:45.742821+00:00
 
-    with Timer('do sth', verbose=False) as t:
+    with Timer("do sth", verbose=False) as t:
         await sleep(0.11)
     logger.debug(t)
     # do sth Cost: 0.11 seconds
 
     print(Timer.beijing_now())
     # 2026-06-10 18:01:49.383679+08:00
+
 
 run_async(main)
 ```
