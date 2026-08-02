@@ -18,6 +18,10 @@ $ pip install asynctor
 ---> 100%
 Successfully installed asynctor
 ```
+</div>
+
+<details>
+    
 with extras:
 ```shell
 pip install "asynctor[xlsx,redis,fastapi]"
@@ -39,7 +43,7 @@ Or install by ssh
 uv pip install "asynctor[redis] @git+ssh://git@github.com/waketzheng/asynctor.git"
 ```
 
-</div>
+</details>
 
 ## Usage
 
@@ -69,7 +73,7 @@ True
 ```py
 >>> import time
 >>> import anyio
->>> from asynctor import timeit
+>>> from asynctor import Timer, timeit
 >>> @timeit
 ... async def sleep_test():
 ...     await anyio.sleep(3)
@@ -83,7 +87,7 @@ sleep_test Cost: 3.0 seconds
 ...
 >>> sleep_test2()
 sleep_test2 Cost: 3.1 seconds
->>> with timeit('Sleeping'):
+>>> with Timer('Sleeping'):
 ...     sleep()
 ...
 Sleeping Cost: 3.0 seconds
@@ -125,10 +129,9 @@ async def get_value_from_redis_by_key(redis: AioRedisDep, key: str) -> str:
 *pip install "asynctor[testing]"*
 ```py
 import pytest
-from asynctor.testing import anyio_backend_fixture, async_client_fixture
-from httpx import AsyncClient
+from asynctor.testing import AsyncClient, anyio_backend_fixture, async_client_fixture
 
-from main import app
+from main import app  # isinstance(app, FastAPI)
 
 anyio_backend = anyio_backend_fixture()
 client = async_client_fixture(app)
@@ -140,23 +143,20 @@ async def test_api(client: AsyncClient):
     assert response.status_code == 200
 ```
 
-- runserver for fastapi projects
+- runserver/config_access_log/add_timing_middleware for fastapi projects
 
 *pip install "asynctor[fastapi]"*
 ```py
+from asynctor.contrib.fastapi import add_timing_middleware, config_access_log, runserver
 from fastapi import FastAPI
 
 app = FastAPI()
-
-
-def main() -> None:
-    from asynctor.contrib.fastapi import runserver
-
-    runserver(app)
+config_access_log()
+add_timing_middleware(app)
 
 
 if __name__ == "__main__":
-    main()
+    runserver()
 ```
 
 - Read Excel File
