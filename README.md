@@ -21,7 +21,7 @@ Successfully installed asynctor
 </div>
 
 <details>
-    
+
 with extras:
 ```shell
 pip install "asynctor[xlsx,redis,fastapi]"
