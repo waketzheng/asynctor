@@ -495,15 +495,15 @@ wheels = [
 
 [[package]]
 name = "fast-dev-cli"
-version = "0.25.1"
+version = "0.25.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "tomli", marker = "python_full_version < '3.11'" },
     { name = "typer" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3a/15/c23319adc5b8d655acda749051a5250975cde857382a42253f7ebc96ed25/fast_dev_cli-0.25.1.tar.gz", hash = "sha256:5dbc93a12cec412b134da2c5ee036481aa123ed46802111f2e11befe2a40afb5", size = 23008, upload-time = "2026-08-01T14:52:13.978Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/72/d4/926feb0711e6b386b1cf105bcc4aba7ccfc785ad8357b604328c5945ebc0/fast_dev_cli-0.25.3.tar.gz", hash = "sha256:a50076fda0f660198637724f99c2f5c7b8ac9532a05d3d9eee786927422c9362", size = 23869, upload-time = "2026-08-02T07:13:50.658Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/39/06/e6168db99c6f5653a1f06748b5b97f2635b4a9a97615d1217622e0df0c0d/fast_dev_cli-0.25.1-py3-none-any.whl", hash = "sha256:b7b65faf61d42aa25e4115f7bc22ddf305f0f2e05661087d595c291bae182e90", size = 22286, upload-time = "2026-08-01T14:52:13.049Z" },
+    { url = "https://files.pythonhosted.org/packages/32/7f/718cfc02612fd54f4130d02159354e041862f7293be25114a5e37770213b/fast_dev_cli-0.25.3-py3-none-any.whl", hash = "sha256:8b27f117e9d2007d5be3d1afefe74366e00a87db7a29aa9b8269dc375f2874e6", size = 23101, upload-time = "2026-08-02T07:13:49.552Z" },
 ]
 
 [package.optional-dependencies]
