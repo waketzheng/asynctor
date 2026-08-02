@@ -184,15 +184,27 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
                 return func(*args, **kwargs)
 
     @staticmethod
-    def now() -> AwareDateTime:
+    def utcnow() -> AwareDateTime:
         """Get utc now with tzinfo
 
         Usage::
-            >>> now = Timer.now()
+            >>> now = Timer.utcnow()
             >>> str(now).endswith('+00:00')
             True
         """
         return datetime.now(UTC)
+
+    @staticmethod
+    def now() -> AwareDateTime:
+        """Get now with tzinfo of localtime
+
+        Usage::
+            >>> now = Timer.now()
+            >>> zone = str(now)[-len('+00:00'):]
+            >>> zone in ('+00:00', '+08:00') or zone.startswith('+')
+            True
+        """
+        return datetime.now().astimezone()
 
     @staticmethod
     def to_beijing(dt: AwareDateTime) -> AwareDateTime:
@@ -208,7 +220,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
             >>> str(now).endswith('+08:00')
             True
         """
-        return cls.to_beijing(cls.now())
+        return cls.to_beijing(cls.utcnow())
 
     @classmethod
     def current_time(cls) -> int:
@@ -223,11 +235,11 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
             >>> len(str(Timer.current_time())) == 13
             True
             >>> utc_dt = datetime.fromtimestamp(Timer.current_time() / 1000, UTC)
-            >>> now = Timer.now()
+            >>> now = Timer.utcnow()
             >>> (now - utc_dt).total_seconds() < 1
             True
         """
-        return int(cls.now().timestamp() * 1000)
+        return int(cls.utcnow().timestamp() * 1000)
 
 
 @overload

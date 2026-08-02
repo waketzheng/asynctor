@@ -44,7 +44,7 @@ repository = "https://github.com/waketzheng/asynctor.git"
 
 [dependency-groups]
 dev = [
-    "fast-dev-cli[all]>=0.22.0",
+    "fast-dev-cli[all]>=0.25.3",
 ]
 lint = [
     "types-redis>=4.6.0.20241004",

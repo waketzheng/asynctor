@@ -155,7 +155,7 @@ requires-dist = [
 provides-extras = ["accel", "toml", "redis", "xlsx", "testing", "fastapi", "tomli", "xls", "all"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "fast-dev-cli", extras = ["all"], specifier = ">=0.22.0" }]
+dev = [{ name = "fast-dev-cli", extras = ["all"], specifier = ">=0.25.3" }]
 lint = [
     { name = "pandas-stubs", specifier = ">=2.2.0" },
     { name = "types-redis", specifier = ">=4.6.0.20241004" },

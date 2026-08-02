@@ -1,8 +1,15 @@
 # ChangeLog
 
-## 0.13
+## 0.14
+### [0.14.0] Unrelease
 
-### Unrelease
+#### Added
+- feat: add `Timer.utcnow` function
+
+#### Changed
+- refactor: use localtime zoneinfo for `Timer.now`
+
+## 0.13
 
 ### [0.13.3](../../releases/tag/v0.13.3) - 2026-08-02
 - refactor: add typos pre-commit hook and fix issues
