@@ -32,10 +32,14 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           activate-environment: true
           enable-cache: true
+          version: "0.12.1"
+          cache-dependency-path: |
+            pyproject.toml
+            uv.lock
       - uses: astral-sh/ruff-action@v3
       - uses: extractions/setup-just@v4  # Or: uv tool install rust-just
       - name: Setup PDM by uv
@@ -81,9 +85,13 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           allow-prereleases: true
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
           enable-cache: true
+          version: "0.12.1"
+          cache-dependency-path: |
+            pyproject.toml
+            uv.lock
       - name: Setup PDM by uv
         run: |
           uv tool install pdm
