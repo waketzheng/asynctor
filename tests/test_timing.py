@@ -225,7 +225,7 @@ async def test_with_timeit():
 
 
 def test_nows():
-    utc_now = Timer.now()
+    utc_now = Timer.utcnow()
     bj_now = Timer.beijing_now()
     assert str(utc_now).endswith("+00:00")
     assert str(bj_now).endswith("+08:00")
@@ -245,6 +245,7 @@ def test_nows():
         datetime_strptime(str(Timer.to_beijing(utc_now)).split(".")[0], fmt)
         - datetime_strptime(str(utc_now).split(".")[0], fmt)
     ) == timedelta(hours=8)
+    assert datetime.now().astimezone().tzinfo == Timer.now().tzinfo
 
 
 def datetime_strptime(s: str, fmt: str) -> datetime:
@@ -253,7 +254,7 @@ def datetime_strptime(s: str, fmt: str) -> datetime:
 
 def test_current_time(monkeypatch):
     now = datetime(1970, 1, 1, 0, 0, 1, 234567, tzinfo=UTC)
-    monkeypatch.setattr(Timer, "now", staticmethod(lambda: now))
+    monkeypatch.setattr(Timer, "utcnow", staticmethod(lambda: now))
 
     assert Timer.current_time() == 1234
 
