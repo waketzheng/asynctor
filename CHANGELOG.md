@@ -4,6 +4,10 @@
 
 ### Unrelease
 
+### [0.13.3]
+- refactor: add typos pre-commit hook and fix issues
+- refactor: apply style of `ruff>=0.16`
+
 ### [0.13.2](../../releases/tag/v0.13.2) - 2026-07-10
 
 #### Added
