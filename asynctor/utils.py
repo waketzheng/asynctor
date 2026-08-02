@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import functools
 import os
+import re
 import shlex
 import socket
 import subprocess  # nosec
@@ -234,7 +235,9 @@ class Shell:
 
     @staticmethod
     def shell_should_be_true(command: list[str] | str) -> bool:
-        return bool(set(command) & {"|", ">", "&"})
+        if isinstance(command, str):
+            return re.search(r'[\s"&|<>^()%!]', command) is not None
+        return bool(set(command) & {"|", ">", ">>", "&"})
 
     @classmethod
     def run_by_subprocess(cls, cmd: str, **kw) -> subprocess.CompletedProcess[str]:
@@ -262,7 +265,7 @@ class Shell:
     def command(self) -> str:
         if isinstance(self._command, str):
             return self._command
-        return " ".join(repr(i) if " " in i else i for i in self._command)
+        return " ".join(shlex.quote(i) if " " in i else i for i in self._command)
 
     def run(
         self, kwargs: dict[str, Any] | None = None, *, verbose: bool = False, **kw: Any

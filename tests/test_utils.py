@@ -225,6 +225,26 @@ def test_shell_redirect(tmp_workdir):
     shell_out = Shell(f"{cmd} > {out_file}")
     assert file.name not in shell_out.capture_output()
     assert file.name in out_file.read_text()
+    out_file2 = Path("out2.txt")
+    shell_out2 = Shell(f"{cmd} >> {out_file2}")
+    assert file.name not in shell_out2.capture_output()
+    assert file.name in out_file2.read_text()
+
+
+def test_shell_redirect_list(tmp_workdir):
+    file = Path("a")
+    file.touch()
+    cmd = ["python", "-c", "import os;[print(i) for i in os.listdir() if len(i) < 3]"]
+    shell = Shell(cmd)
+    assert file.name in shell.capture_output()
+    out_file = Path("out.txt")
+    shell_out = Shell([*cmd, ">", str(out_file)])
+    assert file.name not in shell_out.capture_output()
+    assert file.name in out_file.read_text()
+    out_file2 = Path("out2.txt")
+    shell_out2 = Shell([*cmd, ">>", str(out_file2)])
+    assert file.name not in shell_out2.capture_output()
+    assert file.name in out_file2.read_text()
 
 
 def test_shell_run_kw(tmp_workdir):
