@@ -51,6 +51,8 @@ jobs:
         run: uv tool install fast-dev-cli
       - name: Setup ty
         run: uv tool install ty
+      - name: Pull submodule justfile
+        run: just
       - name: Install deps
         run: just deps
       - name: Check code style and Type Hints
@@ -100,6 +102,8 @@ jobs:
       - name: Setup fast by uv
         run: |
           uv tool install fast-dev-cli
+      - name: Pull submodule justfile
+        run: uvx --from rust-just just
       - name: Install deps
         run: uvx --from rust-just just deps --no-group lint
       - name: Test with pytest
@@ -141,9 +145,10 @@ jobs:
     needs: test
     runs-on: ubuntu-latest
     steps:
-      - uses: astral-sh/setup-uv@v7
+      - uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
         with:
-          enable-cache: true
+          enable-cache: false
+          version: "0.12.1"
       - name: Finished
         run: uvx coveralls --finish
         env:
