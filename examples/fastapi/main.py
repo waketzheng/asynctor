@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-from fastapi import FastAPI
-from pydantic import BaseModel
-
 from asynctor.contrib.fastapi import (
     AioRedisDep,
     add_timing_middleware,
@@ -10,6 +7,8 @@ from asynctor.contrib.fastapi import (
     register_aioredis,
     runserver,
 )
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 app = FastAPI()
 add_timing_middleware(app)

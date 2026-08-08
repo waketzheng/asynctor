@@ -7,7 +7,6 @@ from io import StringIO
 
 import anyio
 import pytest
-
 from asynctor.timing import UTC, Timer, ZoneInfo, timeit
 
 

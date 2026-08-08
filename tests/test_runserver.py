@@ -8,11 +8,10 @@ from typing import Annotated
 import pytest
 import typer
 import uvicorn
-from fastapi import FastAPI
-
 from asynctor.compat import chdir
 from asynctor.contrib.fastapi import ACCESS_LOG_FMT, RunServer, runserver
 from asynctor.utils import get_machine_ip
+from fastapi import FastAPI
 
 
 def get_log_config() -> dict:

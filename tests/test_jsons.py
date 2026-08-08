@@ -4,7 +4,6 @@ from decimal import Decimal
 from pathlib import Path
 
 import pytest
-
 from asynctor.exceptions import AsynctorError, UnsupportedError
 from asynctor.jsons import FastJson, json_dump_bytes, json_dumps, json_loads
 

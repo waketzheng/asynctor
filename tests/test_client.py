@@ -6,15 +6,14 @@ import os
 import re
 import sys
 
-import pytest
-from fastapi import FastAPI, Request
-from redis.asyncio import Redis
-
 import asynctor.client as client_mod
+import pytest
 from asynctor import AsyncRedis
 from asynctor.contrib import fastapi as fastapi_utils
 from asynctor.testing import async_client_fixture
 from asynctor.utils import AsyncTestClient
+from fastapi import FastAPI, Request
+from redis.asyncio import Redis
 
 from .main import app
 

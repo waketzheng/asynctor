@@ -8,9 +8,8 @@ from typing import Any, Final
 import anyio
 import pandas as pd
 import pytest
-from fastapi import UploadFile
-
 from asynctor.xls import Excel, df_to_datas, load_xls, read_excel
+from fastapi import UploadFile
 
 
 @pytest.mark.anyio

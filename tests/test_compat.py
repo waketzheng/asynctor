@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import get_type_hints
 
 import pytest
-
 from asynctor.compat import Self, StrEnum, load_toml
 
 

@@ -20,8 +20,8 @@ lock:
 venv:
 	just venv
 
-venv39:
-	just venv 3.9
+venv310:
+	just venv 3.10
 
 deps:
 	just deps
@@ -50,7 +50,6 @@ style:
 	just style
 
 _build:
-	rm -fR dist/
 	just _build
 build:
 	just build

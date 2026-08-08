@@ -11,7 +11,6 @@ from datetime import datetime
 from pathlib import Path
 
 import pytest
-
 from asynctor import AttrDict, Timer
 from asynctor.utils import (
     AsyncTestClient,

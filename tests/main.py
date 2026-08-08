@@ -3,9 +3,6 @@ from __future__ import annotations
 from contextlib import asynccontextmanager
 
 import uvicorn
-from fastapi import FastAPI, Request
-from pydantic import BaseModel
-
 from asynctor import AsyncRedis
 from asynctor.contrib.fastapi import (
     AioRedis,
@@ -15,6 +12,8 @@ from asynctor.contrib.fastapi import (
     register_aioredis,
 )
 from asynctor.utils import get_machine_ip
+from fastapi import FastAPI, Request
+from pydantic import BaseModel
 
 
 @asynccontextmanager

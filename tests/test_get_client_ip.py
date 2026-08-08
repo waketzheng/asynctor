@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import pytest
-
 from asynctor import AsyncTestClient
 from asynctor.utils import get_machine_ip
 

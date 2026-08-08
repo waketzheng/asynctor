@@ -8,7 +8,6 @@ from typing import Any
 import anyio
 import pytest
 from anyio.lowlevel import checkpoint
-
 from asynctor.aio import (
     LengthFixedList,
     async_to_sync,
