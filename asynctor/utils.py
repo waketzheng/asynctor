@@ -198,7 +198,7 @@ def cache_attr(func: Callable[..., T]) -> Callable[..., T]:
     """
 
     @functools.wraps(func)
-    def run(cls) -> T:
+    def run(cls: type) -> T:
         key = "-cache-" + getattr(func, "__name__", str(func))
         if hasattr(cls, key):
             return getattr(cls, key)

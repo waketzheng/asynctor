@@ -31,7 +31,9 @@ class Promise:
 class ChoicesType(EnumType):
     """A metaclass for creating a enum choices."""
 
-    def __new__(metacls, classname, bases, classdict, **kwds) -> "ChoicesType":  # NOQA: PYI034
+    def __new__(
+        metacls, classname: str, bases: tuple[type, ...], classdict: Any, **kwds
+    ) -> "ChoicesType":
         labels = []
         for key in classdict._member_names:
             value = classdict[key]
@@ -110,7 +112,7 @@ class TextChoices(Choices, StrEnum):  # ty:ignore[invalid-method-override]
     """Class for creating enumerated string choices."""
 
     @staticmethod
-    def _generate_next_value_(name: str, start, count, last_values) -> str:
+    def _generate_next_value_(name: str, start: int, count: int, last_values: Any) -> str:
         """
         Return the member name.
         """

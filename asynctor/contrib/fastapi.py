@@ -7,19 +7,21 @@ import os
 import platform
 import re
 import sys
-from collections.abc import AsyncGenerator, Callable
+from collections.abc import AsyncGenerator, Callable, Coroutine
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated, Any, TypeAlias
+from typing import Annotated, Any, TypeAlias, TypeVar
 
 import uvicorn
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.routing import _merge_lifespan_context
 
 from ..client import AsyncRedis
 from ..exceptions import UnsupportedError
 from ..timing import Timer
 from ..utils import Shell, load_bool
+
+T = TypeVar("T")
 
 
 def register_aioredis(
@@ -397,7 +399,17 @@ class RunServer:
         cls.echo_and_run(app, host, port, reload, docs_params, pre_start, echo, **kw)
 
     @classmethod
-    def echo_and_run(cls, app, host, port, reload, docs_params, pre_start, echo=None, **kw) -> None:
+    def echo_and_run(
+        cls,
+        app: FastAPI,
+        host: str,
+        port: int | None,
+        reload: bool,
+        docs_params: dict[str, str] | None,
+        pre_start: Callable | None,
+        echo: Callable | None = None,
+        **kw,
+    ) -> None:
         """Print the docs URL, run startup hooks, optionally open it, then start uvicorn.
 
         If ``port`` is not supplied, ``ASYNCTOR_PORT`` is used when it contains
@@ -538,7 +550,9 @@ def add_timing_middleware(app: FastAPI, header: str = "X-Process-Time") -> None:
     """
 
     @app.middleware("http")
-    async def add_process_time_header(request: Request, call_next):
+    async def add_process_time_header(
+        request: Request, call_next: Callable[[Request], Coroutine[Any, Any, Response]]
+    ) -> Response:
         with Timer(request.url.path, decimal_places=3, verbose=False) as t:
             response = await call_next(request)
         response.headers[header] = f"{int(t.cost * 1000)} ms"

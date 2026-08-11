@@ -18,7 +18,7 @@ if sys.version_info >= (3, 11):
 
     from tomllib import loads as load_toml
 else:
-    import contextlib
+    from contextlib import AbstractContextManager
     from enum import Enum
 
     from typing_extensions import NotRequired, Self
@@ -37,7 +37,7 @@ else:
 
         return tomli.loads(content)
 
-    class chdir(contextlib.AbstractContextManager):  # Copied from source code of Python3.13
+    class chdir(AbstractContextManager):  # Copied from source code of Python3.14.7
         """Non thread-safe context manager to change the current working directory."""
 
         def __init__(self, path):
@@ -51,7 +51,7 @@ else:
         def __exit__(self, *excinfo):
             os.chdir(self._old_cwd.pop())
 
-    # Copied from source code of Python3.14
+    # Copied from source code of Python3.14.7 and custom `__str__` for `StrEnum`
     class ReprEnum(Enum):
         """
         Only changes the repr(), leaving str() and format() to the mixed-in type.

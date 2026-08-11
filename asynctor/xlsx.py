@@ -84,7 +84,7 @@ def df_to_datas(df: pd.DataFrame) -> list[dict]:
 
 
 async def load_xlsx(
-    file: UploadFile | FilePathType | BytesIO | bytes, as_str=False, **kw
+    file: UploadFile | FilePathType | BytesIO | bytes, as_str: bool = False, **kw
 ) -> list[dict]:
     """Read Excel content and return row-oriented dictionaries.
 

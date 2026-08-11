@@ -92,7 +92,9 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         # read_text Cost: 0.2 seconds
     """
 
-    def __init__(self, message: str | Callable, decimal_places=1, verbose=True) -> None:
+    def __init__(
+        self, message: str | Callable, decimal_places: int = 1, verbose: bool = True
+    ) -> None:
         if callable(message):  # Use as decorator
             func = message
             self.__name__ = message = getattr(func, "__name__", str(func))
@@ -105,7 +107,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
     def start(self, ts: float | None = None) -> None:
         self._start = ts or time.time()
 
-    def capture(self, ts: float | None = None, verbose=None) -> None:
+    def capture(self, ts: float | None = None, verbose: bool | None = None) -> None:
         self._end = ts or time.time()
         if verbose is None:
             verbose = self._verbose
@@ -169,12 +171,13 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         )
 
     def __call__(self, *args, **kwargs) -> Any:
-        if (func := getattr(self, "func", None)) is None:
+        if not hasattr(self, "func") or self.func is None:
             return None
+        func: Callable = self.func
         if is_async_callable(func):
 
             @functools.wraps(func)
-            async def inner(*gs, **kw):
+            async def inner(*gs, **kw) -> Any:
                 async with self._recreate_cm():
                     return await func(*gs, **kw)
 

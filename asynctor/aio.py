@@ -178,7 +178,7 @@ async def map_group(
 
 
 class BulkGather:
-    def __init__(self, results) -> None:
+    def __init__(self, results: list) -> None:
         self._results = results
 
     async def runner(self, index: int, coro: Coroutine[Any, Any, T_Retval]) -> None:
@@ -190,7 +190,9 @@ class BulkGather:
         async with limiter:
             self._results[index] = await coro
 
-    async def run(self, coros, batch_size, wait_last, total) -> None:
+    async def run(
+        self, coros: Iterable[Coroutine], batch_size: int, wait_last: bool, total: int
+    ) -> None:
         is_generator = total == 0
         if not batch_size:
             await self.unlimit_gather(coros, is_generator)
@@ -201,13 +203,15 @@ class BulkGather:
                 batch_size, coros, is_generator, total
             )
 
-    async def unlimit_gather(self, coros, is_generator) -> None:
+    async def unlimit_gather(self, coros: Iterable[Coroutine], is_generator: bool) -> None:
         func = functools.partial(map_group, self.runner, enumerate(coros))
         if is_generator:
             func = functools.partial(func, results=self._results)
         await func()
 
-    async def run_in_capacity_limiter(self, batch_size, coros, is_generator) -> None:
+    async def run_in_capacity_limiter(
+        self, batch_size: int, coros: Iterable[Coroutine], is_generator: bool
+    ) -> None:
         limiter = anyio.CapacityLimiter(batch_size)
         todo_args = ((*item, limiter) for item in enumerate(coros))
         func = functools.partial(map_group, self.limited_runner, todo_args)
@@ -216,7 +220,7 @@ class BulkGather:
         await func()
 
     async def only_start_new_one_after_last_batch_finish(
-        self, batch_size, coros, is_generator, total
+        self, batch_size: int, coros: Iterable[Coroutine], is_generator: bool, total: int
     ) -> None:
         if is_generator:
             todos: list[tuple[int, Coroutine]] = []
@@ -235,7 +239,7 @@ class BulkGather:
                 await map_group(self.runner, args_items)
 
     @property
-    def results(self):
+    def results(self) -> tuple:
         return tuple(self._results)
 
 

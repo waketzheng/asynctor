@@ -12,11 +12,17 @@ else:
     try:
         from redis.asyncio import Redis
     except ImportError:  # pragma: no cover
+        import types
         from contextlib import AbstractAsyncContextManager
 
         class Redis(AbstractAsyncContextManager):  # type:ignore[no-redef]
             def __init__(self, *args: Any, **kwargs: Any) -> None: ...
-            async def __aexit__(self, exc_type, exc_val, exc_tb) -> bool | None: ...
+            async def __aexit__(
+                self,
+                exc_type: type[BaseException] | None,
+                exc_val: BaseException | None,
+                exc_tb: types.TracebackType | None,
+            ) -> bool | None: ...
             async def ping(self) -> bool:
                 return False
 

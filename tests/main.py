@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -17,7 +18,7 @@ from pydantic import BaseModel
 
 
 @asynccontextmanager
-async def lifespan(fastapi_app: FastAPI):
+async def lifespan(fastapi_app: FastAPI) -> AsyncGenerator[None]:
     async with AsyncRedis(fastapi_app):
         yield
 
@@ -36,7 +37,7 @@ async def root(redis: AioRedis) -> list[str]:
 
 @app_default_to_mount_lifespan.get("/state")
 @app_for_utils_test.get("/state")
-async def state(request: Request):
+async def state(request: Request) -> dict[str, str]:
     return {"redis": str(getattr(request.app.state, "redis", None))}
 
 

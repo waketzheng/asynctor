@@ -57,7 +57,7 @@ except ImportError:
 
                 def encode(self, o: Any) -> str:
                     # Convert datetime keys to strings
-                    def convert_keys(item):
+                    def convert_keys(item: dict | list | tuple | Any) -> Any:
                         if isinstance(item, dict):
                             return {
                                 self.time_serializer(k): convert_keys(v) for k, v in item.items()

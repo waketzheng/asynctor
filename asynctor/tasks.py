@@ -19,7 +19,7 @@ FuncResults: TypeAlias = Annotated[
 
 
 class StoredThread(Thread):
-    def run(self):
+    def run(self) -> None:
         """Use a new attribute `_result` to stored target result or exception."""
         try:
             self._result = self._target(*self._args, **self._kwargs)  # type:ignore
@@ -128,7 +128,7 @@ class ThreadGroup(AbstractContextManager):
 def _test() -> None:  # pragma: no cover
     import time
 
-    def saying(msg="haha", loop=5, ident=0) -> float:
+    def saying(msg: str = "haha", loop: int = 5, ident: int = 0) -> float:
         print(msg)
         total = 0
         for i in range(loop):
