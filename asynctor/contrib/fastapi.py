@@ -10,16 +10,23 @@ import sys
 from collections.abc import AsyncGenerator, Callable, Coroutine
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Annotated, Any, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Annotated, Any, TypeVar, cast
 
 import uvicorn
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.routing import _merge_lifespan_context
 
+from .._types import PreStartFunc, TyperSecho, UvicornKwargs
 from ..client import AsyncRedis
 from ..exceptions import UnsupportedError
 from ..timing import Timer
 from ..utils import Shell, load_bool
+
+if TYPE_CHECKING:
+    if sys.version_info >= (3, 11):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
 
 T = TypeVar("T")
 
@@ -187,22 +194,13 @@ def config_access_log_to_show_time(log: str = "uvicorn.access") -> None:
     config_access_log(log=log)
 
 
-PreStartFunc: TypeAlias = Callable[
-    [
-        Annotated[str, "host"],
-        Annotated[int | None, "port"],
-        Annotated[bool, "reload"],
-        Annotated[dict[str, str] | None, "docs_params"],
-    ],
-    Any,
-]
-
-
 class RunServer:
     """Implementation helpers used by ``runserver``."""
 
     @staticmethod
-    def uvicorn_run(app: FastAPI, host: str, port: int | None, reload: bool, **kw) -> None:
+    def uvicorn_run(
+        app: FastAPI, host: str, port: int | None, reload: bool, **kw: Unpack[UvicornKwargs]
+    ) -> None:
         """Start uvicorn with the resolved application and network options.
 
         When reload is enabled, uvicorn receives ``"__main__:app"`` because
@@ -224,7 +222,7 @@ class RunServer:
 
     @staticmethod
     def parse_host_port(
-        addrport: str | int, verbose: bool, echo: Callable
+        addrport: str | int, verbose: bool, echo: Callable[[Any], Any]
     ) -> tuple[str | None, int | None]:
         """Parse a CLI address or port argument into host and port overrides.
 
@@ -253,7 +251,7 @@ class RunServer:
         return host, port
 
     @staticmethod
-    def load_prod_port(config_file: Path, verbose: bool, echo: Callable) -> int:
+    def load_prod_port(config_file: Path, verbose: bool, echo: Callable[[Any], Any]) -> int:
         """Load a production port from a gunicorn config file.
 
         The config module is imported from ``config_file``. ``PORT`` is used
@@ -291,7 +289,7 @@ class RunServer:
         host: str,
         port: int | None,
         docs_params: dict | None = None,
-        echo: Callable | None = None,
+        echo: Callable[[Any], Any] | None = None,
     ) -> str:
         """Build, print, and return the FastAPI documentation URL.
 
@@ -320,8 +318,10 @@ class RunServer:
             print(f"{tip}\n{url}")
         else:
             echo(tip)
+            secho = cast(TyperSecho, echo)
+            # echo can be `typer.secho` or `typer.echo`
             try:
-                echo(url, bold=True)
+                secho(url, bold=True)
             except TypeError:
                 echo(url)
         return url
@@ -349,11 +349,11 @@ class RunServer:
         reload: bool,
         prod: bool,
         verbose: bool,
-        echo: Callable,
+        echo: Callable[[Any], Any],
         docs_params: dict[str, str] | None = None,
         pre_start: PreStartFunc | None = None,
         open_browser: bool | None = None,
-        **kw,
+        **kw: Unpack[UvicornKwargs],
     ) -> None:
         """Resolve command-line server options and start uvicorn.
 
@@ -406,9 +406,10 @@ class RunServer:
         port: int | None,
         reload: bool,
         docs_params: dict[str, str] | None,
-        pre_start: Callable | None,
-        echo: Callable | None = None,
-        **kw,
+        pre_start: PreStartFunc | None,
+        echo: Callable[[Any], Any] | None = None,
+        open_browser: bool | None = None,
+        **kw: Unpack[UvicornKwargs],
     ) -> None:
         """Print the docs URL, run startup hooks, optionally open it, then start uvicorn.
 
@@ -423,6 +424,7 @@ class RunServer:
         :param docs_params: optional query parameters appended to the docs URL.
         :param pre_start: optional callback invoked before uvicorn starts.
         :param echo: optional output callback.
+        :param open_browser: whether open docs url in browser.
         :param kw: additional keyword arguments passed to ``uvicorn.run``.
         """
         if not port:
@@ -432,8 +434,15 @@ class RunServer:
             try:
                 pre_start(host=host, port=port, reload=reload, docs_params=docs_params)
             except TypeError:
-                pre_start()
-        if kw.pop("open_browser", False) or load_bool("ASYNCTOR_BROWSER"):
+                try:
+                    pre_start(host, port, reload, docs_params)
+                except TypeError:
+                    f = cast(Callable[[], None], pre_start)
+                    f()
+        if open_browser or (
+            open_browser is None
+            and (load_bool("ASYNCTOR_BROWSER") or load_bool("ASYNCTOR_OPEN_BROWSER"))
+        ):
             command = "explorer" if platform.system() == "Windows" else "open"
             if host == "0.0.0.0" and (m := re.search(r"://(.*?)[:/]", url)):  # nosec:B104
                 url = url.replace(m.group(1), "127.0.0.1")
