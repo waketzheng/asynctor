@@ -3,14 +3,11 @@ from __future__ import annotations
 import asyncio
 import os
 import ssl
-import sys
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from configparser import RawConfigParser
 from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict
 
-import click
 from uvicorn.config import (
-    INTERFACES,
     Config,
     HTTPProtocolType,
     InterfaceType,
@@ -20,69 +17,112 @@ from uvicorn.config import (
 )
 
 if TYPE_CHECKING:
-    if sys.version_info >= (3, 11):
-        from typing import NotRequired
-    else:
-        from typing_extensions import NotRequired
+    from ssl import TLSVersion, VerifyFlags, VerifyMode
 
-
-# LEVEL_CHOICES = click.Choice(list(LOG_LEVELS.keys()))
-# LIFESPAN_CHOICES = click.Choice(list(LIFESPAN.keys()))
-INTERFACE_CHOICES = click.Choice(INTERFACES)
+    from redis.asyncio.connection import ConnectionPool
+    from redis.asyncio.retry import Retry
+    from redis.credentials import CredentialProvider
+    from redis.driver_info import DriverInfo
+    from redis.event import EventDispatcher
+    from redis.maint_notifications import MaintNotificationsConfig
 
 
 class UvicornKwargs(TypedDict, total=False):
-    uds: NotRequired[str | None]
-    fd: NotRequired[int | None]
-    loop: NotRequired[LoopFactoryType | str]
-    http: NotRequired[type[asyncio.Protocol] | HTTPProtocolType | str]
-    ws: NotRequired[type[asyncio.Protocol] | WSProtocolType | str]
-    ws_max_size: NotRequired[int]
-    ws_max_queue: NotRequired[int]
-    ws_ping_interval: NotRequired[float | None]
-    ws_ping_timeout: NotRequired[float | None]
-    ws_per_message_deflate: NotRequired[bool]
-    lifespan: NotRequired[LifespanType]
-    interface: NotRequired[InterfaceType]
-    reload_dirs: NotRequired[list[str] | str | None]
-    reload_includes: NotRequired[list[str] | str | None]
-    reload_excludes: NotRequired[list[str] | str | None]
-    reload_delay: NotRequired[float]
-    workers: NotRequired[int | None]
-    env_file: NotRequired[str | os.PathLike[str] | None]
-    log_config: NotRequired[
-        dict[str, Any] | str | os.PathLike[str] | RawConfigParser | IO[Any] | None
-    ]
-    log_level: NotRequired[str | int | None]
-    access_log: NotRequired[bool]
-    proxy_headers: NotRequired[bool]
-    server_header: NotRequired[bool]
-    date_header: NotRequired[bool]
-    forwarded_allow_ips: NotRequired[list[str] | str | None]
-    root_path: NotRequired[str]
-    limit_concurrency: NotRequired[int | None]
-    backlog: NotRequired[int]
-    limit_max_requests: NotRequired[int | None]
-    limit_max_requests_jitter: NotRequired[int]
-    timeout_keep_alive: NotRequired[int]
-    timeout_graceful_shutdown: NotRequired[int | None]
-    timeout_worker_healthcheck: NotRequired[int]
-    ssl_keyfile: NotRequired[str | os.PathLike[str] | None]
-    ssl_certfile: NotRequired[str | os.PathLike[str] | None]
-    ssl_keyfile_password: NotRequired[str | None]
-    ssl_version: NotRequired[int]
-    ssl_cert_reqs: NotRequired[int]
-    ssl_ca_certs: NotRequired[str | os.PathLike[str] | None]
-    ssl_ciphers: NotRequired[str | None]
-    ssl_context_factory: NotRequired[
-        Callable[[Config, Callable[[], ssl.SSLContext]], ssl.SSLContext] | None
-    ]
-    headers: NotRequired[list[tuple[str, str]] | None]
-    use_colors: NotRequired[bool | None]
-    app_dir: NotRequired[str | None]
-    factory: NotRequired[bool]
-    h11_max_incomplete_event_size: NotRequired[int | None]
-    reset_contextvars: NotRequired[bool]
+    uds: str | None
+    fd: int | None
+    loop: LoopFactoryType | str
+    http: type[asyncio.Protocol] | HTTPProtocolType | str
+    ws: type[asyncio.Protocol] | WSProtocolType | str
+    ws_max_size: int
+    ws_max_queue: int
+    ws_ping_interval: float | None
+    ws_ping_timeout: float | None
+    ws_per_message_deflate: bool
+    lifespan: LifespanType
+    interface: InterfaceType
+    reload_dirs: list[str] | str | None
+    reload_includes: list[str] | str | None
+    reload_excludes: list[str] | str | None
+    reload_delay: float
+    workers: int | None
+    env_file: str | os.PathLike[str] | None
+    log_config: dict[str, Any] | str | os.PathLike[str] | RawConfigParser | IO[Any] | None
+    log_level: str | int | None
+    access_log: bool
+    proxy_headers: bool
+    server_header: bool
+    date_header: bool
+    forwarded_allow_ips: list[str] | str | None
+    root_path: str
+    limit_concurrency: int | None
+    backlog: int
+    limit_max_requests: int | None
+    limit_max_requests_jitter: int
+    timeout_keep_alive: int
+    timeout_graceful_shutdown: int | None
+    timeout_worker_healthcheck: int
+    ssl_keyfile: str | os.PathLike[str] | None
+    ssl_certfile: str | os.PathLike[str] | None
+    ssl_keyfile_password: str | None
+    ssl_version: int
+    ssl_cert_reqs: int
+    ssl_ca_certs: str | os.PathLike[str] | None
+    ssl_ciphers: str | None
+    ssl_context_factory: Callable[[Config, Callable[[], ssl.SSLContext]], ssl.SSLContext] | None
+    headers: list[tuple[str, str]] | None
+    use_colors: bool | None
+    app_dir: str | None
+    factory: bool
+    h11_max_incomplete_event_size: int | None
+    reset_contextvars: bool
+
+
+class RedisKwargs(TypedDict, total=False):
+    host: str
+    port: int
+    db: str | int
+    password: str | None
+    socket_timeout: float | None
+    socket_connect_timeout: float | None
+    socket_read_size: int
+    socket_keepalive: bool | None
+    socket_keepalive_options: Mapping[int, int | bytes] | object | None
+    connection_pool: ConnectionPool | None
+    unix_socket_path: str | None
+    encoding: str
+    encoding_errors: str
+    decode_responses: bool
+    retry_on_timeout: bool
+    retry: Retry
+    retry_on_error: list | None
+    ssl: bool
+    ssl_keyfile: str | None
+    ssl_certfile: str | None
+    ssl_cert_reqs: str | VerifyMode
+    ssl_include_verify_flags: list[VerifyFlags] | None
+    ssl_exclude_verify_flags: list[VerifyFlags] | None
+    ssl_ca_certs: str | None
+    ssl_ca_data: str | None
+    ssl_ca_path: str | None
+    ssl_check_hostname: bool
+    ssl_min_version: TLSVersion | None
+    ssl_ciphers: str | None
+    ssl_password: str | None
+    max_connections: int | None
+    single_connection_client: bool
+    health_check_interval: int
+    client_name: str | None
+    lib_name: str | object | None
+    lib_version: str | object | None
+    driver_info: DriverInfo | object | None
+    username: str | None
+    auto_close_connection_pool: bool | None
+    redis_connect_func: Callable | None
+    credential_provider: CredentialProvider | None
+    protocol: int | None
+    legacy_responses: bool
+    event_dispatcher: EventDispatcher | None
+    maint_notifications_config: MaintNotificationsConfig | None
 
 
 class PreStartFunc(Protocol):

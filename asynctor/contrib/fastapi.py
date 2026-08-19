@@ -16,13 +16,14 @@ import uvicorn
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.routing import _merge_lifespan_context
 
-from .._types import PreStartFunc, TyperSecho, UvicornKwargs
 from ..client import AsyncRedis
 from ..exceptions import UnsupportedError
 from ..timing import Timer
-from ..utils import Shell, load_bool
+from ..utils import Shell, get_machine_ip, load_bool
 
 if TYPE_CHECKING:
+    from .._types import PreStartFunc, RedisKwargs, TyperSecho, UvicornKwargs
+
     if sys.version_info >= (3, 11):
         from typing import Unpack
     else:
@@ -32,9 +33,7 @@ T = TypeVar("T")
 
 
 def register_aioredis(
-    app: FastAPI,
-    check_connection: bool = True,
-    **kwargs: Annotated[Any, "Kwargs that will pass to `redis.asyncio.Redis.__init__`"],
+    app: FastAPI, check_connection: bool = True, **kwargs: Unpack[RedisKwargs]
 ) -> None:
     """Register an async Redis client on a FastAPI application.
 
@@ -307,8 +306,6 @@ class RunServer:
             if declared_host := os.getenv("ASYNCTOR_HOST"):
                 host = declared_host
             else:
-                from asynctor.utils import get_machine_ip
-
                 host = get_machine_ip()
         url = f"http://{host}:{port or 8000}{app.docs_url}"
         if docs_params:
@@ -318,7 +315,7 @@ class RunServer:
             print(f"{tip}\n{url}")
         else:
             echo(tip)
-            secho = cast(TyperSecho, echo)
+            secho = cast("TyperSecho", echo)
             # echo can be `typer.secho` or `typer.echo`
             try:
                 secho(url, bold=True)
