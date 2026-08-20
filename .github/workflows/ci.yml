@@ -136,7 +136,7 @@ jobs:
       - name: Ensure make command work
         if: matrix.python-version == '3.12'
         run: |
-          uv tool install rust-just
+          just tools ${{ matrix.python-version }}
           uv python install 3.10
           make _verify
       - name: Upload Coverage
