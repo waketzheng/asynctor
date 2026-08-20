@@ -15,7 +15,7 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
 
-  - repo: git@github.com:crate-ci/typos.git
+  - repo: https://github.com/crate-ci/typos.git
     rev: v1.49.0
     hooks:
       - id: typos
