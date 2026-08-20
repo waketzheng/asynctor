@@ -7,15 +7,6 @@ from collections.abc import Callable, Mapping
 from configparser import RawConfigParser
 from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict
 
-from uvicorn.config import (
-    Config,
-    HTTPProtocolType,
-    InterfaceType,
-    LifespanType,
-    LoopFactoryType,
-    WSProtocolType,
-)
-
 if TYPE_CHECKING:
     from ssl import TLSVersion, VerifyFlags, VerifyMode
 
@@ -25,6 +16,14 @@ if TYPE_CHECKING:
     from redis.driver_info import DriverInfo
     from redis.event import EventDispatcher
     from redis.maint_notifications import MaintNotificationsConfig
+    from uvicorn.config import (
+        Config,
+        HTTPProtocolType,
+        InterfaceType,
+        LifespanType,
+        LoopFactoryType,
+        WSProtocolType,
+    )
 
 
 class UvicornKwargs(TypedDict, total=False):
