@@ -133,6 +133,11 @@ jobs:
           echo -e "[pytest]\ntrio_mode = true" > pytest.ini
           uv run --no-sync pytest -s tests/test_aio.py
           rm pytest.ini
+      - name: Ensure make command work
+        if: matrix.python-version == '3.12'
+        run: |
+          uv python install 3.10
+          make _verify
       - name: Upload Coverage
         run: uvx coveralls --service=github
         env:
