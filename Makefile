@@ -29,6 +29,9 @@ deps:
 start:
 	just start
 
+prepare:
+	just prepare
+
 _check:
 	just _check
 check:
@@ -65,9 +68,9 @@ ci: check _test
 
 _verify: up lock
 	$(MAKE) venv options=--force
-	$(MAKE) venv39 options=--force
+	$(MAKE) venv310 options=--force
 	$(MAKE) venv version=3.12 options=--force
-	$(MAKE) start
+	$(MAKE) prepare
 	$(MAKE) deps
 	$(MAKE) check
 	$(MAKE) _check
