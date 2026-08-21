@@ -32,6 +32,14 @@ if TYPE_CHECKING:
     from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
 
+__all__ = (
+    "AsyncClient",
+    "AsyncTestClient",
+    "anyio_backend_fixture",
+    "async_client_fixture",
+    "tmp_workdir_fixture",
+)
+
 
 @asynccontextmanager
 async def client_manager(
