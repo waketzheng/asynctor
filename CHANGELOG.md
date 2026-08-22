@@ -1,7 +1,19 @@
 # ChangeLog
 
+## 0.15
+
+### [0.15.1] Unrelease
+
+### [0.15.0] (../../releases/tag/v0.15.0) - 2026-08-23
+
+#### Added
+- feat: add `asynctor._types` module
+- Use `Unpack[TypedDict]` to improve type hints of `kwargs`
+
+#### Fixes
+- fix: lint issues of ruff rule `ANN`
+
 ## 0.14
-### [0.14.1] Unrelease
 
 ### [0.14.0] (../../releases/tag/v0.14.0) - 2026-08-09
 
