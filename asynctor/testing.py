@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import sys
 from collections.abc import Callable, Generator
 from contextlib import AbstractAsyncContextManager, asynccontextmanager
 from pathlib import Path
@@ -25,12 +26,19 @@ from .utils import AsyncClientGenerator
 if TYPE_CHECKING:
     from types import TracebackType
 
+    if sys.version_info >= (3, 11):
+        from typing import Unpack
+    else:
+        from typing_extensions import Unpack
+
     from _pytest.config import Config
     from _pytest.fixtures import FixtureFunctionDefinition
     from _pytest.scope import ScopeName
     from asgi_lifespan import LifespanManager
     from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
+
+    from ._types import AsyncClientKwargs
 
 __all__ = (
     "AsyncClient",
@@ -99,7 +107,7 @@ def _init_client(app: ASGIApp, base_url: str, timeout: float, **kwargs: Any) -> 
     )
 
 
-class AsyncTestClient(AbstractAsyncContextManager):
+class AsyncTestClient(AbstractAsyncContextManager[AsyncClient]):
     """Async test client for FastAPI
 
     :param app: a fastapi instance.
@@ -138,7 +146,7 @@ class AsyncTestClient(AbstractAsyncContextManager):
         mount_lifespan: bool = True,
         base_url: str = "http://test",
         timeout: float = 30,
-        **kwargs,
+        **kwargs: Unpack[AsyncClientKwargs],
     ) -> None:
         self._app = app
         self._mount_lifespan = mount_lifespan

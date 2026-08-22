@@ -8,8 +8,20 @@ from configparser import RawConfigParser
 from typing import IO, TYPE_CHECKING, Any, Protocol, TypedDict
 
 if TYPE_CHECKING:
+    import ssl
     from ssl import TLSVersion, VerifyFlags, VerifyMode
 
+    from httpx2._client import EventHook
+    from httpx2._config import Limits
+    from httpx2._transports.base import AsyncBaseTransport
+    from httpx2._types import (
+        AuthTypes,
+        CertTypes,
+        CookieTypes,
+        HeaderTypes,
+        ProxyTypes,
+        QueryParamTypes,
+    )
     from redis.asyncio.connection import ConnectionPool
     from redis.asyncio.retry import Retry
     from redis.credentials import CredentialProvider
@@ -132,3 +144,22 @@ class PreStartFunc(Protocol):
 
 class TyperSecho(Protocol):
     def __call__(self, message: str, bold: bool) -> Any: ...
+
+
+class AsyncClientKwargs(TypedDict, total=False):
+    auth: AuthTypes | None
+    params: QueryParamTypes | None
+    headers: HeaderTypes | None
+    cookies: CookieTypes | None
+    verify: ssl.SSLContext | str | bool
+    cert: CertTypes | None
+    http1: bool
+    http2: bool
+    proxy: ProxyTypes | None
+    mounts: None | Mapping[str, AsyncBaseTransport | None]
+    follow_redirects: bool
+    limits: Limits
+    max_redirects: int
+    event_hooks: None | Mapping[str, list[EventHook]]
+    trust_env: bool
+    default_encoding: str | Callable[[bytes], str | None]
