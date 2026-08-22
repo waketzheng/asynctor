@@ -287,7 +287,7 @@ class RunServer:
         app: FastAPI,
         host: str,
         port: int | None,
-        docs_params: dict | None = None,
+        docs_params: dict[str, str] | None = None,
         echo: Callable[[Any], Any] | None = None,
     ) -> str:
         """Build, print, and return the FastAPI documentation URL.
@@ -461,6 +461,65 @@ def get_log_config(fmt: str) -> dict[str, Any]:
     return log_config
 
 
+class _ServerRunner:
+    def __init__(
+        self,
+        app: FastAPI,
+        docs_params: dict[str, str] | None = None,
+        pre_start: PreStartFunc | None = None,
+        open_browser: bool | None = None,
+        **kw: Unpack[UvicornKwargs],
+    ):
+        self.app = app
+        self.docs_params = docs_params
+        self.pre_start = pre_start
+        self.open_browser = open_browser
+        self.kw = kw
+
+    def echo_and_run(
+        self,
+        host: str,
+        port: int | None,
+        reload: bool,
+        echo: Callable[[Any], Any] | None = None,
+    ) -> None:
+        RunServer.echo_and_run(
+            self.app,
+            host,
+            port,
+            reload,
+            docs_params=self.docs_params,
+            pre_start=self.pre_start,
+            open_browser=self.open_browser,
+            **self.kw,
+        )
+
+    def run(
+        self,
+        addrport: str | None,
+        port: int | None,
+        host: str,
+        reload: bool,
+        prod: bool,
+        verbose: bool,
+        echo: Callable[[Any], Any],
+    ) -> None:
+        RunServer.run(
+            self.app,
+            addrport,
+            port,
+            host,
+            reload,
+            prod,
+            verbose,
+            echo=echo,
+            docs_params=self.docs_params,
+            pre_start=self.pre_start,
+            open_browser=self.open_browser,
+            **self.kw,
+        )
+
+
 def runserver(
     app: FastAPI,
     addrport: str | int | None = None,
@@ -472,7 +531,7 @@ def runserver(
     pre_start: PreStartFunc | None = None,
     open_browser: bool | None = None,
     log_access_time: bool = True,
-    **kw,
+    **kw: Unpack[UvicornKwargs],
 ) -> None:
     """Run a FastAPI application with asynctor's development server helper.
 
@@ -505,14 +564,14 @@ def runserver(
         if __name__ == "__main__":
             runserver(app, reload=True)
     """
-    kw.update(docs_params=docs_params, pre_start=pre_start, open_browser=open_browser)
     if log_access_time:
         if (log_config := kw.get("log_config")) is not None:
             raise UnsupportedError(f"Argument value conflict: {log_access_time=} vs {log_config=}")
         log_config = get_log_config(ACCESS_LOG_FMT)
-        kw.update(log_config=log_config)
+        kw["log_config"] = log_config
+    runner = _ServerRunner(app, docs_params, pre_start, open_browser, **kw)
     if not (args := sys.argv[1:]):
-        return RunServer.echo_and_run(app, host, port, reload, **kw)
+        return runner.echo_and_run(host, port, reload)
     try:
         import typer
     except ImportError as e:
@@ -530,7 +589,7 @@ def runserver(
         prod: bool = False,
         verbose: bool = verbose,
     ) -> None:
-        RunServer.run(app, addrport, port, host, reload, prod, verbose, echo=typer.secho, **kw)
+        runner.run(addrport, port, host, reload, prod, verbose, echo=typer.secho)
 
     if (django_style_noreload := "--noreload") in args:
         sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"
