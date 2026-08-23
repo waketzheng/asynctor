@@ -40,7 +40,10 @@ jobs:
           cache-dependency-glob: |
             pyproject.toml
             uv.lock
-      - uses: astral-sh/ruff-action@v3
+      - name: Install ruff without running check or format
+        uses: astral-sh/ruff-action@v4.1.0
+        with:
+          args: "--version"
       - uses: extractions/setup-just@v4  # Or: uv tool install rust-just
       - name: Setup PDM by uv
         run: |
