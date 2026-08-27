@@ -2,7 +2,12 @@
 
 ## 0.15
 
-### [0.15.1] Unrelease
+### [0.15.2] Unrelease
+
+### [0.15.1] (../../releases/tag/v0.15.1) - 2026-08-27
+
+#### Fixes
+- refactor: improve type hints of `aio.run_async`
 
 ### [0.15.0] (../../releases/tag/v0.15.0) - 2026-08-23
 
