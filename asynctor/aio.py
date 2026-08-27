@@ -4,7 +4,15 @@ import functools
 import itertools
 import sys
 import warnings
-from collections.abc import AsyncGenerator, Callable, Coroutine, Generator, Iterable, Sequence
+from collections.abc import (
+    AsyncGenerator,
+    Awaitable,
+    Callable,
+    Coroutine,
+    Generator,
+    Iterable,
+    Sequence,
+)
 from contextlib import asynccontextmanager
 from typing import TYPE_CHECKING, Any, Literal, ParamSpec, TypeAlias, TypeVar, cast, overload
 
@@ -381,7 +389,8 @@ async def wait_for(coro: Coroutine[Any, Any, T_Retval], timeout: float) -> T_Ret
 
 def be_awaitable(
     async_func: Coroutine[Any, Any, T_Retval]
-    | Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval]],
+    | Awaitable[T_Retval]
+    | Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval] | Awaitable[T_Retval]],
 ) -> Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval]]:
     @functools.wraps(async_func)  # type:ignore
     async def do_await(*gs: Unpack[PosArgsT]) -> T_Retval:
@@ -401,7 +410,8 @@ def be_awaitable(
 
 def run_async(
     async_func: Coroutine[Any, Any, T_Retval]
-    | Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval]],
+    | Awaitable[T_Retval]
+    | Callable[[Unpack[PosArgsT]], Coroutine[Any, Any, T_Retval] | Awaitable[T_Retval]],
     *args: Unpack[PosArgsT],
 ) -> T_Retval:
     """Run async function in worker thread and get the result of it"""
