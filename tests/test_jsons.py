@@ -41,7 +41,6 @@ def test_loads():
 
 def test_fast_json():
     assert FastJson.loads(b'{"1":1}') == {"1": 1}  # ty:ignore[missing-argument]
-    assert FastJson.loads.__doc__ == json_loads.__doc__
     assert FastJson.dumps({1: 1}, "str") == '{"1":1}'
     assert FastJson.dumps({1: 1}, "string") == '{"1":1}'  # type:ignore
     assert FastJson.dumps({1: 1}, output="str") == '{"1":1}'
@@ -67,17 +66,50 @@ def test_fast_json():
 
 def test_fast_json_unsupported_output():
     with pytest.raises(ValueError):
-        FastJson.dumps({1: 1}, output=bytes)  # type:ignore
+        FastJson.dumps({1: 1}, output="String")  # type:ignore
     with pytest.raises(AsynctorError):
-        FastJson.dumps({1: 1}, output=bytes)  # type:ignore
+        FastJson.dumps({1: 1}, output="String")  # type:ignore
     with pytest.raises(UnsupportedError):
-        FastJson.dumps({1: 1}, output=bytes)  # type:ignore
+        FastJson.dumps({1: 1}, output="String")  # type:ignore
 
 
-def test_fast_json_write(tmp_workdir):
+def test_fast_json_write_and_loads(tmp_workdir):
     p = Path("a.json")
     assert FastJson.dumps({1: 1}, p) == b'{"1":1}'
     assert p.read_bytes() == b'{"1":1}'
     assert FastJson.dumps({1: 1}, p, pretty=True) == b'{\n  "1": 1\n}'
     assert p.read_bytes() == b'{\n  "1": 1\n}'
     assert FastJson.dumps({1: 1}, pretty=True, output=p) == b'{\n  "1": 1\n}'
+
+    assert FastJson.loads(p) == {"1": 1}
+
+
+def test_dumps_loads_diff(tmp_workdir):
+    p = Path("foo.json")
+    origin = (1, 2)
+    assert FastJson.dumps(origin, p) == b"[1,2]"
+    loaded = FastJson.loads(p)
+    assert loaded != origin
+    assert isinstance(loaded, list)
+    assert all(i == j for i, j in zip(origin, loaded, strict=True))
+
+    origin = {1: 2}
+    assert FastJson.dumps(origin, p) == b'{"1":2}'
+    loaded = FastJson.loads(p)
+    assert loaded != origin
+    assert isinstance(loaded, dict)
+    assert loaded == {"1": 2}
+
+    origin = {None: (1, 2)}
+    assert FastJson.dumps(origin, p) == b'{"null":[1,2]}'
+    loaded = FastJson.loads(p)
+    assert loaded != origin
+    assert isinstance(loaded, dict)
+    assert loaded == {"null": [1, 2]}
+
+    origin = {1.0: 2.0}
+    assert FastJson.dumps(origin, p) == b'{"1.0":2.0}'
+    loaded = FastJson.loads(p)
+    assert loaded != origin
+    assert isinstance(loaded, dict)
+    assert loaded == {"1.0": 2}

@@ -4,6 +4,9 @@
 
 ### [0.15.2] Unrelease
 
+#### Added
+- feat: support passing a `pathlib.Path` instance to `FastJson.loads`
+
 ### [0.15.1] (../../releases/tag/v0.15.1) - 2026-08-27
 
 #### Fixes

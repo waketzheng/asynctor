@@ -8,8 +8,9 @@ from typing import Any, Literal, TypeAlias, overload
 
 from .exceptions import UnsupportedError
 
-BasicJsonType: TypeAlias = str | bool | int | float | None
-JsonAbleType: TypeAlias = dict[BasicJsonType, Any] | list[Any] | tuple[Any, ...] | BasicJsonType
+BasicJsonType: TypeAlias = str | int | float | bool | None
+LoadedJsonType: TypeAlias = dict[BasicJsonType, Any] | list[Any] | BasicJsonType
+JsonAbleType: TypeAlias = LoadedJsonType | tuple[Any, ...]
 StrictJsonType: TypeAlias = (
     dict[BasicJsonType, JsonAbleType]
     | list[JsonAbleType]
@@ -77,7 +78,7 @@ except ImportError:
     ) -> bytes:
         return json_dumps(obj, pretty=pretty, default=default).encode()
 
-    def json_loads(obj: DumpedJsonType) -> JsonAbleType:
+    def json_loads(obj: DumpedJsonType) -> LoadedJsonType:
         return json.loads(obj)
 else:
 
@@ -94,7 +95,7 @@ else:
     ) -> str:
         return json_dump_bytes(obj, pretty=pretty, default=default).decode()
 
-    def json_loads(obj: DumpedJsonType) -> JsonAbleType:
+    def json_loads(obj: DumpedJsonType) -> LoadedJsonType:
         return orjson.loads(obj)
 
 
@@ -148,7 +149,16 @@ class FastJson:
                 return json_dumps(obj, pretty=pretty)
             case x if x is str:  # support: FastJson.dumps(obj, output=str)
                 return json_dumps(obj, pretty=pretty)
+            case x if x is bytes:  # support: FastJson.dumps(obj, output=bytes)
+                return json_dump_bytes(obj, pretty=pretty)
             case _:
                 raise UnsupportedError(f"Unsupported output format: {output!r}")
 
-    loads = staticmethod(json_loads)
+    @staticmethod
+    def loads(obj: DumpedJsonType | Path) -> LoadedJsonType:
+        """Deserialize JSON to Python objects.
+
+        :param obj: Automatically reads file content if a `Path` is given;
+            otherwise, loads the input using `json` or `orjson`.
+        """
+        return json_loads(obj.read_bytes() if isinstance(obj, Path) else obj)
