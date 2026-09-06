@@ -2,17 +2,19 @@
 
 ## 0.15
 
-### [0.15.2] Unrelease
+### [0.15.3] Unrelease
+
+### [0.15.2](../../releases/tag/v0.15.2) - 2026-09-06
 
 #### Added
 - feat: support passing a `pathlib.Path` instance to `FastJson.loads`
 
-### [0.15.1] (../../releases/tag/v0.15.1) - 2026-08-27
+### [0.15.1](../../releases/tag/v0.15.1) - 2026-08-27
 
 #### Fixes
 - refactor: improve type hints of `aio.run_async`
 
-### [0.15.0] (../../releases/tag/v0.15.0) - 2026-08-23
+### [0.15.0](../../releases/tag/v0.15.0) - 2026-08-23
 
 #### Added
 - feat: add `asynctor._types` module
@@ -23,7 +25,7 @@
 
 ## 0.14
 
-### [0.14.0] (../../releases/tag/v0.14.0) - 2026-08-09
+### [0.14.0](../../releases/tag/v0.14.0) - 2026-08-09
 
 #### Added
 - feat: add `Timer.utcnow` function
