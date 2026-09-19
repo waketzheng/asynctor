@@ -190,6 +190,22 @@ class TestOpenBrowser:
         mock_uvicorn_run.assert_called_once_with("__main__:app", host="0.0.0.0", reload=True)
 
 
+def test_custom_echo(mocker, mock_uvicorn_run, mock_no_args):
+    mock_secho = mocker.patch("typer.secho")
+    app = FastAPI()
+
+    class Counter:
+        called = 0
+
+    def silent(msg: str) -> None:
+        Counter.called += 1
+
+    runserver(app, "localhost", verbose=True, echo=silent)
+    mock_secho.assert_not_called()
+    assert Counter.called > 0
+    mock_uvicorn_run.assert_called()
+
+
 def test_reload(mock_uvicorn_run):
     opts = CliOpts(reload=True)
     RunServer.run(FastAPI(), echo=typer.secho, **opts.as_dict())

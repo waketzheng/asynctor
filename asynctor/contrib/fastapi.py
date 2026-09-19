@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import functools
+import importlib
 import logging
 import os
 import platform
@@ -483,6 +484,9 @@ class _ServerRunner:
         reload: bool,
         echo: Callable[[Any], Any] | None = None,
     ) -> None:
+        if echo is None:
+            typer = importlib.import_module("typer")
+            echo = typer.secho
         RunServer.echo_and_run(
             self.app,
             host,
@@ -491,6 +495,7 @@ class _ServerRunner:
             docs_params=self.docs_params,
             pre_start=self.pre_start,
             open_browser=self.open_browser,
+            echo=echo,
             **self.kw,
         )
 
@@ -531,6 +536,7 @@ def runserver(
     pre_start: PreStartFunc | None = None,
     open_browser: bool | None = None,
     log_access_time: bool = True,
+    echo: Callable[[Any], Any] | None = None,
     **kw: Unpack[UvicornKwargs],
 ) -> None:
     """Run a FastAPI application with asynctor's development server helper.
@@ -550,6 +556,7 @@ def runserver(
     :param pre_start: optional callback invoked before uvicorn starts.
     :param open_browser: whether to open the docs URL before the server starts.
     :param log_access_time: whether to install the default access-log format.
+    :param echo: callback used to print verbose messages(default: typer.secho).
     :param kw: additional keyword arguments passed to ``uvicorn.run``.
     :raises UnsupportedError: if ``log_access_time`` and ``log_config`` are both supplied.
     :raises ImportError: if command-line arguments are used without ``typer`` installed.
@@ -571,7 +578,7 @@ def runserver(
         kw["log_config"] = log_config
     runner = _ServerRunner(app, docs_params, pre_start, open_browser, **kw)
     if not (args := sys.argv[1:]):
-        return runner.echo_and_run(host, port, reload)
+        return runner.echo_and_run(host, port, reload, echo=echo)
     try:
         import typer
     except ImportError as e:
@@ -589,7 +596,8 @@ def runserver(
         prod: bool = False,
         verbose: bool = verbose,
     ) -> None:
-        runner.run(addrport, port, host, reload, prod, verbose, echo=typer.secho)
+        secho = typer.secho if echo is None else echo
+        runner.run(addrport, port, host, reload, prod, verbose, echo=secho)
 
     if (django_style_noreload := "--noreload") in args:
         sys.argv[sys.argv.index(django_style_noreload)] = "--no-reload"
