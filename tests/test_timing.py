@@ -13,14 +13,6 @@ from asynctor import timing
 from asynctor.timing import UTC, Timer, ZoneInfo, get_current_time, timeit
 
 
-def test_get_current_time():
-    with pytest.MonkeyPatch.context() as mp:
-        mp.setitem(sys.modules, "anyio", None)
-        mp.setattr(time, "perf_counter", lambda: 7.0)
-        importlib.reload(timing)
-        assert timing.get_current_time() == 7.0
-
-
 @contextmanager
 def capture_stdout():
     """Redirect sys.stdout to a new StringIO
@@ -275,3 +267,11 @@ def test_export():
 
     assert _Timer is Timer
     assert _timeit is timeit
+
+
+def test_get_current_time():
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setitem(sys.modules, "anyio", None)
+        mp.setattr(time, "perf_counter", lambda: 7.0)
+        importlib.reload(timing)
+        assert timing.get_current_time() == 7.0
