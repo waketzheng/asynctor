@@ -2,7 +2,17 @@
 
 ## 0.15
 
-### [0.15.3] Unrelease
+### [0.15.5] Unrelease
+
+### [0.15.4](../../releases/tag/v0.15.4) - 2026-09-27
+
+#### Fixes
+- refactor: use `time.perf_counter` instead of `time.time` for cost calculating
+
+### [0.15.3](../../releases/tag/v0.15.3) - 2026-09-20
+
+#### Added
+- feat: expose the `echo` parameter for runserver
 
 ### [0.15.2](../../releases/tag/v0.15.2) - 2026-09-06
 
