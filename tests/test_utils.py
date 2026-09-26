@@ -36,8 +36,9 @@ async def client():
 
 @pytest.fixture(scope="session")
 async def client_without_lifespan():
-    async with AsyncTestClient(app_for_utils_test, mount_lifespan=False) as c:
-        yield c
+    with pytest.deprecated_call():
+        async with AsyncTestClient(app_for_utils_test, mount_lifespan=False) as c:
+            yield c
 
 
 @pytest.fixture(scope="session")
@@ -49,8 +50,9 @@ async def client_func_style():
 
 @pytest.fixture(scope="session")
 async def client_func_style_without_lifespan():
-    async with client_manager(app_for_utils_test, mount_lifespan=False) as c:
-        yield c
+    with pytest.deprecated_call():
+        async with client_manager(app_for_utils_test, mount_lifespan=False) as c:
+            yield c
 
 
 @pytest.mark.anyio

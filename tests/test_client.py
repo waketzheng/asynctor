@@ -10,8 +10,7 @@ import asynctor.client as client_mod
 import pytest
 from asynctor import AsyncRedis
 from asynctor.contrib import fastapi as fastapi_utils
-from asynctor.testing import async_client_fixture
-from asynctor.utils import AsyncTestClient
+from asynctor.testing import AsyncTestClient, async_client_fixture
 from fastapi import FastAPI, Request
 from redis.asyncio import Redis
 

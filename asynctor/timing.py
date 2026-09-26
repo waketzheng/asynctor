@@ -18,6 +18,17 @@ else:
 
     UTC = timezone.utc
 
+try:
+    import anyio
+
+    def get_current_time() -> float:
+        return anyio.current_time()
+except ImportError:
+
+    def get_current_time() -> float:
+        return time.perf_counter()
+
+
 if TYPE_CHECKING:
     if sys.version_info >= (3, 13):  # pragma: no cover
         from typing import TypeIs
@@ -101,14 +112,14 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
             self.func: Callable = func
         self.message = message
         self._decimal_places = decimal_places
-        self._end = self._start = time.time()
+        self._end = self._start = time.perf_counter()
         self._verbose = verbose
 
     def start(self, ts: float | None = None) -> None:
-        self._start = ts or time.time()
+        self._start = ts or time.perf_counter()
 
     def capture(self, ts: float | None = None, verbose: bool | None = None) -> None:
-        self._end = ts or time.time()
+        self._end = ts or time.perf_counter()
         if verbose is None:
             verbose = self._verbose
         if verbose:
@@ -126,7 +137,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         if start is None:
             start = self._start
         if not end:
-            end = time.time()
+            end = time.perf_counter()
         return round(end - start, self._decimal_places)
 
     def __str__(self) -> str:
@@ -140,12 +151,7 @@ class Timer(AbstractContextManager, AbstractAsyncContextManager):
         return self
 
     def _get_current_timestamp(self) -> float:
-        try:
-            import anyio
-
-            return anyio.current_time()
-        except ImportError:
-            return time.time()
+        return get_current_time()
 
     async def __aexit__(self, *args, **kwargs) -> None:
         self.capture(self._get_current_timestamp())

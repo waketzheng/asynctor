@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import importlib
+import sys
 import time
 from contextlib import contextmanager, redirect_stdout
 from datetime import datetime, timedelta
@@ -7,7 +9,16 @@ from io import StringIO
 
 import anyio
 import pytest
-from asynctor.timing import UTC, Timer, ZoneInfo, timeit
+from asynctor import timing
+from asynctor.timing import UTC, Timer, ZoneInfo, get_current_time, timeit
+
+
+def test_get_current_time():
+    with pytest.MonkeyPatch.context() as mp:
+        mp.setitem(sys.modules, "anyio", None)
+        mp.setattr(time, "perf_counter", lambda: 7.0)
+        importlib.reload(timing)
+        assert timing.get_current_time() == 7.0
 
 
 @contextmanager
@@ -72,27 +83,27 @@ def raw_wait_for():
 
 @pytest.mark.anyio
 async def test_timeit():
-    start = time.time()
+    start = get_current_time()
     s = 0.2
     with capture_stdout() as stream:
         r = await sleep(s)
-    end = time.time()
+    end = get_current_time()
     assert round(end - start, 1) == s
     assert r is None
     stdout = stream.getvalue()
     assert str(s) in stdout and sleep.__name__ in stdout
-    start = time.time()
+    start = get_current_time()
     with capture_stdout() as stream1:
         r1 = await sleep1()
-    end = time.time()
+    end = time.perf_counter()
     assert round(end - start, 1) == 0.1
     assert r1 == 1
     stdout1 = stream1.getvalue()
     assert "0.1" in stdout1 and sleep1.__name__ in stdout1
-    start = time.time()
+    start = get_current_time()
     with capture_stdout() as stream2:
         r2 = wait_for()
-    end = time.time()
+    end = get_current_time()
     assert round(end - start, 1) == 0.1
     assert r2 == "I'm a teapot"
     stdout2 = stream2.getvalue()
@@ -103,27 +114,27 @@ async def test_timeit():
 class TestTimer:
     @pytest.mark.anyio
     async def test_decorator(self):
-        start = time.time()
+        start = get_current_time()
         s = 0.2
         with capture_stdout() as stream:
             r = await do_sleep(s)
-        end = time.time()
+        end = get_current_time()
         assert round(end - start, 1) == s
         assert r is None
         stdout = stream.getvalue()
         assert str(s) in stdout and do_sleep.__name__ in stdout
-        start = time.time()
+        start = get_current_time()
         with capture_stdout() as stream1:
             r1 = await do_sleep1()
-        end = time.time()
+        end = get_current_time()
         assert round(end - start, 1) == 0.1
         assert r1 == 1
         stdout1 = stream1.getvalue()
         assert "0.1" in stdout1 and do_sleep1.__name__ in stdout1
-        start = time.time()
+        start = get_current_time()
         with capture_stdout() as stream2:
             r2 = do_wait_for()
-        end = time.time()
+        end = get_current_time()
         assert round(end - start, 1) == 0.1
         assert r2 == "I'm a teapot"
         stdout2 = stream2.getvalue()
@@ -135,7 +146,7 @@ class TestTimer:
         # Manual capture
         clock = Timer("testing start capture", decimal_places=2, verbose=False)
         assert repr(clock) == "Timer('testing start capture', 2, False)"
-        start = time.time()
+        start = get_current_time()
         assert clock._start <= start
         await anyio.sleep(0.5)
         clock.start()
@@ -173,13 +184,13 @@ class TestTimer:
 
     @pytest.mark.anyio
     async def test_with(self):
-        start = time.time()
+        start = get_current_time()
         message = "Welcome to guangdong"
         with capture_stdout() as stream, Timer(message):
             await raw_sleep1()
             raw_wait_for()
             await raw_sleep(0.21)
-        end = time.time()
+        end = get_current_time()
         assert round(end - start, 1) == (0.1 + 0.1 + 0.2)
         stdout = stream.getvalue()
         assert "0.4" in stdout
@@ -207,13 +218,13 @@ class TestTimer:
 
 @pytest.mark.anyio
 async def test_with_timeit():
-    start = time.time()
+    start = get_current_time()
     message = "hello kitty"
     with capture_stdout() as stream, timeit(message):
         await raw_sleep1()
         raw_wait_for()
         await raw_sleep(0.21)
-    end = time.time()
+    end = get_current_time()
     assert round(end - start, 1) == (0.1 + 0.1 + 0.2)
     stdout = stream.getvalue()
     assert "0.4" in stdout
