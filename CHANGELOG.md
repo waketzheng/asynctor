@@ -2,7 +2,12 @@
 
 ## 0.15
 
-### [0.15.5] Unrelease
+### [0.15.6] Unrelease
+
+### [0.15.5](../../releases/tag/v0.15.5) - 2026-09-30
+
+#### Added
+- Add parameter `return_type` to improve type hints for `json_loads`/`FastJson.loads`
 
 ### [0.15.4](../../releases/tag/v0.15.4) - 2026-09-27
 
