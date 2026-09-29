@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from decimal import Decimal
 from pathlib import Path
+from typing import Any, cast
 
 import pytest
 from asynctor.exceptions import AsynctorError, UnsupportedError
@@ -86,7 +87,7 @@ def test_fast_json_write_and_loads(tmp_workdir):
 
 def test_dumps_loads_diff(tmp_workdir):
     p = Path("foo.json")
-    origin = (1, 2)
+    origin: Any = (1, 2)
     assert FastJson.dumps(origin, p) == b"[1,2]"
     loaded = FastJson.loads(p)
     assert loaded != origin
@@ -113,3 +114,26 @@ def test_dumps_loads_diff(tmp_workdir):
     assert loaded != origin
     assert isinstance(loaded, dict)
     assert loaded == {"1.0": 2}
+
+
+def test_return_type():
+    def validated(data: dict) -> dict:
+        return data
+
+    d = FastJson.loads('{"a":1}', return_type=dict)
+    assert validated(d) == d
+
+    def get_first(values: list[int]) -> int:
+        return values[0]
+
+    v = json_loads("[1,2]", return_type=list[int])
+    assert get_first(v) == 1
+
+    data = json_loads("null", return_type=Any)
+    # If set return_type to Any, ty check will pass, but mypy not
+    v_data = validated(data)  # type:ignore[arg-type]
+    assert v_data == data
+
+    unknown_type_data = FastJson.loads("{}")
+    vv_data = validated(cast(dict, unknown_type_data))
+    assert vv_data == unknown_type_data

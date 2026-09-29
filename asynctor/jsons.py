@@ -4,7 +4,7 @@ import functools
 from collections.abc import Callable
 from datetime import date, datetime, time
 from pathlib import Path
-from typing import Any, Literal, TypeAlias, overload
+from typing import Any, Literal, TypeAlias, TypeVar, cast, overload
 
 from .exceptions import UnsupportedError
 
@@ -18,6 +18,7 @@ StrictJsonType: TypeAlias = (
     | BasicJsonType
 )
 DumpedJsonType: TypeAlias = str | bytes | bytearray
+T_type = TypeVar("T_type")
 
 try:
     import orjson
@@ -78,7 +79,7 @@ except ImportError:
     ) -> bytes:
         return json_dumps(obj, pretty=pretty, default=default).encode()
 
-    def json_loads(obj: DumpedJsonType) -> LoadedJsonType:
+    def _json_loads(obj: DumpedJsonType) -> Any:
         return json.loads(obj)
 else:
 
@@ -95,7 +96,7 @@ else:
     ) -> str:
         return json_dump_bytes(obj, pretty=pretty, default=default).decode()
 
-    def json_loads(obj: DumpedJsonType) -> LoadedJsonType:
+    def _json_loads(obj: DumpedJsonType) -> Any:
         return orjson.loads(obj)
 
 
@@ -111,7 +112,28 @@ json_dumps.__doc__ = """Serialize ``obj`` to a JSON formatted string
 :param default: a function that return a serializable version of obj or raise TypeError
 :param pretty: whether indent to humanize
 """
-json_loads.__doc__ = """Deserialize JSON to Python objects."""
+
+
+@overload
+def json_loads(obj: DumpedJsonType) -> LoadedJsonType: ...
+
+
+@overload
+def json_loads(obj: DumpedJsonType, *, return_type: None = None) -> LoadedJsonType: ...
+
+
+@overload
+def json_loads(obj: DumpedJsonType, *, return_type: type[T_type]) -> T_type: ...
+
+
+def json_loads(
+    obj: DumpedJsonType, *, return_type: type[T_type] | None = None
+) -> LoadedJsonType | T_type:
+    """Deserialize JSON to Python objects."""
+    data = _json_loads(obj)
+    if return_type is None:
+        return data
+    return cast(T_type, data)
 
 
 class FastJson:
@@ -155,10 +177,26 @@ class FastJson:
                 raise UnsupportedError(f"Unsupported output format: {output!r}")
 
     @staticmethod
-    def loads(obj: DumpedJsonType | Path) -> LoadedJsonType:
+    @overload
+    def loads(obj: DumpedJsonType | Path) -> LoadedJsonType: ...
+
+    @staticmethod
+    @overload
+    def loads(obj: DumpedJsonType | Path, *, return_type: None = None) -> LoadedJsonType: ...
+
+    @staticmethod
+    @overload
+    def loads(obj: DumpedJsonType | Path, *, return_type: type[T_type]) -> T_type: ...
+
+    @staticmethod
+    def loads(
+        obj: DumpedJsonType | Path, *, return_type: type[T_type] | None = None
+    ) -> LoadedJsonType | T_type:
         """Deserialize JSON to Python objects.
 
         :param obj: Automatically reads file content if a `Path` is given;
             otherwise, loads the input using `json` or `orjson`.
         """
-        return json_loads(obj.read_bytes() if isinstance(obj, Path) else obj)
+        return json_loads(
+            obj.read_bytes() if isinstance(obj, Path) else obj, return_type=return_type
+        )
