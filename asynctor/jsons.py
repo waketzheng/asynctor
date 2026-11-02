@@ -139,18 +139,25 @@ def json_loads(
 class FastJson:
     @overload
     @classmethod
-    def dumps(cls, obj: Any, output: Literal["str"], *, pretty: bool = False) -> str: ...
+    def dumps(
+        cls, obj: Any, output: Literal["str"] | type[str], *, pretty: bool = False
+    ) -> str: ...
+
     @overload
     @classmethod
     def dumps(
-        cls, obj: Any, output: Literal["bytes"] | Path = "bytes", *, pretty: bool = False
+        cls,
+        obj: Any,
+        output: Literal["bytes"] | type[bytes] | Path = "bytes",
+        *,
+        pretty: bool = False,
     ) -> bytes: ...
 
     @classmethod
     def dumps(
         cls,
         obj: Any,
-        output: Literal["str", "bytes"] | Path = "bytes",
+        output: Literal["str", "bytes"] | type[str | bytes] | Path = "bytes",
         *,
         pretty: bool = False,
     ) -> str | bytes:

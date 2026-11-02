@@ -41,11 +41,11 @@ def test_loads():
 
 
 def test_fast_json():
-    assert FastJson.loads(b'{"1":1}') == {"1": 1}  # ty:ignore[missing-argument]
+    assert FastJson.loads(b'{"1":1}') == {"1": 1}
     assert FastJson.dumps({1: 1}, "str") == '{"1":1}'
     assert FastJson.dumps({1: 1}, "string") == '{"1":1}'  # type:ignore
     assert FastJson.dumps({1: 1}, output="str") == '{"1":1}'
-    assert FastJson.dumps({1: 1}, output=str) == '{"1":1}'  # type:ignore
+    assert FastJson.dumps({1: 1}, output=str) == '{"1":1}'
     assert FastJson.dumps({1: 1}, "str", pretty=True) == '{\n  "1": 1\n}'
     assert FastJson.dumps({1: 1}, pretty=True, output="str") == '{\n  "1": 1\n}'
     assert FastJson.dumps({1: 1}) == b'{"1":1}'
