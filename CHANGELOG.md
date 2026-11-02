@@ -1,8 +1,18 @@
 # ChangeLog
 
-## 0.15
+## 0.16
+### [0.16.1] Unrelease
 
-### [0.15.6] Unrelease
+### [0.16.0](../../releases/tag/v0.16.0) - 2026-11-02
+
+#### Changed
+- feat: use `anyio.AsyncContextManagerMixin` in `AsyncTestClient` and bump the anyio dependency to `>=4.10.0`
+- refactor: use `monkeypatch.chdir` instead of `contextlib.chdir` for `tmp_workdir_fixture`
+
+#### Fixes
+- refactor: `FastJson.dumps(..., output=str)` no longer triggle mypy complaint
+
+## 0.15
 
 ### [0.15.5](../../releases/tag/v0.15.5) - 2026-09-30
 
