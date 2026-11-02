@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import sys
 from collections.abc import Callable, Generator
-from contextlib import AbstractAsyncContextManager, asynccontextmanager
+from contextlib import asynccontextmanager
+from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
 import pytest
+from anyio import AsyncContextManagerMixin
 
 try:
     from httpx2 import ASGITransport, AsyncClient
@@ -20,12 +22,9 @@ except ImportError:
             "    $ pip install httpx2\n"
         ) from None
 
-from .compat import chdir
 from .utils import AsyncClientGenerator
 
 if TYPE_CHECKING:
-    from types import TracebackType
-
     if sys.version_info >= (3, 11):
         from typing import Unpack
     else:
@@ -85,16 +84,17 @@ async def client_manager(
         assert response.status_code == 200
     ```
     """
+    client_factory: Callable[[ASGIApp], AsyncClient] = partial(
+        _init_client, base_url=base_url, timeout=timeout, **kwargs
+    )
+
     if mount_lifespan:
         from asgi_lifespan import LifespanManager
 
-        async with (
-            LifespanManager(app) as manager,
-            _init_client(manager.app, base_url, timeout, **kwargs) as c,
-        ):
+        async with LifespanManager(app) as manager, client_factory(manager.app) as c:
             yield c
     else:
-        async with _init_client(app, base_url, timeout, **kwargs) as c:
+        async with client_factory(app) as c:
             yield c
 
 
@@ -107,7 +107,7 @@ def _init_client(app: ASGIApp, base_url: str, timeout: float, **kwargs: Any) -> 
     )
 
 
-class AsyncTestClient(AbstractAsyncContextManager[AsyncClient]):
+class AsyncTestClient(AsyncContextManagerMixin):
     """Async test client for FastAPI
 
     :param app: a fastapi instance.
@@ -156,31 +156,16 @@ class AsyncTestClient(AbstractAsyncContextManager[AsyncClient]):
         self._timeout = timeout
         self._kwargs = kwargs
 
-    async def __aenter__(self) -> AsyncClient:
-        if self._client is None:
-            app = await self._init_app()
-            self._client = _init_client(app, self._base_url, self._timeout, **self._kwargs)
-        return await self._client.__aenter__()
-
-    async def _init_app(self) -> ASGIApp:
-        app: ASGIApp = self._app
-        if self._mount_lifespan:
-            from asgi_lifespan import LifespanManager
-
-            self._manager = manager = await LifespanManager(app).__aenter__()
-            app = manager.app
-        return app
-
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> None:
-        if self._client:
-            await self._client.__aexit__(exc_type, exc_value, traceback)
-        if self._manager:
-            await self._manager.__aexit__(exc_type, exc_value, traceback)
+    @asynccontextmanager
+    async def __asynccontextmanager__(self) -> AsyncClientGenerator:
+        async with client_manager(
+            self._app,
+            self._base_url,
+            self._mount_lifespan,
+            self._timeout,
+            **self._kwargs,
+        ) as client:
+            yield client
 
 
 def async_client_fixture(app: FastAPI, mount_lifespan: bool = True) -> FixtureFunctionDefinition:
@@ -272,9 +257,9 @@ def tmp_workdir_fixture() -> FixtureFunctionDefinition:
     """
 
     @pytest.fixture
-    def tmp_work_dir(tmp_path: Path) -> Generator[Path]:
-        with chdir(tmp_path):
-            yield tmp_path
+    def tmp_work_dir(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Generator[Path]:
+        monkeypatch.chdir(tmp_path)
+        yield tmp_path
 
     return tmp_work_dir
 

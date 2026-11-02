@@ -17,7 +17,6 @@ from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from asgi_lifespan._types import ASGIApp
     from fastapi import FastAPI
 
     from . import testing
@@ -69,17 +68,13 @@ class AsyncTestClient(AbstractAsyncContextManager):
 
     def __init__(self, *args, **kwargs) -> None:
         _deprecated_warns("AsyncTestClient")
-        self.client_cls.__init__(self, *args, **kwargs)  # type:ignore
+        self.context = self.client_cls(*args, **kwargs)
 
     async def __aenter__(self) -> AsyncClient:
-        await self.client_cls.__aenter__(self)  # type:ignore
-        return self._client  # type:ignore
-
-    async def _init_app(self) -> ASGIApp:
-        return await self.client_cls._init_app(self)  # type:ignore
+        return await self.context.__aenter__()
 
     async def __aexit__(self, *args, **kw) -> None:
-        await self.client_cls.__aexit__(self, *args, **kw)  # type: ignore
+        await self.context.__aexit__(*args, **kw)
 
 
 def local_dict(data: dict[str, T], *keys: str) -> dict[str, T]:

@@ -7,7 +7,7 @@ license = { text = "MIT" }
 requires-python = ">=3.10"
 dynamic = [ "version" ]
 dependencies = [
-    "anyio>=3.7.1",
+    "anyio>=4.10.0",
     "typing-extensions>=4.15.0; python_version < '3.11'",
     "exceptiongroup>=1.3.0; python_version < '3.11'",
 ]
