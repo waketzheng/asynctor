@@ -95,7 +95,7 @@ class Choices(enum.Enum, metaclass=ChoicesType):  # type:ignore[misc,valid-type]
         return f"{self.__class__.__qualname__}.{self._name_}"
 
 
-class IntegerChoices(Choices, IntEnum):  # ty:ignore[invalid-method-override]
+class IntegerChoices(Choices, IntEnum):  # ty:ignore
     """Class for creating enumerated integer choices."""
 
     if TYPE_CHECKING:
@@ -108,7 +108,7 @@ class IntegerChoices(Choices, IntEnum):  # ty:ignore[invalid-method-override]
         def value(self) -> int: ...
 
 
-class TextChoices(Choices, StrEnum):  # ty:ignore[invalid-method-override]
+class TextChoices(Choices, StrEnum):  # ty:ignore
     """Class for creating enumerated string choices."""
 
     @staticmethod

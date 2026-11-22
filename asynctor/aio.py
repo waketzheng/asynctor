@@ -29,7 +29,7 @@ else:  # pragma: no cover
     from typing_extensions import TypeVarTuple, Unpack
 
     try:
-        from exceptiongroup import ExceptionGroup  # ty:ignore[unresolved-import]
+        from exceptiongroup import ExceptionGroup  # ty:ignore[import-not-found]
     except ImportError:
         ExceptionGroup = Exception  # type:ignore  # ty:ignore[invalid-assignment]
 try:
@@ -103,7 +103,7 @@ def ensure_afunc(
 ) -> CallableT | Callable[[], Coroutine[Any, Any, T_Retval]]:
     """Wrap coroutine to be async function"""
     if callable(coro):
-        return coro  # ty: ignore[invalid-return-type]
+        return coro  # ty: ignore[invalid-explicit-return]
 
     async def do_await() -> T_Retval:
         return await coro

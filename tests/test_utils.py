@@ -83,32 +83,32 @@ class TestAttrDict:
         origin_dict = {"a": 1, "b": {"c": 2, "d": {"e": 3}}}
         d = AttrDict(origin_dict)
         assert d == origin_dict
-        assert d.a == d["a"] == 1  # ty: ignore[unresolved-attribute]
-        assert d.b == d["b"] == {"c": 2, "d": {"e": 3}}  # ty: ignore[unresolved-attribute]
-        assert d.b.c == d["b"]["c"] == 2  # ty: ignore[unresolved-attribute]
-        assert d.b.d == d["b"]["d"] == {"e": 3}  # ty: ignore[unresolved-attribute]
-        assert d.b.d.e == d["b"]["d"]["e"] == 3  # ty: ignore[unresolved-attribute]
+        assert d.a == d["a"] == 1  # ty: ignore[missing-attribute]
+        assert d.b == d["b"] == {"c": 2, "d": {"e": 3}}  # ty: ignore[missing-attribute]
+        assert d.b.c == d["b"]["c"] == 2  # ty: ignore[missing-attribute]
+        assert d.b.d == d["b"]["d"] == {"e": 3}  # ty: ignore[missing-attribute]
+        assert d.b.d.e == d["b"]["d"]["e"] == 3  # ty: ignore[missing-attribute]
         assert str(d) == str(origin_dict)
         assert repr(d) == "AttrDict(" + repr(origin_dict) + ")"
 
     def test_raises(self):
         with pytest.raises(AttributeError):
-            assert AttrDict().a  # ty: ignore[unresolved-attribute]
+            assert AttrDict().a  # ty: ignore[missing-attribute]
         with pytest.raises(KeyError):
             assert AttrDict()["a"]
 
     def test_key_startswith_underline(self):
         d = AttrDict({"_a": 1, "__b": 2, "___c": 3, "____d": 4})
-        assert d._a == d["_a"] == 1  # ty: ignore[unresolved-attribute]
+        assert d._a == d["_a"] == 1  # ty: ignore[missing-attribute]
         assert d["__b"] == 2
         assert d["___c"] == 3
         assert d["____d"] == 4
         with pytest.raises(AttributeError):
-            assert d.__b  # ty: ignore[unresolved-attribute]
+            assert d.__b  # ty: ignore[missing-attribute]
         with pytest.raises(AttributeError):
-            assert d.___c  # ty: ignore[unresolved-attribute]
+            assert d.___c  # ty: ignore[missing-attribute]
         with pytest.raises(AttributeError):
-            assert d.____d  # ty: ignore[unresolved-attribute]
+            assert d.____d  # ty: ignore[missing-attribute]
 
     def test_initial(self):
         assert AttrDict() == {} == {}
@@ -134,15 +134,15 @@ class TestAttrDict:
         assert d["a-b"] == 1
         assert d[("a", "b")] == 2
         with pytest.raises(AttributeError):
-            assert d.a_b  # ty: ignore[unresolved-attribute]
+            assert d.a_b  # ty: ignore[missing-attribute]
         with pytest.raises(AttributeError):
-            assert d.ab  # ty: ignore[unresolved-attribute]
-        assert d["c_d"] == d.c_d == 4  # ty: ignore[unresolved-attribute]
+            assert d.ab  # ty: ignore[missing-attribute]
+        assert d["c_d"] == d.c_d == 4  # ty: ignore[missing-attribute]
         assert d["e f"] == 5
         with pytest.raises(AttributeError):
-            assert d.e_f  # ty: ignore[unresolved-attribute]
+            assert d.e_f  # ty: ignore[missing-attribute]
         with pytest.raises(AttributeError):
-            assert d.ef  # ty: ignore[unresolved-attribute]
+            assert d.ef  # ty: ignore[missing-attribute]
 
     def test_exclude(self):
         d = AttrDict({"keys": {"a": 1}})
@@ -393,12 +393,12 @@ class TestExtendSyspath:
         f.write_text("a = 1")
         shutil.copy(f, f.with_stem(f.stem + "2"))
         with pytest.raises(ImportError):
-            import foo  # ty:ignore[unresolved-import]
+            import foo  # ty:ignore[import-not-found]
         with ExtendSyspath(str(f)):
-            import foo  # ty:ignore[unresolved-import]
+            import foo  # ty:ignore[import-not-found]
 
             assert foo.a == 1
-        import foo2  # ty:ignore[unresolved-import]
+        import foo2  # ty:ignore[import-not-found]
 
         assert foo2.a == foo.a
         path = d.as_posix()
@@ -414,12 +414,12 @@ class TestExtendSyspath:
         f.write_text("ss = 2")
         shutil.copy(f, f.with_stem(f.stem + "2"))
         with pytest.raises(ImportError):
-            import sth  # ty:ignore[unresolved-import]
+            import sth  # ty:ignore[import-not-found]
         with ExtendSyspath(str(d)):
-            import sth  # ty:ignore[unresolved-import]
+            import sth  # ty:ignore[import-not-found]
 
             assert sth.ss == 2
-        import sth2  # ty:ignore[unresolved-import]
+        import sth2  # ty:ignore[import-not-found]
 
         assert sth2.ss == sth.ss
         path = d.as_posix()
@@ -434,23 +434,23 @@ class TestExtendSyspath:
         f.write_text("num = 3")
         shutil.copy(f, f.with_stem(f.stem + "2"))
         with pytest.raises(ImportError):
-            import ccc  # ty:ignore[unresolved-import]
+            import ccc  # ty:ignore[import-not-found]
         path = d.as_posix()
         with ExtendSyspath(str(d), rollback=True):
-            import ccc  # ty:ignore[unresolved-import]
+            import ccc  # ty:ignore[import-not-found]
 
             assert ccc.num == 3
             assert path in sys.path
         assert path not in sys.path
         path = d.resolve().as_posix()
         with ExtendSyspath(d, rollback=True):
-            import ccc  # ty:ignore[unresolved-import]
+            import ccc  # ty:ignore[import-not-found]
 
             assert ccc.num == 3
             assert path in sys.path
         assert path not in sys.path
         with pytest.raises(ImportError):
-            import ccc2  # ty:ignore[unresolved-import]
+            import ccc2  # ty:ignore[import-not-found]
 
             assert ccc2.num == 3
 
@@ -461,16 +461,16 @@ class TestExtendSyspath:
         f.write_text("num = 3")
         shutil.copy(f, f.with_stem(f.stem + "2"))
         with pytest.raises(ImportError):
-            import ddd  # ty:ignore[unresolved-import]
+            import ddd  # ty:ignore[import-not-found]
         path = d.resolve().as_posix()
         with TempExtendSyspath(d):
-            import ddd  # ty:ignore[unresolved-import]
+            import ddd  # ty:ignore[import-not-found]
 
             assert ddd.num == 3
             assert path == sys.path[0]
         assert path not in sys.path
         with pytest.raises(ImportError):
-            import ddd2  # ty:ignore[unresolved-import]
+            import ddd2  # ty:ignore[import-not-found]
 
             assert ddd2.num == 3
 
@@ -483,13 +483,13 @@ class TestExtendSyspath:
         if "." not in sys.path:
             sys.path.append(".")
         with contextlib.suppress(FileNotFoundError):
-            import dup  # ty:ignore[unresolved-import]
+            import dup  # ty:ignore[import-not-found]
 
             assert dup.num == 2
         sys.modules.pop("dup", None)
         sys.path.insert(0, str(tmp_workdir))
         with ExtendSyspath(d, rollback=True, insert=True):
-            import dup  # ty:ignore[unresolved-import]
+            import dup  # ty:ignore[import-not-found]
 
             assert dup.num == 3
             sys.path.pop(0)
@@ -508,26 +508,26 @@ class TestExtendSyspath:
             sys.path.pop(sys.path.index(dirname))
         sys.modules.pop("dup", None)
         with contextlib.suppress(FileNotFoundError):
-            import dup  # ty:ignore[unresolved-import]
+            import dup  # ty:ignore[import-not-found]
 
             assert dup.num == 2
         sys.modules.pop("dup", None)
         with ExtendSyspath(d, rollback=True):
-            import dup  # ty:ignore[unresolved-import]
+            import dup  # ty:ignore[import-not-found]
 
             assert dup.num == 2
         sys.modules.pop("dup", None)
         with contextlib.suppress(FileNotFoundError):
-            import dup  # ty:ignore[unresolved-import]
+            import dup  # ty:ignore[import-not-found]
 
             assert dup.num == 2
         sys.modules.pop("dup", None)
         with ExtendSyspath(d, insert=True):
-            import dup  # ty:ignore[unresolved-import]
+            import dup  # ty:ignore[import-not-found]
 
             assert dup.num == 3
         sys.modules.pop("dup", None)
         with contextlib.suppress(FileNotFoundError):
-            import dup  # ty:ignore[unresolved-import]
+            import dup  # ty:ignore[import-not-found]
 
             assert dup.num == 3
