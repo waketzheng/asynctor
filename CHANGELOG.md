@@ -1,7 +1,16 @@
 # ChangeLog
 
 ## 0.16
-### [0.16.1] Unrelease
+
+### [0.16.2] Unrelease
+
+### [0.16.1](../../releases/tag/v0.16.1) - 2026-11-22
+
+#### Changed
+
+- feat: auto set `protocol=2` for local Redis on Windows
+- refactor: only honor `REDIS_HOST` when not localhost
+- warn: emit deprecation warning when using external `REDIS_HOST`'
 
 ### [0.16.0](../../releases/tag/v0.16.0) - 2026-11-02
 
