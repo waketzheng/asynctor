@@ -1,20 +1,23 @@
 from __future__ import annotations
 
 import builtins
+import contextlib
 import importlib.util
-import os
 import re
+import socket
 import sys
 
-import asynctor.client as client_mod
 import pytest
-from asynctor import AsyncRedis
-from asynctor.contrib import fastapi as fastapi_utils
-from asynctor.testing import AsyncTestClient, async_client_fixture
 from fastapi import FastAPI, Request
 from redis.asyncio import Redis
 
-from .main import app
+with contextlib.suppress(DeprecationWarning):
+    import asynctor.client as client_mod
+    from asynctor import AsyncRedis
+    from asynctor.contrib import fastapi as fastapi_utils
+    from asynctor.testing import AsyncTestClient, async_client_fixture
+
+    from .main import app
 
 client = async_client_fixture(app)
 
@@ -39,7 +42,7 @@ def _load_client_without_redis(monkeypatch):
 
 
 @pytest.mark.anyio
-async def test_apis(client):
+async def test_apis(client, monkeypatch):
     path = "/"
     r = await client.get(path)
     assert r.status_code == 200
@@ -53,8 +56,16 @@ async def test_apis(client):
     r = await client.post(path, json=payload)
     assert r.status_code == 200, r.text
     assert r.json()["b"] == "1"
-    os.environ["REDIS_HOST"] = "localhost"
-    cached = await AsyncRedis().get("b")
+
+    def fake_getaddrinfo(host, port, *args, **kwargs):
+        return [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("127.0.0.1", port))]
+
+    monkeypatch.setattr(socket, "getaddrinfo", fake_getaddrinfo)
+    monkeypatch.setenv("REDIS_HOST", "mock.remote_redis.com")
+    with pytest.warns(
+        UserWarning, match="Use 'mock.remote_redis.com' as redis host from env REDIS_HOST"
+    ):
+        cached = await AsyncRedis().get("b")
     assert cached == b"1"
 
 
@@ -172,3 +183,18 @@ async def test_register_aioredis_not_installed_accepts_connection_kwargs(monkeyp
     with pytest.raises(RuntimeError, match=re.escape('pip install "asynctor[redis]"')):
         async with AsyncTestClient(app):
             pass
+
+
+def test_windows_local_redis_protocol(monkeypatch, mocker):
+    monkeypatch.setattr("platform.system", lambda: "Windows")
+    mock_object = mocker.patch("redis.asyncio.Redis.__init__")
+    _ = AsyncRedis()
+    mock_object.assert_called_once_with(protocol=2)
+
+
+def test_async_redis_default_protocol_on_linux(monkeypatch, mocker):
+    monkeypatch.setattr("platform.system", lambda: "Linux")
+
+    mock_object = mocker.patch("redis.asyncio.Redis.__init__")
+    _ = AsyncRedis()
+    mock_object.assert_called_once_with()

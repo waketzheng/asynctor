@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import os
+import platform
+import warnings
 from typing import TYPE_CHECKING, Annotated, Any, cast
 
 if TYPE_CHECKING:
@@ -48,7 +50,9 @@ def _get_app_state(app: Any) -> Any | None:
 
 
 class RedisClient(Redis):  # ty: ignore[unsupported-base]
-    def __init__(self, **kw: Annotated[Any, "Same as redis.asyncio.Redis"]) -> None:
+    def __init__(
+        self, *, protocol: int | None = None, **kw: Annotated[Any, "Same as redis.asyncio.Redis"]
+    ) -> None:
         """Expand `redis.asyncio.Redis` to auto load REDIS_HOST from os environ,
         if host parameter not explicitly set.
 
@@ -63,8 +67,16 @@ class RedisClient(Redis):  # ty: ignore[unsupported-base]
             assert r.connection_pool.connection_kwargs['host'] == '127.0.0.1'
             ```
         """
-        if "host" not in kw and (host := os.getenv("REDIS_HOST")):
+        default_host = ("localhost", "127.0.0.1")
+        if "host" not in kw and (host := os.getenv("REDIS_HOST")) and host not in default_host:
+            warnings.warn(f"Use {host!r} as redis host from env REDIS_HOST", stacklevel=2)
             kw["host"] = host
+        if protocol is not None:
+            kw["protocol"] = protocol
+        elif (not (h := kw.get("host")) or h in default_host) and platform.system() == "Windows":
+            # Local Redis on Windows is typically version 5.0
+            # Explicitly set protocol to 2 to avoid HELLO command errors
+            kw["protocol"] = 2
         super().__init__(**kw)
 
 
