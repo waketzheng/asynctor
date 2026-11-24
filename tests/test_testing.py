@@ -5,6 +5,7 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from asynctor.utils import Shell
 
 try:
     from asynctor.testing import tmp_workdir_fixture
@@ -49,3 +50,9 @@ def test_raise_runtime_error_without_httpx2_and_httpx():
 
     with pytest.raises(RuntimeError):
         from asynctor.testing import AsyncClient  # NOQA
+
+
+@pytest.mark.parametrize("extra", ["api", "testing"])
+def test_optional_deps(extra: str):
+    cmd = 'uv pip install --no-deps --dry-run -e ".[extra]"'
+    assert Shell(cmd).call() == 0
